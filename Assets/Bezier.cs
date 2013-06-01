@@ -3,10 +3,10 @@ using System.Collections;
 
 public class Bezier : MonoBehaviour {
 	
-	Vector3 A = new Vector3(0, 0, 0);
+	Vector3 A = new Vector3(-4, 0, 0);
 	Vector3 B = new Vector3(2, 0, 0);
-	Vector3 C = new Vector3(2, 8, 0);
-	Vector3 D = new Vector3(4, 8, 0);
+	Vector3 C = new Vector3(4, 8, 0);
+	Vector3 D = new Vector3(6, 8, 0);
 	
 	int detail = 6;
 	
