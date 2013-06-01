@@ -1,16 +1,17 @@
 using UnityEngine;
 using System.Collections;
 
-public class Bezier : MonoBehaviour {
-	
+//public class Bezier : MonoBehaviour {
+public class BezierGenerator : MonoBehaviour {
+	/*
 	Vector3 A = new Vector3(-4, 0, 0);
 	Vector3 B = new Vector3(2, 0, 0);
 	Vector3 C = new Vector3(4, 8, 0);
 	Vector3 D = new Vector3(6, 8, 0);
 	
 	int detail = 6;
-	
-	void Start() {
+	*/
+	public void BezierPlatformGenerate(Vector3 A, Vector3 B, Vector3 C, Vector3 D, int detail) {
 		Vector3[] P = BezierGenerate(A, B, C, D, detail);
 		
 		CreateSphereAt(P[0]);
@@ -37,7 +38,7 @@ public class Bezier : MonoBehaviour {
 		float d = (pos1 - pos2).magnitude;
 		b.transform.localScale = new Vector3(d, 1, 1);
 	}
-	
+	/*
 	void OnDrawGizmos() {
 		Vector3[] P = BezierGenerate(A, B, C, D, detail);
 		for (int i = 1; i <= detail; i++)
@@ -49,8 +50,8 @@ public class Bezier : MonoBehaviour {
 		Gizmos.color = Color.red;
 		Gizmos.DrawSphere(D, 0.1f);
 	}
-	
-	Vector3[] BezierGenerate(Vector3 A, Vector3 B, Vector3 C, Vector3 D, int detail) {
+	*/
+	public Vector3[] BezierGenerate(Vector3 A, Vector3 B, Vector3 C, Vector3 D, int detail) {
 		Vector3[] P = new Vector3[201];
 		
 		float a = 1.0f;
