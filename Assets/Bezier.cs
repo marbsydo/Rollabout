@@ -2,18 +2,43 @@ using UnityEngine;
 using System.Collections;
 
 public class Bezier : MonoBehaviour {
+	
+	Vector3 A = new Vector3(0, 0, 0);
+	Vector3 B = new Vector3(2, 0, 0);
+	Vector3 C = new Vector3(2, 8, 0);
+	Vector3 D = new Vector3(4, 8, 0);
+	
+	int detail = 6;
+	
 	void Start() {
+		Vector3[] P = BezierGenerate(A, B, C, D, detail);
 		
+		CreateSphereAt(P[0]);
+		for (int i = 1; i <= detail; i++) {
+			CreateBlockBetween(P[i-1], P[i]);
+			CreateSphereAt(P[i]);
+		}
+	}
+	
+	void CreateSphereAt(Vector3 pos) {
+		GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+		s.transform.position = pos;
+	}
+	
+	void CreateBlockBetween(Vector3 pos1, Vector3 pos2) {
+		GameObject b = GameObject.CreatePrimitive(PrimitiveType.Cube);
+		b.transform.position = (pos1 + pos2) / 2;
+		
+		// Rotate block
+		float a = Mathf.Rad2Deg * Mathf.Atan2(pos2.y - pos1.y, pos2.x - pos1.x);
+		b.transform.eulerAngles = new Vector3(0, 0, a);
+		
+		// Change its length
+		float d = (pos1 - pos2).magnitude;
+		b.transform.localScale = new Vector3(d, 1, 1);
 	}
 	
 	void OnDrawGizmos() {
-		
-		Vector3 A = new Vector3(0 , 0 , 0 );
-		Vector3 B = new Vector3(10, 0 , 0 );
-		Vector3 C = new Vector3(10, 40, 0 );
-		Vector3 D = new Vector3(20, 40, 0 );
-		
-		int detail = 3;
 		Vector3[] P = BezierGenerate(A, B, C, D, detail);
 		for (int i = 1; i <= detail; i++)
 			Gizmos.DrawLine(P[i-1], P[i]);
