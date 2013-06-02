@@ -9,10 +9,7 @@ public class EditorController : BezierGenerator {
 	float editorCameraSpeedNormal = 0.5f;
 	float editorCameraSpeedShift = 2f;
 	
-	Vector3 pointA;
-	Vector3 pointB;
-	Vector3 pointC;
-	Vector3 pointD;
+	Vector3[] bezierPoint = new Vector3[4];
 	int detail = 10;
 	int drawStage = 0;
 	
@@ -40,15 +37,15 @@ public class EditorController : BezierGenerator {
 			m.z = 0;
 			
 			if (drawStage == 0) {
-				pointA = m;
-				pointB = pointA + new Vector3(8, 0, 0);
+				bezierPoint[0] = m;
+				bezierPoint[1] = m + new Vector3(8, 0, 0);
 				drawStage++;
 			} else if (drawStage == 1) {
-				pointD = m;
-				pointC = pointD - new Vector3(8, 0, 0);
+				bezierPoint[2] = m - new Vector3(8, 0, 0);
+				bezierPoint[3] = m;
 				drawStage++;
-				
-				BezierPlatformGenerate(pointA, pointB, pointC, pointD, detail);
+
+				BezierPlatformGenerate(new BezierCubic(bezierPoint[0], bezierPoint[1], bezierPoint[2], bezierPoint[3], detail));
 			}
 		}
 	}
