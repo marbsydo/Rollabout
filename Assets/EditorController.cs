@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class EditorController : BezierGenerator {
+public class EditorController : TerrainGenerator {
 	
 	// Camera
 	Camera editorCamera;

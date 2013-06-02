@@ -1,24 +1,9 @@
 using UnityEngine;
 using System.Collections;
 
-public class BezierGenerator : MonoBehaviour {
-	
-	public Vector3[] BezierGenerate(BezierCubic bezier) {
-		Vector3[] P = new Vector3[bezier.GetSegmentNum() + 1];
-		
-		float a = 1.0f;
-		float d = (1 / (float) bezier.GetSegmentNum());
-		
-		for (int i = 0; i <= bezier.GetSegmentNum(); i++) {
-			P[i] = bezier.CalculateCurvePoint(a);
-			a -= d;
-		}
-		
-		return P;
-	}
-	
+public class TerrainGenerator : MonoBehaviour {
 	public void BezierPlatformGenerate(BezierCubic bezier) {
-		Vector3[] P = BezierGenerate(bezier);
+		Vector3[] P = bezier.CalculateCurvePoints();
 		
 		CreateSphereAt(P[0]);
 		for (int i = 1; i <= bezier.GetSegmentNum(); i++) {
@@ -156,6 +141,20 @@ public class BezierCubic {
 	}
 	
 	// ## Calculating
+	
+	public Vector3[] CalculateCurvePoints() {
+		Vector3[] P = new Vector3[segments + 1];
+		
+		float a = 1.0f;
+		float d = (1 / (float) segments);
+		
+		for (int i = 0; i <= segments; i++) {
+			P[i] = CalculateCurvePoint(a);
+			a -= d;
+		}
+		
+		return P;
+	}
 	
 	public Vector3 CalculateCurvePoint(float a) {
 		float b = 1.0f - a;
