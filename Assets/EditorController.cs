@@ -20,6 +20,16 @@ public class EditorController : TerrainGenerator {
 	void Update() {
 		UpdateCameraMovement();
 		UpdateDrawBeziers();
+		UpdatePlaceBall();
+	}
+	
+	void UpdatePlaceBall() {
+		if (Input.GetMouseButtonDown(1)) {
+			Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
+			m.z = 0;
+			Object ball = Resources.Load("Test/TestBall");
+			GameObject.Instantiate(ball, m, Quaternion.identity);
+		}
 	}
 	
 	void UpdateCameraMovement() {
@@ -38,12 +48,16 @@ public class EditorController : TerrainGenerator {
 			
 			if (drawStage == 0) {
 				bezierPoint[0] = m;
-				bezierPoint[1] = m + new Vector3(8, 0, 0);
 				drawStage++;
 			} else if (drawStage == 1) {
-				bezierPoint[2] = m - new Vector3(8, 0, 0);
-				bezierPoint[3] = m;
+				bezierPoint[1] = m;
 				drawStage++;
+			} else if (drawStage == 2) {
+				bezierPoint[2] = m;
+				drawStage++;
+			} else if (drawStage == 3) {
+				bezierPoint[3] = m;
+				drawStage = 0;
 				
 				BezierCubic bezier = new BezierCubic(bezierPoint[0], bezierPoint[1], bezierPoint[2], bezierPoint[3], detail);
 				bezier.SetSegmentLength(2);
