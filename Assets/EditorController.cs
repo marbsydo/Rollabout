@@ -44,8 +44,10 @@ public class EditorController : BezierGenerator {
 				bezierPoint[2] = m - new Vector3(8, 0, 0);
 				bezierPoint[3] = m;
 				drawStage++;
-
-				BezierPlatformGenerate(new BezierCubic(bezierPoint[0], bezierPoint[1], bezierPoint[2], bezierPoint[3], detail));
+				
+				BezierCubic bezier = new BezierCubic(bezierPoint[0], bezierPoint[1], bezierPoint[2], bezierPoint[3], detail);
+				bezier.SetSegmentLength(2);
+				BezierPlatformGenerate(bezier);
 			}
 		}
 	}
