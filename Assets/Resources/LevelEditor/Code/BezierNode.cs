@@ -13,6 +13,7 @@ public class BezierNode : MonoBehaviour {
 	GameObject[] nodeControl = new GameObject[2];
 	GameObject[] nodeLine = new GameObject[2];
 	
+	
 	// Mouse clicking stuff
 	// 0 = nothing
 	// 1 = nodeVertex
@@ -61,11 +62,24 @@ public class BezierNode : MonoBehaviour {
 			} else {
 				mouseHolding = 0;
 			}
+			
+			if (mouseHolding > 0) {
+				// If we cannot claim the mouse, do not being holding
+				if (!editorController.MouseClaim(gameObject)) {
+					Debug.LogWarning("The mouse was claimed by another!");
+					mouseHolding = 0;
+				}
+			}
 		}
 		
 		if (!Input.GetMouseButton(0)) {
-			// If release button, drop whatever is being moved
-			mouseHolding = 0;
+			if (mouseHolding > 0) {
+				// If release button, drop whatever is being moved
+				mouseHolding = 0;
+				
+				Debug.LogWarning("I am releasing the mouse!");
+				editorController.MouseRelease(gameObject);
+			}
 		}
 		
 		if (mouseHolding > 0) {

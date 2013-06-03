@@ -9,18 +9,75 @@ public class EditorController : TerrainGenerator {
 	float editorCameraSpeedNormal = 0.5f;
 	float editorCameraSpeedShift = 2f;
 	
+	// Prefabs
+	GameObject prefabNode;
+	
+	// Who has claimed to mouse?
+	public bool mouseClaimed = false;
+	public GameObject mouseClaimant;
+	public bool mouseReleaseNextFrame = false;
+	public GameObject mouseReleaseNextFrameClaimant;
+	
+	// Beziers
 	Vector3[] bezierPoint = new Vector3[4];
 	int detail = 10;
 	int drawStage = 0;
 	
 	void Start() {
 		editorCamera = GameObject.Find("EditorCamera").GetComponent<Camera>();
+		
+		prefabNode = Resources.Load("LevelEditor/BezierNode") as GameObject;
 	}
 	
 	void Update() {
+		
+		UpdateMouseRelease();
+		
 		UpdateCameraMovement();
-		UpdateDrawBeziers();
 		UpdatePlaceBall();
+	}
+	
+	void LateUpdate() {
+		UpdateDrawBeziers();
+	}
+	
+	void UpdateMouseRelease() {
+		if (mouseReleaseNextFrame) {
+			MouseRelease(mouseReleaseNextFrameClaimant);
+			mouseReleaseNextFrameClaimant = null;
+			mouseReleaseNextFrame = false;
+		}
+	}
+	
+	// Called by other scripts that want to use the mouse
+	// They will be denied if the mouse is already in use
+	public bool MouseClaim(GameObject mouseClaimant) {
+		if (!mouseClaimed) {
+			// Mouse is not in use. It can be claimed!
+			this.mouseClaimant = mouseClaimant;
+			mouseClaimed = true;
+			Debug.Log("Mouse claimed by " + mouseClaimant.name);
+			return true;
+		} else {
+			// Mouse is in use. It cannot be claimed!
+			return false;
+		}
+	}
+	
+	// Called by other scripts when they are done with the mouse
+	// Claimant is required for debugging
+	public void MouseRelease(GameObject mouseClaimant) {
+		// Mouse is no longer claimed
+		Debug.Log("Mouse released by " + mouseClaimant.name);
+		mouseClaimed = false;
+		this.mouseClaimant = null;
+	}
+	
+	// Called by other scripts when they will be done with the mouse next frame
+	// Claimant is required for debugging
+	public void MouseReleaseNextFrame(GameObject mouseClaimant) {
+		mouseReleaseNextFrame = true;
+		mouseReleaseNextFrameClaimant = mouseClaimant;
 	}
 	
 	// Called by other scripts to work out what the current camera is
@@ -29,10 +86,10 @@ public class EditorController : TerrainGenerator {
 	}
 	
 	void UpdatePlaceBall() {
-		if (Input.GetMouseButtonDown(1)) {
+		if (Input.GetMouseButtonDown(2)) {
 			Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
 			m.z = 0;
-			Object ball = Resources.Load("Editor/TestBall");
+			Object ball = Resources.Load("LevelEditor/TestBall");
 			GameObject.Instantiate(ball, m, Quaternion.identity);
 		}
 	}
@@ -46,6 +103,18 @@ public class EditorController : TerrainGenerator {
 	void UpdateDrawBeziers() {
 		// Each new point is attached to the end of the last point
 		
+		if (Input.GetMouseButtonDown(0)) {
+			// Try to claim the mouse. If it can be claimed, then it is safe to place stuff
+			if (MouseClaim(gameObject)) {			
+				Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
+				m.z = 0;
+				GameObject.Instantiate(prefabNode, m, Quaternion.identity);
+				
+				MouseReleaseNextFrame(gameObject);
+			}
+		}
+		
+		/*
 		if (Input.GetMouseButtonDown(0)) {
 			
 			Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
@@ -69,5 +138,6 @@ public class EditorController : TerrainGenerator {
 				BezierPlatformGenerate(bezier);
 			}
 		}
+		*/
 	}
 }
