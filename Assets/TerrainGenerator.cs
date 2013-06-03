@@ -16,7 +16,7 @@ public class TerrainPart {
 		Vector3[] p = part.CalculatePoints();
 		
 		CreateSphereAt(p[0]);
-		for (int i = 1; i <= p.Length; i++) {
+		for (int i = 1; i < p.Length; i++) {
 			CreateBlockBetween(p[i-1], p[i]);
 			CreateSphereAt(p[i]);
 		}
@@ -41,21 +41,30 @@ public class TerrainPart {
 	}
 }
 
+public enum GenericPartType {StraightLine, CurveBezierCubic}
+
 public class GenericPart {
-	public enum GenericPartType {StraightLine, CurveBezierCubic}
 	
 	GenericPartType type;
 	StraightLine straightLine;
 	CurveBezierCubic curveBezierCubic;
 	
-	public GenericPart(StraightLine straightLine) {
-		this.straightLine = straightLine;
-		this.type = GenericPartType.StraightLine;
+	public GenericPart(GenericPartType type, Vector3 A, Vector3 B) {
+		if (type == GenericPartType.StraightLine) {
+			this.straightLine = new StraightLine(A, B);
+			this.type = type;
+		} else {
+			Debug.LogError("No GenericPart of type " + type + " exists for these arguments");
+		}
 	}
 	
-	public GenericPart(CurveBezierCubic curveBezierCubic) {
-		this.curveBezierCubic = curveBezierCubic;
-		this.type = GenericPartType.CurveBezierCubic;
+	public GenericPart(GenericPartType type, Vector3 A, Vector3 B, Vector3 C, Vector3 D) {
+		if (type == GenericPartType.CurveBezierCubic) {
+			this.curveBezierCubic = new CurveBezierCubic(A, B, C, D, 20);
+			this.type = type;
+		} else {
+			Debug.LogError("No GenericPart of type " + type + " exists for these arguments");
+		}
 	}
 	
 	// Returns the specific point in this part between its beginning and end

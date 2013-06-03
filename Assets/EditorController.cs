@@ -18,10 +18,11 @@ public class EditorController : TerrainGenerator {
 	public bool mouseReleaseNextFrame = false;
 	public GameObject mouseReleaseNextFrameClaimant;
 	
-	// Beziers
+	// Drawing
 	Vector3[] bezierPoint = new Vector3[4];
 	int detail = 10;
 	int drawStage = 0;
+	GameObject[] currentNodes;
 	
 	void Start() {
 		editorCamera = GameObject.Find("EditorCamera").GetComponent<Camera>();
@@ -88,8 +89,7 @@ public class EditorController : TerrainGenerator {
 	
 	void UpdatePlaceBall() {
 		if (Input.GetMouseButtonDown(2)) {
-			Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
-			m.z = 0;
+			Vector3 m = GetMousePos();
 			Object ball = Resources.Load("LevelEditor/TestBall");
 			GameObject.Instantiate(ball, m, Quaternion.identity);
 		}
@@ -105,12 +105,27 @@ public class EditorController : TerrainGenerator {
 		// Each new point is attached to the end of the last point
 		
 		if (Input.GetMouseButtonDown(0)) {
-			// Try to claim the mouse. If it can be claimed, then it is safe to place stuff
-			if (MouseClaim(gameObject)) {			
-				Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
-				m.z = 0;
-				GameObject.Instantiate(prefabNode, m, Quaternion.identity);
+			if (MouseClaim(gameObject)) {
+				drawStage = 1;
+				Vector3 m = GetMousePos();
+				currentNodes = new GameObject[2];
+				currentNodes[0] = GameObject.Instantiate(prefabNode, m, Quaternion.identity) as GameObject;
+			}
+		}
+		
+		if (Input.GetMouseButtonUp(0)) {
+			if (drawStage == 1) {
+				drawStage = 0;
+				Vector3 m = GetMousePos();
+				currentNodes[1] = GameObject.Instantiate(prefabNode, m, Quaternion.identity) as GameObject;
 				
+				// Create the thing between the two points
+				// Calling GenericPart constructor
+				
+				Vector3 A = currentNodes[0].transform.position;
+				Vector3 B = currentNodes[1].transform.position;
+				TerrainPart part = new TerrainPart(new GenericPart(GenericPartType.StraightLine, A, B));
+				part.Generate();
 				MouseReleaseNextFrame(gameObject);
 			}
 		}
@@ -140,5 +155,11 @@ public class EditorController : TerrainGenerator {
 			}
 		}
 		*/
+	}
+	
+	Vector3 GetMousePos() {
+		Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
+		m.z = 0;
+		return m;
 	}
 }
