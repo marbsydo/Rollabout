@@ -23,6 +23,11 @@ public class EditorController : TerrainGenerator {
 		UpdatePlaceBall();
 	}
 	
+	// Called by other scripts to work out what the current camera is
+	public Camera GetCamera() {
+		return editorCamera;
+	}
+	
 	void UpdatePlaceBall() {
 		if (Input.GetMouseButtonDown(1)) {
 			Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
