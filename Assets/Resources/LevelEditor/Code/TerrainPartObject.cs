@@ -31,6 +31,11 @@ public class TerrainPartObject : MonoBehaviour {
 			nodes[0] = CreateNode(p[0], 1);
 			nodes[1] = CreateNode(p[p.Length - 1], 1);
 			break;
+		case BlueprintPartType.CurveCircularArc:
+			nodes = new EditorNode[2];
+			nodes[0] = CreateNode(p[0], 1);
+			nodes[1] = CreateNode(p[1], 1);
+			break;
 		}
 	}
 	
@@ -56,6 +61,11 @@ public class TerrainPartObject : MonoBehaviour {
 			this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
 			this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetControlPosition(0));
 			this.terrainPart.blueprintPart.SetNodePosition(3, nodes[1].GetVertexPosition());
+			break;
+		case BlueprintPartType.CurveCircularArc:
+			this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
+			this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
+			this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetVertexPosition());
 			break;
 		default:
 			Debug.LogError("BlueprintPartType " + this.terrainPart.blueprintPart.GetType() + " does not exist.");

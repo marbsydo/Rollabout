@@ -81,18 +81,28 @@ public class TerrainPart {
 	}
 }
 
-public enum BlueprintPartType {StraightLine, CurveBezierCubic}
+public enum BlueprintPartType {StraightLine, CurveBezierCubic, CurveCircularArc}
 
 public class BlueprintPart {
 	
 	BlueprintPartType type;
 	StraightLine straightLine;
 	CurveBezierCubic curveBezierCubic;
+	CurveCircularArc curveCircularArc;
 	// See also: TerrainPartObject.cs
 	
 	public BlueprintPart(BlueprintPartType type, Vector3 A, Vector3 B) {
 		if (type == BlueprintPartType.StraightLine) {
 			this.straightLine = new StraightLine(A, B);
+			this.type = type;
+		} else {
+			Debug.LogError("No BlueprintPart of type " + type + " exists for these arguments");
+		}
+	}
+	
+	public BlueprintPart(BlueprintPartType type, Vector3 A, Vector3 B, Vector3 C) {
+		if (type == BlueprintPartType.CurveCircularArc) {
+			this.curveCircularArc = new CurveCircularArc(A, B, C);
 			this.type = type;
 		} else {
 			Debug.LogError("No BlueprintPart of type " + type + " exists for these arguments");
@@ -121,6 +131,9 @@ public class BlueprintPart {
 		case BlueprintPartType.CurveBezierCubic:
 			curveBezierCubic.SetPoint(node, pos);
 			break;
+		case BlueprintPartType.CurveCircularArc:
+			curveCircularArc.SetPoint(node, pos);
+			break;
 		default:
 			Debug.Log("BlueprintPartType " + type + " does not exist.");
 			break;
@@ -137,6 +150,9 @@ public class BlueprintPart {
 			break;
 		case BlueprintPartType.CurveBezierCubic:
 			p = curveBezierCubic.CalculateCurvePoint(a);
+			break;
+		case BlueprintPartType.CurveCircularArc:
+			p = curveCircularArc.CalculateCurvePoint(a);
 			break;
 		default:
 			p = Vector3.zero;
@@ -157,6 +173,9 @@ public class BlueprintPart {
 			break;
 		case BlueprintPartType.CurveBezierCubic:
 			p = curveBezierCubic.CalculateCurvePoints();
+			break;
+		case BlueprintPartType.CurveCircularArc:
+			p = curveCircularArc.CalculateCurvePoints();
 			break;
 		default:
 			p = new Vector3[1];
@@ -261,7 +280,7 @@ public class CurveBezierCubic {
 	private Vector3[] p = new Vector3[4];
 	private int segments = 1;
 	
-	// # Constructor
+	// ## Constructor
 	
 	public CurveBezierCubic(Vector3 A, Vector3 B, Vector3 C, Vector3 D, int segments) {
 		SetPointA(A);
@@ -396,5 +415,105 @@ public class CurveBezierCubic {
 		}
 		
 		return l;
+	}
+}
+
+public class CurveCircularArc {
+	private Vector3[] p = new Vector3[3];
+	
+	public CurveCircularArc(Vector3 A, Vector3 B, Vector3 C) {
+		SetPointA(A);
+		SetPointB(B);
+		SetPointC(C);
+	}
+	
+	// ## Setting
+	
+	public void SetPoint(int point, Vector3 p) {
+		switch (point) {
+		case 0:
+			SetPointA(p);
+			break;
+		case 1:
+			SetPointB(p);
+			break;
+		case 2:
+			SetPointC(p);
+			break;
+		default:
+			Debug.Log("There is not SetPoint for " + point);
+			break;
+		}
+	}
+	
+	public void SetPointA(Vector3 A) {
+		this.p[0] = A;
+	}
+	
+	public void SetPointB(Vector3 B) {
+		this.p[1] = B;
+	}
+	
+	public void SetPointC(Vector3 C) {
+		this.p[2] = C;
+	}
+	
+	// ## Calculating
+	
+	public float CalculateDiameter() {
+		// Diameter = length of side / sine of opposite angle
+		float l = (p[0] - p[1]).magnitude;
+		
+		float a0 = Mathf.Atan2(p[0].y - p[2].y, p[0].x - p[2].x);
+		float a1 = Mathf.Atan2(p[1].y - p[2].y, p[1].x - p[2].x);
+		
+		float s = Mathf.Sin(a0 - a1);
+		
+		return l / s;
+	}
+	
+	public Vector3 CalculateCenter() {
+		//Bd = B - A
+		//Cd = C - A
+		//Dd = 2(Bdx * Cdy - Bdy * Cdx)
+		//Ux = (Cdy(Bdx2 + Bdy2) - Bdy(Cdx2 + Cdy2)) / Dd
+		//Uy = (Bdx(Cdx2 + Cdy2) - Cdx(Bdx2 + Bdy2)) / Dd
+		
+		Vector3 Bd = p[1] - p[0];
+		Vector3 Cd = p[2] - p[0];
+		float Dd = 2 * (Bd.x * Cd.y - Bd.y * Cd.x);
+		float Ux = (Cd.y * (Bd.x * Bd.x + Bd.y * Bd.y) - Bd.y * (Cd.x * Cd.x + Cd.y * Cd.y)) / Dd;
+		float Uy = (Bd.x * (Cd.x * Cd.x + Cd.y * Cd.y) - Cd.x * (Bd.x * Bd.x + Bd.y * Bd.y)) / Dd;
+		
+		return new Vector3(Ux, Uy, 0);
+	}
+	
+	public Vector3[] CalculateCurvePoints() {
+		int num = 100;
+		Vector3[] P = new Vector3[num];
+		
+		//todo
+		// this is probably not quite right
+		for (int i = 0; i < num; i += 1) {
+			P[i] = p[0] + CalculateCurvePoint((float) i / (float) num);
+		}
+		
+		return P;
+	}
+	
+	public Vector3 CalculateCurvePoint(float a) {
+		float r = CalculateDiameter() / 2;
+		Vector3 c = CalculateCenter();
+		
+		float d = a * 360 * Mathf.Deg2Rad;
+		
+		//todo
+		// make work on arc
+		// Currently only works out a circle
+		Vector3 P = Vector3.zero;
+		P.x = c.x + (r * Mathf.Cos(d));
+		P.y = c.y + (r * Mathf.Sin(d));
+		
+		return P;
 	}
 }
