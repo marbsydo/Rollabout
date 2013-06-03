@@ -27,7 +27,7 @@ public class EditorController : TerrainGenerator {
 		if (Input.GetMouseButtonDown(1)) {
 			Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
 			m.z = 0;
-			Object ball = Resources.Load("Test/TestBall");
+			Object ball = Resources.Load("Editor/TestBall");
 			GameObject.Instantiate(ball, m, Quaternion.identity);
 		}
 	}
