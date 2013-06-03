@@ -10,7 +10,7 @@ public class EditorController : TerrainGenerator {
 	float editorCameraSpeedShift = 2f;
 	
 	// Prefabs
-	GameObject prefabNode;
+	GameObject prefabTerrainPartObject;
 	
 	// Who has claimed to mouse?
 	public bool mouseClaimed = false;
@@ -22,12 +22,12 @@ public class EditorController : TerrainGenerator {
 	Vector3[] bezierPoint = new Vector3[4];
 	int detail = 10;
 	int drawStage = 0;
-	GameObject[] currentNodes;
+	Vector3[] drawPoints;
 	
 	void Start() {
 		editorCamera = GameObject.Find("EditorCamera").GetComponent<Camera>();
 		
-		prefabNode = Resources.Load("LevelEditor/BezierNode") as GameObject;
+		prefabTerrainPartObject = Resources.Load("LevelEditor/TerrainPartObject") as GameObject;
 	}
 	
 	void Update() {
@@ -108,8 +108,8 @@ public class EditorController : TerrainGenerator {
 			if (MouseClaim(gameObject)) {
 				drawStage = 1;
 				Vector3 m = GetMousePos();
-				currentNodes = new GameObject[2];
-				currentNodes[0] = GameObject.Instantiate(prefabNode, m, Quaternion.identity) as GameObject;
+				drawPoints = new Vector3[2];
+				drawPoints[0] = m;
 			}
 		}
 		
@@ -117,44 +117,23 @@ public class EditorController : TerrainGenerator {
 			if (drawStage == 1) {
 				drawStage = 0;
 				Vector3 m = GetMousePos();
-				currentNodes[1] = GameObject.Instantiate(prefabNode, m, Quaternion.identity) as GameObject;
+				drawPoints[1] = m;
 				
-				// Create the thing between the two points
-				// Calling GenericPart constructor
+				// Create the desired blueprint
 				
-				Vector3 A = currentNodes[0].transform.position;
-				Vector3 B = currentNodes[1].transform.position;
-				TerrainPart part = new TerrainPart(new GenericPart(GenericPartType.StraightLine, A, B));
-				part.Generate();
+				// Straight line
+				//BlueprintPart part = new BlueprintPart(BlueprintPartType.StraightLine, drawPoints[0], drawPoints[1]);
+				
+				// Curve bezier cubic
+				BlueprintPart part = new BlueprintPart(BlueprintPartType.CurveBezierCubic, drawPoints[0], drawPoints[0] + new Vector3(8, 0, 0), drawPoints[1] - new Vector3(8, 0, 0) ,drawPoints[1]);
+				
+				// Assign the blueprint to a terrain object
+				TerrainPartObject terrain = (GameObject.Instantiate(prefabTerrainPartObject, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<TerrainPartObject>();
+				terrain.AssignBlueprint(part);
+				
 				MouseReleaseNextFrame(gameObject);
 			}
 		}
-		
-		/*
-		if (Input.GetMouseButtonDown(0)) {
-			
-			Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
-			m.z = 0;
-			
-			if (drawStage == 0) {
-				bezierPoint[0] = m;
-				drawStage++;
-			} else if (drawStage == 1) {
-				bezierPoint[1] = m;
-				drawStage++;
-			} else if (drawStage == 2) {
-				bezierPoint[2] = m;
-				drawStage++;
-			} else if (drawStage == 3) {
-				bezierPoint[3] = m;
-				drawStage = 0;
-				
-				BezierCubic bezier = new BezierCubic(bezierPoint[0], bezierPoint[1], bezierPoint[2], bezierPoint[3], detail);
-				bezier.SetSegmentLength(2);
-				BezierPlatformGenerate(bezier);
-			}
-		}
-		*/
 	}
 	
 	Vector3 GetMousePos() {

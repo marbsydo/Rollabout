@@ -6,28 +6,63 @@ public class TerrainGenerator : MonoBehaviour {
 }
 
 public class TerrainPart {
-	GenericPart part;
+	public BlueprintPart blueprintPart;
+	Transform parent;
+	GameObject[] objs;
+	int objPos = 0;
 	
-	public TerrainPart(GenericPart part) {
-		this.part = part;
+	public TerrainPart(BlueprintPart blueprintPart) {
+		this.blueprintPart = blueprintPart;
 	}
 	
-	public void Generate() {
-		Vector3[] p = part.CalculatePoints();
+	public void SetParent(Transform parent) {
+		this.parent = parent;
+	}
+	
+	public void Regenerate() {
+		Vector3[] p = blueprintPart.CalculatePoints();
 		
-		CreateSphereAt(p[0]);
+		// For (x) fenceposts, we need (x * 2 - 1) fences and fenceposts
+		ObjsReset(p.Length * 2 - 1);
+		
+		ObjsAppend(CreateSphereAt(p[0]));
 		for (int i = 1; i < p.Length; i++) {
-			CreateBlockBetween(p[i-1], p[i]);
-			CreateSphereAt(p[i]);
+			ObjsAppend(CreateBlockBetween(p[i-1], p[i]));
+			ObjsAppend(CreateSphereAt(p[i]));
 		}
 	}
 	
-	void CreateSphereAt(Vector3 pos) {
-		GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-		s.transform.position = pos;
+	void ObjsReset(int size) {
+		ObjsDestroy();
+		objs = new GameObject[size];
 	}
 	
-	void CreateBlockBetween(Vector3 pos1, Vector3 pos2) {
+	void ObjsAppend(GameObject obj) {
+		objs[objPos] = obj;
+		objPos++;
+	}
+	
+	void ObjsDestroy() {
+		if (objs != null) {
+			for (int i = 0; i < objs.Length; i++) {
+				GameObject.Destroy(objs[i]);
+			}
+		}
+		objs = null;
+		objPos = 0;
+	}
+	
+	GameObject CreateSphereAt(Vector3 pos) {
+		GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+		s.transform.position = pos;
+		
+		if (parent != null)
+			s.transform.parent = parent;
+		
+		return s;
+	}
+	
+	GameObject CreateBlockBetween(Vector3 pos1, Vector3 pos2) {
 		GameObject b = GameObject.CreatePrimitive(PrimitiveType.Cube);
 		b.transform.position = (pos1 + pos2) / 2;
 		
@@ -38,32 +73,57 @@ public class TerrainPart {
 		// Change its length
 		float d = (pos1 - pos2).magnitude;
 		b.transform.localScale = new Vector3(d, 1, 1);
+		
+		if (parent != null)
+			b.transform.parent = parent;
+		
+		return b;
 	}
 }
 
-public enum GenericPartType {StraightLine, CurveBezierCubic}
+public enum BlueprintPartType {StraightLine, CurveBezierCubic}
 
-public class GenericPart {
+public class BlueprintPart {
 	
-	GenericPartType type;
+	BlueprintPartType type;
 	StraightLine straightLine;
 	CurveBezierCubic curveBezierCubic;
+	// See also: TerrainPartObject.cs
 	
-	public GenericPart(GenericPartType type, Vector3 A, Vector3 B) {
-		if (type == GenericPartType.StraightLine) {
+	public BlueprintPart(BlueprintPartType type, Vector3 A, Vector3 B) {
+		if (type == BlueprintPartType.StraightLine) {
 			this.straightLine = new StraightLine(A, B);
 			this.type = type;
 		} else {
-			Debug.LogError("No GenericPart of type " + type + " exists for these arguments");
+			Debug.LogError("No BlueprintPart of type " + type + " exists for these arguments");
 		}
 	}
 	
-	public GenericPart(GenericPartType type, Vector3 A, Vector3 B, Vector3 C, Vector3 D) {
-		if (type == GenericPartType.CurveBezierCubic) {
+	public BlueprintPart(BlueprintPartType type, Vector3 A, Vector3 B, Vector3 C, Vector3 D) {
+		if (type == BlueprintPartType.CurveBezierCubic) {
 			this.curveBezierCubic = new CurveBezierCubic(A, B, C, D, 20);
 			this.type = type;
 		} else {
-			Debug.LogError("No GenericPart of type " + type + " exists for these arguments");
+			Debug.LogError("No BlueprintPart of type " + type + " exists for these arguments");
+		}
+	}
+	
+	public BlueprintPartType GetType() {
+		return type;
+	}
+	
+	public void SetNodePosition(int node, Vector3 pos) {
+		// Update the position of one of the nodes defining the shape
+		switch (type) {
+		case BlueprintPartType.StraightLine:
+			straightLine.SetPoint(node, pos);
+			break;
+		case BlueprintPartType.CurveBezierCubic:
+			curveBezierCubic.SetPoint(node, pos);
+			break;
+		default:
+			Debug.Log("BlueprintPartType " + type + " does not exist.");
+			break;
 		}
 	}
 	
@@ -72,10 +132,10 @@ public class GenericPart {
 	public Vector3 CalculatePoint(float a) {
 		Vector3 p;
 		switch (type) {
-		case GenericPartType.StraightLine:
+		case BlueprintPartType.StraightLine:
 			p = straightLine.CalculateLinePoint(a);
 			break;
-		case GenericPartType.CurveBezierCubic:
+		case BlueprintPartType.CurveBezierCubic:
 			p = curveBezierCubic.CalculateCurvePoint(a);
 			break;
 		default:
@@ -90,12 +150,12 @@ public class GenericPart {
 	public Vector3[] CalculatePoints() {
 		Vector3[] p;
 		switch (type) {
-		case GenericPartType.StraightLine:
+		case BlueprintPartType.StraightLine:
 			p = new Vector3[2];
 			p[0] = straightLine.GetPointA();
 			p[1] = straightLine.GetPointB();
 			break;
-		case GenericPartType.CurveBezierCubic:
+		case BlueprintPartType.CurveBezierCubic:
 			p = curveBezierCubic.CalculateCurvePoints();
 			break;
 		default:
@@ -118,6 +178,20 @@ public class StraightLine {
 	}
 	
 	// ## Setting
+	
+	public void SetPoint(int point, Vector3 p) {
+		switch (point) {
+		case 0:
+			SetPointA(p);
+			break;
+		case 1:
+			SetPointB(p);
+			break;
+		default:
+			Debug.Log("There is not SetPoint for " + point);
+			break;
+		}
+	}
 	
 	public void SetPointA(Vector3 A) {
 		this.p[0] = A;
@@ -158,6 +232,7 @@ number of segments the resulting curve should have.
 ## Setting
 After creation, each individual point (A, B, C and D) can be adjusted, using
 the following functions:
+* SetPoint()
 * SetPointA()
 * SetPointB()
 * SetPointC()
@@ -197,6 +272,26 @@ public class CurveBezierCubic {
 	}
 	
 	// ## Setting
+	
+	public void SetPoint(int point, Vector3 p) {
+		switch (point) {
+		case 0:
+			SetPointA(p);
+			break;
+		case 1:
+			SetPointB(p);
+			break;
+		case 2:
+			SetPointC(p);
+			break;
+		case 3:
+			SetPointD(p);
+			break;
+		default:
+			Debug.Log("There is not SetPoint for " + point);
+			break;
+		}
+	}
 	
 	public void SetPointA(Vector3 A) {
 		this.p[0] = A;
