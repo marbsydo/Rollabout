@@ -2,13 +2,23 @@ using UnityEngine;
 using System.Collections;
 
 public class TerrainGenerator : MonoBehaviour {
-	public void BezierPlatformGenerate(BezierCubic bezier) {
-		Vector3[] P = bezier.CalculateCurvePoints();
+
+}
+
+public class TerrainPart {
+	GenericPart part;
+	
+	public TerrainPart(GenericPart part) {
+		this.part = part;
+	}
+	
+	public void Generate() {
+		Vector3[] p = part.CalculatePoints();
 		
-		CreateSphereAt(P[0]);
-		for (int i = 1; i <= bezier.GetSegmentNum(); i++) {
-			CreateBlockBetween(P[i-1], P[i]);
-			CreateSphereAt(P[i]);
+		CreateSphereAt(p[0]);
+		for (int i = 1; i <= p.Length; i++) {
+			CreateBlockBetween(p[i-1], p[i]);
+			CreateSphereAt(p[i]);
 		}
 	}
 	
@@ -28,6 +38,100 @@ public class TerrainGenerator : MonoBehaviour {
 		// Change its length
 		float d = (pos1 - pos2).magnitude;
 		b.transform.localScale = new Vector3(d, 1, 1);
+	}
+}
+
+public class GenericPart {
+	public enum GenericPartType {StraightLine, CurveBezierCubic}
+	
+	GenericPartType type;
+	StraightLine straightLine;
+	CurveBezierCubic curveBezierCubic;
+	
+	public GenericPart(StraightLine straightLine) {
+		this.straightLine = straightLine;
+		this.type = GenericPartType.StraightLine;
+	}
+	
+	public GenericPart(CurveBezierCubic curveBezierCubic) {
+		this.curveBezierCubic = curveBezierCubic;
+		this.type = GenericPartType.CurveBezierCubic;
+	}
+	
+	// Returns the specific point in this part between its beginning and end
+	// where `a` is a value between 0.0f and 1.0f.
+	public Vector3 CalculatePoint(float a) {
+		Vector3 p;
+		switch (type) {
+		case GenericPartType.StraightLine:
+			p = straightLine.CalculateLinePoint(a);
+			break;
+		case GenericPartType.CurveBezierCubic:
+			p = curveBezierCubic.CalculateCurvePoint(a);
+			break;
+		default:
+			p = Vector3.zero;
+			Debug.LogError("Invalid type: " + type);
+			break;
+		}
+		return p;
+	}
+	
+	// Returns all points necessary for generating this part
+	public Vector3[] CalculatePoints() {
+		Vector3[] p;
+		switch (type) {
+		case GenericPartType.StraightLine:
+			p = new Vector3[2];
+			p[0] = straightLine.GetPointA();
+			p[1] = straightLine.GetPointB();
+			break;
+		case GenericPartType.CurveBezierCubic:
+			p = curveBezierCubic.CalculateCurvePoints();
+			break;
+		default:
+			p = new Vector3[1];
+			Debug.LogError("Invalid type: " + type);
+			break;
+		}
+		return p;
+	}
+}
+
+public class StraightLine {
+	private Vector3[] p = new Vector3[2];
+	
+	// # Constructor
+	
+	public StraightLine(Vector3 A, Vector3 B) {
+		SetPointA(A);
+		SetPointB(B);
+	}
+	
+	// ## Setting
+	
+	public void SetPointA(Vector3 A) {
+		this.p[0] = A;
+	}
+	
+	public void SetPointB(Vector3 B) {
+		this.p[1] = B;
+	}
+	
+	// ## Getting
+	
+	public Vector3 GetPointA() {
+		return this.p[0];
+	}
+	
+	public Vector3 GetPointB() {
+		return this.p[1];
+	}
+	
+	// ## Calculating
+	
+	public Vector3 CalculateLinePoint(float a) {
+		return p[0] + (p[1] - p[0]) * a;
 	}
 }
 
@@ -69,13 +173,13 @@ sparingly because the result has to be generated each time:
 * CalculateCurvePoint()
 * CalculateLength()
 */
-public class BezierCubic {
+public class CurveBezierCubic {
 	private Vector3[] p = new Vector3[4];
 	private int segments = 1;
 	
 	// # Constructor
 	
-	public BezierCubic(Vector3 A, Vector3 B, Vector3 C, Vector3 D, int segments) {
+	public CurveBezierCubic(Vector3 A, Vector3 B, Vector3 C, Vector3 D, int segments) {
 		SetPointA(A);
 		SetPointB(B);
 		SetPointC(C);

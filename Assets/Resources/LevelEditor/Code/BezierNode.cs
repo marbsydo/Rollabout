@@ -36,6 +36,12 @@ public class BezierNode : MonoBehaviour {
 		nodeLine[0] = GameObject.Instantiate(spriteBezierLine, transform.position, Quaternion.identity) as GameObject;
 		nodeLine[1] = GameObject.Instantiate(spriteBezierLine, transform.position, Quaternion.identity) as GameObject;
 		
+		nodeVertex.transform.parent = transform;
+		nodeControl[0].transform.parent = transform;
+		nodeControl[1].transform.parent = transform;
+		nodeLine[0].transform.parent = transform;
+		nodeLine[1].transform.parent = transform;
+		
 		nodeControl[0].transform.position = transform.position - new Vector3(2, 0, 0);
 		nodeControl[1].transform.position = transform.position + new Vector3(2, 0, 0);
 		
@@ -66,7 +72,6 @@ public class BezierNode : MonoBehaviour {
 			if (mouseHolding > 0) {
 				// If we cannot claim the mouse, do not being holding
 				if (!editorController.MouseClaim(gameObject)) {
-					Debug.LogWarning("The mouse was claimed by another!");
 					mouseHolding = 0;
 				}
 			}
@@ -77,7 +82,6 @@ public class BezierNode : MonoBehaviour {
 				// If release button, drop whatever is being moved
 				mouseHolding = 0;
 				
-				Debug.LogWarning("I am releasing the mouse!");
 				editorController.MouseRelease(gameObject);
 			}
 		}

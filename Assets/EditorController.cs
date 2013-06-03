@@ -38,6 +38,9 @@ public class EditorController : TerrainGenerator {
 	}
 	
 	void LateUpdate() {
+		/* UpdateDrawBeziers() must be in LateUpdate because it takes second
+		 * priority after BezierNode.cs, who also wants to claim the mouse
+		 */
 		UpdateDrawBeziers();
 	}
 	
@@ -56,7 +59,6 @@ public class EditorController : TerrainGenerator {
 			// Mouse is not in use. It can be claimed!
 			this.mouseClaimant = mouseClaimant;
 			mouseClaimed = true;
-			Debug.Log("Mouse claimed by " + mouseClaimant.name);
 			return true;
 		} else {
 			// Mouse is in use. It cannot be claimed!
@@ -68,7 +70,6 @@ public class EditorController : TerrainGenerator {
 	// Claimant is required for debugging
 	public void MouseRelease(GameObject mouseClaimant) {
 		// Mouse is no longer claimed
-		Debug.Log("Mouse released by " + mouseClaimant.name);
 		mouseClaimed = false;
 		this.mouseClaimant = null;
 	}
