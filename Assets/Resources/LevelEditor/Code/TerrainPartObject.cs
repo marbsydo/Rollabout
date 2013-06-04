@@ -34,7 +34,8 @@ public class TerrainPartObject : MonoBehaviour {
 		case BlueprintPartType.CurveCircularArc:
 			nodes = new EditorNode[2];
 			nodes[0] = CreateNode(p[0], 1);
-			nodes[1] = CreateNode(p[1], 1);
+			nodes[0].SetControlRestriction(0, EditorNodeControlRestriction.PerpendicularToMiddleOfAC);
+			nodes[1] = CreateNode(p[1], 0);
 			break;
 		}
 	}
