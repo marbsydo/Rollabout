@@ -504,70 +504,13 @@ public class CurveCircularArc {
 	public Vector3 CalculateCurvePoint(float a) {
 		float r = CalculateDiameter() / 2;
 		Vector3 m = CalculateCenter();
-		
-		// Angle between A and the middle, for knowing where the arc starts
-		float am = Mathf.Atan2(p[0].y - m.y, p[0].x - m.x);
-		
-		Vector3 A = p[0];
-		Vector3 B = p[1];
-		Vector3 C = p[2];
-		
-		float ac = (A - C).magnitude;
-		
-		float ab = (A - B).magnitude;
-		float ma = (m - A).magnitude;
-		float bc = (B - C).magnitude;
-		float mc = (m - C).magnitude;
-		
-		float m1 = (Mathf.Acos((r*r + ma*ma - ab*ab) / (2 * r * ma)));
-		float m2 = (Mathf.Acos((mc*mc + r*r - bc*bc) / (2 * mc * r)));
-		float m3 = (Mathf.Acos((ma*ma + mc*mc - ac*ac) / (2 * ma * mc)));
-		
-		float aStart = am;
-		float aThrough = m1 + m2;
-		
-		// If C is between A & B, angle is clockwise, else anti-clockwise
-		bool isClockwise = true;
-		
-		// If C is closer to A than B is to A, take the obtuse angle
-		if (ac < ab) {
-			aThrough = 360 * Mathf.Deg2Rad - aThrough;
-		}
-		
-		if (Input.GetKeyDown(KeyCode.Q)) {
-			Debug.DrawLine(m, A, Color.red, 20);
-			Debug.DrawLine(m, B, Color.blue, 20);
-			Debug.DrawLine(m, C, Color.yellow, 20);
-			
-			Debug.Log("red-blue: " + m1 * Mathf.Rad2Deg + " blue-yellow: " + m2 * Mathf.Rad2Deg + " total: " + aThrough * Mathf.Rad2Deg);
-		}
-		
-		//aThrough = 180 * Mathf.Deg2Rad;
-		
-		float d = aStart + a * aThrough * (isClockwise ? -1 : 1);
+
+		float d = 360 * Mathf.Deg2Rad * a;
 
 		Vector3 P = Vector3.zero;
 		P.x = m.x + (r * Mathf.Cos(d));
 		P.y = m.y + (r * Mathf.Sin(d));
 		
 		return P;
-	}
-	
-	bool IsAngleBetweenAngles(float A, float B, float C) {
-		// True if C is between A and B
-		
-		A = Angle180(A - C);
-		B = Angle180(B - C);
-		
-		return (Mathf.Sign(A) != Mathf.Sign(B)) && (Mathf.Abs(A) + Mathf.Abs(B) <= 180 * Mathf.Deg2Rad) || A == 0 || B == 0;
-	}
-	
-	float Angle180(float A) {
-		A %= 180 * Mathf.Deg2Rad;
-		if (A > 180)
-			A -= 360;
-		else if (A <= -180)
-			A += 360;
-		return A;
 	}
 }
