@@ -473,6 +473,7 @@ public class CurveCircularArc {
 	}
 	
 	public Vector3 CalculateCenter() {
+		// Calculate center relative to A (p[0]):
 		//Bd = B - A
 		//Cd = C - A
 		//Dd = 2(Bdx * Cdy - Bdy * Cdx)
@@ -485,17 +486,16 @@ public class CurveCircularArc {
 		float Ux = (Cd.y * (Bd.x * Bd.x + Bd.y * Bd.y) - Bd.y * (Cd.x * Cd.x + Cd.y * Cd.y)) / Dd;
 		float Uy = (Bd.x * (Cd.x * Cd.x + Cd.y * Cd.y) - Cd.x * (Bd.x * Bd.x + Bd.y * Bd.y)) / Dd;
 		
-		return new Vector3(Ux, Uy, 0);
+		// Center was calculated relative to A (p[0]) so add it back
+		return p[0] + new Vector3(Ux, Uy, 0);
 	}
 	
 	public Vector3[] CalculateCurvePoints() {
-		int num = 100;
+		int num = 20;
 		Vector3[] P = new Vector3[num];
 		
-		//todo
-		// this is probably not quite right
 		for (int i = 0; i < num; i += 1) {
-			P[i] = p[0] + CalculateCurvePoint((float) i / (float) num);
+			P[i] = CalculateCurvePoint((float) i / (float) (num-1));
 		}
 		
 		return P;
@@ -503,17 +503,71 @@ public class CurveCircularArc {
 	
 	public Vector3 CalculateCurvePoint(float a) {
 		float r = CalculateDiameter() / 2;
-		Vector3 c = CalculateCenter();
+		Vector3 m = CalculateCenter();
 		
-		float d = a * 360 * Mathf.Deg2Rad;
+		// Angle between A and the middle, for knowing where the arc starts
+		float am = Mathf.Atan2(p[0].y - m.y, p[0].x - m.x);
 		
-		//todo
-		// make work on arc
-		// Currently only works out a circle
+		Vector3 A = p[0];
+		Vector3 B = p[1];
+		Vector3 C = p[2];
+		
+		float ac = (A - C).magnitude;
+		
+		float ab = (A - B).magnitude;
+		float ma = (m - A).magnitude;
+		float bc = (B - C).magnitude;
+		float mc = (m - C).magnitude;
+		
+		float m1 = (Mathf.Acos((r*r + ma*ma - ab*ab) / (2 * r * ma)));
+		float m2 = (Mathf.Acos((mc*mc + r*r - bc*bc) / (2 * mc * r)));
+		float m3 = (Mathf.Acos((ma*ma + mc*mc - ac*ac) / (2 * ma * mc)));
+		
+		float aStart = am;
+		float aThrough = m1 + m2;
+		
+		// If C is between A & B, angle is clockwise, else anti-clockwise
+		bool isClockwise = true;
+		
+		// If C is closer to A than B is to A, take the obtuse angle
+		if (ac < ab) {
+			aThrough = 360 * Mathf.Deg2Rad - aThrough;
+		}
+		
+		if (Input.GetKeyDown(KeyCode.Q)) {
+			Debug.DrawLine(m, A, Color.red, 20);
+			Debug.DrawLine(m, B, Color.blue, 20);
+			Debug.DrawLine(m, C, Color.yellow, 20);
+			
+			Debug.Log("red-blue: " + m1 * Mathf.Rad2Deg + " blue-yellow: " + m2 * Mathf.Rad2Deg + " total: " + aThrough * Mathf.Rad2Deg);
+		}
+		
+		//aThrough = 180 * Mathf.Deg2Rad;
+		
+		float d = aStart + a * aThrough * (isClockwise ? -1 : 1);
+
 		Vector3 P = Vector3.zero;
-		P.x = c.x + (r * Mathf.Cos(d));
-		P.y = c.y + (r * Mathf.Sin(d));
+		P.x = m.x + (r * Mathf.Cos(d));
+		P.y = m.y + (r * Mathf.Sin(d));
 		
 		return P;
+	}
+	
+	bool IsAngleBetweenAngles(float A, float B, float C) {
+		// True if C is between A and B
+		
+		A = Angle180(A - C);
+		B = Angle180(B - C);
+		
+		return (Mathf.Sign(A) != Mathf.Sign(B)) && (Mathf.Abs(A) + Mathf.Abs(B) <= 180 * Mathf.Deg2Rad) || A == 0 || B == 0;
+	}
+	
+	float Angle180(float A) {
+		A %= 180 * Mathf.Deg2Rad;
+		if (A > 180)
+			A -= 360;
+		else if (A <= -180)
+			A += 360;
+		return A;
 	}
 }
