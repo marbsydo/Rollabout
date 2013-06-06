@@ -504,13 +504,45 @@ public class CurveCircularArc {
 	public Vector3 CalculateCurvePoint(float a) {
 		float r = CalculateDiameter() / 2;
 		Vector3 m = CalculateCenter();
+		
+		// Positive = Anti-clockwise
+		// Negative = Clockwise
 
-		float d = 360 * Mathf.Deg2Rad * a;
+		float angleToA = Mathf.Atan2(p[0].y - m.y, p[0].x - m.x);
+		float angleToB = Mathf.Atan2(p[1].y - m.y, p[1].x - m.x);
+		float angleToC = Mathf.Atan2(p[2].y - m.y, p[2].x - m.x);
+
+		float angleStart = angleToA;
+		float angleThrough = ShortAngleBetweenAngles(angleToA, angleToC);
+		//Debug.Log("angleToA: " + angleToA * Mathf.Rad2Deg + "angleToB: " + angleToB * Mathf.Rad2Deg + "angleToC: " + angleToC * Mathf.Rad2Deg + "angleThrough: " + angleThrough * Mathf.Rad2Deg);
+
+		// Flip direction
+		if (Input.GetKey(KeyCode.Z))
+			angleThrough = -angleThrough;
+
+		// Flip angle through
+		if (Input.GetKey(KeyCode.X))
+			angleThrough = (360 * Mathf.Deg2Rad) - angleThrough;
+
+		float ra = Mathf.Abs(r);
+
+
+		float d = angleStart + angleThrough * a;
 
 		Vector3 P = Vector3.zero;
-		P.x = m.x + (r * Mathf.Cos(d));
-		P.y = m.y + (r * Mathf.Sin(d));
+		P.x = m.x + (ra * Mathf.Cos(d));
+		P.y = m.y + (ra * Mathf.Sin(d));
 		
 		return P;
+	}
+
+	float ShortAngleBetweenAngles(float a1, float a2) {
+		float b = (Mathf.Abs(a1 - a2)) % (360 * Mathf.Deg2Rad);
+
+		if (b > (180 * Mathf.Deg2Rad)) {
+			b = (360 * Mathf.Deg2Rad) - b;
+		}
+
+		return b;
 	}
 }
