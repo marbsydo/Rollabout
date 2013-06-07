@@ -121,14 +121,19 @@ public class EditorController : TerrainGenerator {
 				
 				// Create the desired blueprint
 				
-				// Straight line
-				//BlueprintPart part = new BlueprintPart(BlueprintPartType.StraightLine, drawPoints[0], drawPoints[1]);
-				
-				// Curve bezier cubic
-				//BlueprintPart part = new BlueprintPart(BlueprintPartType.CurveBezierCubic, drawPoints[0], drawPoints[0] + new Vector3(8, 0, 0), drawPoints[1] - new Vector3(8, 0, 0) ,drawPoints[1]);
-				
-				BlueprintPart part = new BlueprintPart(BlueprintPartType.CurveCircularArc, drawPoints[0], drawPoints[0] + (drawPoints[1] - drawPoints[0]) / 2, drawPoints[1]);
-				
+				BlueprintPart part;
+
+				if (Input.GetKey(KeyCode.Z)) {
+					// Curve bezier cubic
+					part = new BlueprintPart(BlueprintPartType.CurveBezierCubic, drawPoints[0], drawPoints[0] + new Vector3(8, 0, 0), drawPoints[1] - new Vector3(8, 0, 0) ,drawPoints[1]);
+				} else if (Input.GetKey(KeyCode.X)) {
+					// Circular arc
+					part = new BlueprintPart(BlueprintPartType.CurveCircularArc, drawPoints[0], drawPoints[0] + (drawPoints[1] - drawPoints[0]) / 2, drawPoints[1]);
+				} else {
+					// Straight line
+					part = new BlueprintPart(BlueprintPartType.StraightLine, drawPoints[0], drawPoints[1]);
+				}
+
 				// Assign the blueprint to a terrain object
 				TerrainPartObject terrain = (GameObject.Instantiate(prefabTerrainPartObject, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<TerrainPartObject>();
 				terrain.AssignBlueprint(part);

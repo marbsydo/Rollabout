@@ -163,7 +163,7 @@ public class EditorNode : MonoBehaviour {
 			// Something is being held, so move it
 			
 			Vector3 m = editorController.GetCamera().ScreenToWorldPoint(Input.mousePosition);
-			m.z = 0;
+			m.z = transform.position.z;
 			
 			if (mouseHolding == -1) {
 				//nodeVertex.transform.position = m;

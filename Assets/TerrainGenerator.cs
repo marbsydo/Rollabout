@@ -215,10 +215,12 @@ public class StraightLine {
 	}
 	
 	public void SetPointA(Vector3 A) {
+		A.z = 0;
 		this.p[0] = A;
 	}
 	
 	public void SetPointB(Vector3 B) {
+		B.z = 0;
 		this.p[1] = B;
 	}
 	
@@ -315,18 +317,22 @@ public class CurveBezierCubic {
 	}
 	
 	public void SetPointA(Vector3 A) {
+		A.z = 0;
 		this.p[0] = A;
 	}
 	
 	public void SetPointB(Vector3 B) {
+		B.z = 0;
 		this.p[1] = B;
 	}
 	
 	public void SetPointC(Vector3 C) {
+		C.z = 0;
 		this.p[2] = C;
 	}
 	
 	public void SetPointD(Vector3 D) {
+		D.z = 0;
 		this.p[3] = D;
 	}
 	
@@ -452,14 +458,17 @@ public class CurveCircularArc {
 	}
 	
 	public void SetPointA(Vector3 A) {
+		A.z = 0;
 		this.p[0] = A;
 	}
 	
 	public void SetPointB(Vector3 B) {
+		B.z = 0;
 		this.p[1] = B;
 	}
 	
 	public void SetPointC(Vector3 C) {
+		C.z = 0;
 		this.p[2] = C;
 	}
 	
