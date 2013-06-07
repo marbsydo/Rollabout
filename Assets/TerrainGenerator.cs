@@ -140,6 +140,7 @@ public class BlueprintPart {
 		}
 	}
 	
+	/*
 	// Returns the specific point in this part between its beginning and end
 	// where `a` is a value between 0.0f and 1.0f.
 	public Vector3 CalculatePoint(float a) {
@@ -161,6 +162,7 @@ public class BlueprintPart {
 		}
 		return p;
 	}
+	*/
 	
 	// Returns all points necessary for generating this part
 	public Vector3[] CalculatePoints() {
@@ -420,6 +422,9 @@ public class CurveBezierCubic {
 
 public class CurveCircularArc {
 	private Vector3[] p = new Vector3[3];
+
+	float calculatedDiameter;
+	Vector3 calculatedMiddle;
 	
 	public CurveCircularArc(Vector3 A, Vector3 B, Vector3 C) {
 		SetPointA(A);
@@ -458,9 +463,9 @@ public class CurveCircularArc {
 		this.p[2] = C;
 	}
 	
-	// ## Calculating
+	// ## Updating internal calculations
 	
-	public float CalculateDiameter() {
+	public void UpdateCalculatedDiameter() {
 		// Diameter = length of side / sine of opposite angle
 		float l = (p[0] - p[1]).magnitude;
 		
@@ -469,10 +474,11 @@ public class CurveCircularArc {
 		
 		float s = Mathf.Sin(a0 - a1);
 		
-		return l / s;
+		calculatedDiameter = l / s;
+		//return l / s;
 	}
 	
-	public Vector3 CalculateCenter() {
+	public void UpdateCalculatedMiddle() {
 		// Calculate center relative to A (p[0]):
 		//Bd = B - A
 		//Cd = C - A
@@ -487,51 +493,132 @@ public class CurveCircularArc {
 		float Uy = (Bd.x * (Cd.x * Cd.x + Cd.y * Cd.y) - Cd.x * (Bd.x * Bd.x + Bd.y * Bd.y)) / Dd;
 		
 		// Center was calculated relative to A (p[0]) so add it back
-		return p[0] + new Vector3(Ux, Uy, 0);
+		calculatedMiddle = p[0] + new Vector3(Ux, Uy, 0);
+		//return p[0] + new Vector3(Ux, Uy, 0);
 	}
+
+	// ## Calculating
 	
 	public Vector3[] CalculateCurvePoints() {
-		int num = 20;
-		Vector3[] P = new Vector3[num];
-		
-		for (int i = 0; i < num; i += 1) {
-			P[i] = CalculateCurvePoint((float) i / (float) (num-1));
+		// This function first finds the correct pair of values for variables `flipAngle` and `flipDirection`
+		// through brute force. This is done by generatating a high detailed curve for all 4 combinations
+		// and finding which one is the correct arc. Finally, the arc is generated in a lower detail and
+		// the result is returned. This function is probably not very fast.
+
+		// The maximum arc diameter allowed. Any arc above this simply becomes a straight line
+		const float maxDiameter = 50f;
+
+		// The number of segments used for the arc when brute forcing the solution
+		const int bruteForceCurveSegments = 100;
+
+		// The number of segments used for the finished solution with the correct found boolean pairs
+		const int solutionCurveSegments = 20;
+
+		// Ensure internal calculates are up to date
+		UpdateCalculatedDiameter();
+		UpdateCalculatedMiddle();
+
+		bool flipAngle = false;
+		bool flipDirection = false;
+
+		bool foundCorrectBools = false;
+		if (Mathf.Abs(calculatedDiameter) < maxDiameter) {
+			// First, calculate the boolean arguments for the curve through brute force
+			int tempNum = bruteForceCurveSegments;
+			Vector3[] temp = new Vector3[tempNum];
+			foundCorrectBools = false;
+			bool endsAtEndPoint;
+			bool intersectsMidPoint;
+			for (int j = 0; j < 4 && !foundCorrectBools; j++) {
+
+				switch (j) {
+					case 0:
+					flipAngle = false;
+					flipDirection = false;
+					break;
+					case 1:
+					flipAngle = true;
+					flipDirection = false;
+					break;
+					case 2:
+					flipAngle = false;
+					flipDirection = true;
+					break;
+					case 3:
+					flipAngle = true;
+					flipDirection = true;
+					break;
+				}
+
+				intersectsMidPoint = false;
+
+				for (int i = 0; i < tempNum; i++) {
+					temp[i] = CalculateCurvePointRaw((float) i / (float) (tempNum - 1), flipAngle, flipDirection);
+
+					if (!intersectsMidPoint)
+						if (PointNearPoint(temp[i], p[1], 0.5f))
+							intersectsMidPoint = true;
+				}
+
+				endsAtEndPoint = PointNearPoint(temp[tempNum - 1], p[2], 0.01f);
+
+				if (endsAtEndPoint && intersectsMidPoint) {
+					foundCorrectBools = true;
+				}
+			}
+		} else {
+			// Diameter was too big, so do not bother calculating
+			//Debug.LogWarning("Diameter was too big");
+			foundCorrectBools = false;
 		}
-		
-		return P;
+
+		Vector3[] points;
+
+		if (foundCorrectBools) {
+			int num = solutionCurveSegments;
+			points = new Vector3[num];
+			
+			for (int i = 0; i < num; i ++) {
+				points[i] = CalculateCurvePointRaw((float) i / (float) (num-1), flipAngle, flipDirection);
+			}
+		} else {
+			// No fitting arc could be found, so just generate a straight line
+			points = new Vector3[2];
+			points[0] = p[0];
+			points[0].z = 0;
+			points[1] = p[2];
+			points[1].z = 0;
+		}
+			
+		return points;
 	}
 	
-	public Vector3 CalculateCurvePoint(float a) {
-		float r = CalculateDiameter() / 2;
-		Vector3 m = CalculateCenter();
-		
-		// Positive = Anti-clockwise
-		// Negative = Clockwise
+	Vector3 CalculateCurvePointRaw(float a, bool flipAngle, bool flipDirection) {
+		Vector3 m = calculatedMiddle;
 
 		float angleToA = Mathf.Atan2(p[0].y - m.y, p[0].x - m.x);
-		float angleToB = Mathf.Atan2(p[1].y - m.y, p[1].x - m.x);
+		//float angleToB = Mathf.Atan2(p[1].y - m.y, p[1].x - m.x);
 		float angleToC = Mathf.Atan2(p[2].y - m.y, p[2].x - m.x);
 
 		float angleStart = angleToA;
 		float angleThrough = ShortAngleBetweenAngles(angleToA, angleToC);
-		//Debug.Log("angleToA: " + angleToA * Mathf.Rad2Deg + "angleToB: " + angleToB * Mathf.Rad2Deg + "angleToC: " + angleToC * Mathf.Rad2Deg + "angleThrough: " + angleThrough * Mathf.Rad2Deg);
 
-		// Flip direction
-		if (Input.GetKey(KeyCode.Z))
-			angleThrough = -angleThrough;
-
-		// Flip angle through
-		if (Input.GetKey(KeyCode.X))
+		// Flip angle through (X)
+		if (flipAngle)
 			angleThrough = (360 * Mathf.Deg2Rad) - angleThrough;
 
-		float ra = Mathf.Abs(r);
+		// Flip direction (Z)
+		if (flipDirection)
+			angleThrough = -angleThrough;
+
+		float r = Mathf.Abs(calculatedDiameter) / 2;
 
 
 		float d = angleStart + angleThrough * a;
 
 		Vector3 P = Vector3.zero;
-		P.x = m.x + (ra * Mathf.Cos(d));
-		P.y = m.y + (ra * Mathf.Sin(d));
+		P.x = m.x + (r * Mathf.Cos(d));
+		P.y = m.y + (r * Mathf.Sin(d));
 		
 		return P;
 	}
@@ -544,5 +631,12 @@ public class CurveCircularArc {
 		}
 
 		return b;
+	}
+
+	// Returns true if two points are very near
+	bool PointNearPoint(Vector3 a, Vector3 b, float precision) {
+		a.z = 0;
+		b.z = 0;
+		return ((a - b).magnitude < precision);
 	}
 }
