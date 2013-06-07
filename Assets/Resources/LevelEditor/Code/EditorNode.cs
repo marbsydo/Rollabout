@@ -178,7 +178,7 @@ public class EditorNode : MonoBehaviour {
 		}
 	}
 	
-	void MoveVertex(Vector3 pos) {
+	public void MoveVertex(Vector3 pos) {
 		if (handlesHaveBeenCreated) {
 			Vector3 d = pos - nodeVertex.transform.position;
 			d.z = 0;
@@ -190,7 +190,7 @@ public class EditorNode : MonoBehaviour {
 		}
 	}
 	
-	void MoveControl(int control, Vector3 pos) {
+	public void MoveControl(int control, Vector3 pos) {
 		if (handlesHaveBeenCreated) {
 			nodeControl[control].transform.position = pos;
 			

@@ -506,7 +506,7 @@ public class CurveCircularArc {
 		// the result is returned. This function is probably not very fast.
 
 		// The maximum arc diameter allowed. Any arc above this simply becomes a straight line
-		const float maxDiameter = 50f;
+		const float maxDiameter = 200f;
 
 		// The number of segments used for the arc when brute forcing the solution
 		const int bruteForceCurveSegments = 100;

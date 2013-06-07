@@ -17,8 +17,10 @@ public class TerrainPartObject : MonoBehaviour {
 		this.terrainPart = new TerrainPart(blueprintPart);
 		this.terrainPart.SetParent(transform);
 		this.terrainPart.Regenerate();
-		
+
 		// Create the relevant nodes for this object
+		// Todo: Is moving the vertices and controls based upon the path really the best solution?
+		// Should it not instead be able to directly read the initial position from the blueprint of these handles?
 		Vector3[] p = blueprintPart.CalculatePoints();
 		switch (blueprintPart.GetType()) {
 		case BlueprintPartType.StraightLine:
@@ -34,8 +36,8 @@ public class TerrainPartObject : MonoBehaviour {
 		case BlueprintPartType.CurveCircularArc:
 			nodes = new EditorNode[2];
 			nodes[0] = CreateNode(p[0], 1);
-			nodes[0].SetControlRestriction(0, EditorNodeControlRestriction.PerpendicularToMiddleOfAC);
-			nodes[1] = CreateNode(p[1], 0);
+			nodes[0].MoveControl(0, p[0] + (p[p.Length - 1] - p[0])/2);
+			nodes[1] = CreateNode(p[p.Length - 1], 0);
 			break;
 		}
 	}

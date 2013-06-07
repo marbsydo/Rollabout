@@ -127,7 +127,7 @@ public class EditorController : TerrainGenerator {
 				// Curve bezier cubic
 				//BlueprintPart part = new BlueprintPart(BlueprintPartType.CurveBezierCubic, drawPoints[0], drawPoints[0] + new Vector3(8, 0, 0), drawPoints[1] - new Vector3(8, 0, 0) ,drawPoints[1]);
 				
-				BlueprintPart part = new BlueprintPart(BlueprintPartType.CurveCircularArc, drawPoints[0], drawPoints[0] + new Vector3(3, 0, 0), drawPoints[1]);
+				BlueprintPart part = new BlueprintPart(BlueprintPartType.CurveCircularArc, drawPoints[0], drawPoints[0] + (drawPoints[1] - drawPoints[0]) / 2, drawPoints[1]);
 				
 				// Assign the blueprint to a terrain object
 				TerrainPartObject terrain = (GameObject.Instantiate(prefabTerrainPartObject, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<TerrainPartObject>();
