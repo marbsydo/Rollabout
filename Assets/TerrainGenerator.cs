@@ -438,6 +438,10 @@ public class CurveCircularArc {
 	private bool calculatedArcExists;      // True = an arc exists (will be false if diameter is too large)
 	private bool calculatedArcIsReflex;    // True = reflex angle, false = non-reflex angle
 	private bool calculatedArcIsClockwise; // True = clockwise, false = anti-clockwise
+
+	// These values are set by CalculateAngles()
+	private float calculatedAngleStart;
+	private float calculatedAngleThrough;
 	
 	public CurveCircularArc(Vector3 A, Vector3 B, Vector3 C) {
 		SetPointA(A);
@@ -510,6 +514,23 @@ public class CurveCircularArc {
 		// Center was calculated relative to A (p[0]) so add it back
 		this.calculatedMiddle = p[0] + new Vector3(Ux, Uy, 0);
 	}
+
+	public void CalculateAngles() {
+		// Relies upon result from CalculateMiddle()
+
+		// Calculates:
+		// angleStart
+		// angleThrough
+
+		Vector3 m = calculatedMiddle;
+
+		float angleToA = Mathf.Atan2(p[0].y - m.y, p[0].x - m.x);
+		//float angleToB = Mathf.Atan2(p[1].y - m.y, p[1].x - m.x);
+		float angleToC = Mathf.Atan2(p[2].y - m.y, p[2].x - m.x);
+
+		this.calculatedAngleStart = angleToA;
+		this.calculatedAngleThrough = ShortAngleBetweenAngles(angleToA, angleToC);
+	}
 	
 	public void CalculateArcType() {
 		// This function finds the correct pair of values for variables `flipAngle` and `flipDirection`
@@ -525,6 +546,7 @@ public class CurveCircularArc {
 		// Ensure internal calculates are up to date
 		CalculateDiameter();
 		CalculateMiddle();
+		CalculateAngles();
 
 		bool flipAngle = false;     // True if angle is reflex, false if angle is not reflex (obtuse, right-angle, acute)
 		bool flipDirection = false; // True if angle is clockwise, false if angle is anti-clockwise
@@ -614,12 +636,8 @@ public class CurveCircularArc {
 	Vector3 CalculateCurvePointRaw(float a, bool flipAngle, bool flipDirection) {
 		Vector3 m = calculatedMiddle;
 
-		float angleToA = Mathf.Atan2(p[0].y - m.y, p[0].x - m.x);
-		//float angleToB = Mathf.Atan2(p[1].y - m.y, p[1].x - m.x);
-		float angleToC = Mathf.Atan2(p[2].y - m.y, p[2].x - m.x);
-
-		float angleStart = angleToA;
-		float angleThrough = ShortAngleBetweenAngles(angleToA, angleToC);
+		float angleStart = this.calculatedAngleStart;
+		float angleThrough = this.calculatedAngleThrough;
 
 		// Flip angle through (X)
 		if (flipAngle)
