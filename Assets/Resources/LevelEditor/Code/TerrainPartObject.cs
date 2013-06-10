@@ -64,11 +64,15 @@ public class TerrainPartObject : MonoBehaviour {
 			this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
 			this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetControlPosition(0));
 			this.terrainPart.blueprintPart.SetNodePosition(3, nodes[1].GetVertexPosition());
+
+			this.terrainPart.blueprintPart.SetSegmentLength(3f);
 			break;
 		case BlueprintPartType.CurveCircularArc:
 			this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
 			this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
 			this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetVertexPosition());
+
+			this.terrainPart.blueprintPart.SetSegmentLength(3f);
 			break;
 		default:
 			Debug.LogError("BlueprintPartType " + this.terrainPart.blueprintPart.GetType() + " does not exist.");

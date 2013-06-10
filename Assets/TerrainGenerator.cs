@@ -139,6 +139,20 @@ public class BlueprintPart {
 			break;
 		}
 	}
+
+	public void SetSegmentLength(float segmentLength) {
+		switch (type) {
+			case BlueprintPartType.StraightLine:
+				// Do nothing
+				break;
+			case BlueprintPartType.CurveBezierCubic:
+				curveBezierCubic.SetSegmentLength(segmentLength);
+				break;
+			case BlueprintPartType.CurveCircularArc:
+				curveCircularArc.SetSegmentLength(segmentLength);
+				break;
+		}
+	}
 	
 	/*
 	// Returns the specific point in this part between its beginning and end
@@ -345,7 +359,7 @@ public class CurveBezierCubic {
 		}
 	}
 	
-	public void SetSegmentLength(int segmentLength) {
+	public void SetSegmentLength(float segmentLength) {
 		// Calculates how many segments are required based upon desired length
 		int segments = (int) (CalculateLength() / segmentLength);
 		if (segments < 1)
@@ -429,6 +443,7 @@ public class CurveBezierCubic {
 
 public class CurveCircularArc {
 	private Vector3[] p = new Vector3[3];
+	private float segmentLength = 2f; // Number of segments is calculated based upon segmentLength during CalculateCurvePoints()
 
 	// These values are set by CalculateDiameter() and CalculateMiddle()
 	private float calculatedDiameter;
@@ -441,7 +456,10 @@ public class CurveCircularArc {
 
 	// These values are set by CalculateAngles()
 	private float calculatedAngleStart;
-	private float calculatedAngleThrough;
+	private float calculatedAngleThrough; // NOTE: Pass this through AngleToggleReflexAndDirection() for the real angle
+
+	// This value are set by CalculateLength()
+	private float calculatedLength;
 	
 	public CurveCircularArc(Vector3 A, Vector3 B, Vector3 C) {
 		SetPointA(A);
@@ -481,6 +499,10 @@ public class CurveCircularArc {
 	public void SetPointC(Vector3 C) {
 		C.z = 0;
 		this.p[2] = C;
+	}
+
+	public void SetSegmentLength(float segmentLength) {
+		this.segmentLength = segmentLength;
 	}
 	
 	// ## Calculating
@@ -530,6 +552,15 @@ public class CurveCircularArc {
 
 		this.calculatedAngleStart = angleToA;
 		this.calculatedAngleThrough = ShortAngleBetweenAngles(angleToA, angleToC);
+	}
+
+	public void CalculateLength() {
+		// Relies upon result from CalculateAngles(), CalculateDiameter() and CalculateArcType()
+
+		float angleThrough = AngleToggleReflexAndDirection(this.calculatedAngleThrough, this.calculatedArcIsReflex, this.calculatedArcIsClockwise);
+
+		// Length = angle (in radians) * radius
+		this.calculatedLength = Mathf.Abs(angleThrough * this.calculatedDiameter / 2);
 	}
 	
 	public void CalculateArcType() {
@@ -609,11 +640,17 @@ public class CurveCircularArc {
 
 	public Vector3[] CalculateCurvePoints() {
 		CalculateArcType();
+		CalculateLength();
 
 		Vector3[] points;
 
 		if (this.calculatedArcExists) {
-			int num = 20;
+			// Calculate number of segments based upon desired segmentLength
+			int num = (int) (this.calculatedLength / segmentLength);
+
+			// Must be at least 2 points
+			if (num < 2)
+				num = 2;
 			points = new Vector3[num];
 			
 			//Debug.Log((flipAngle ? "Angle is reflex" : "Angle not reflex") + (flipDirection ? " and clockwise." : " and anti-clockwise."));
@@ -634,29 +671,36 @@ public class CurveCircularArc {
 	}
 	
 	Vector3 CalculateCurvePointRaw(float a, bool flipAngle, bool flipDirection) {
-		Vector3 m = calculatedMiddle;
-
-		float angleStart = this.calculatedAngleStart;
-		float angleThrough = this.calculatedAngleThrough;
-
-		// Flip angle through (X)
-		if (flipAngle)
-			angleThrough = (360 * Mathf.Deg2Rad) - angleThrough;
-
-		// Flip direction (Z)
-		if (flipDirection)
-			angleThrough = -angleThrough;
+		// Relies upon result from CalculateAngles()
 
 		float r = Mathf.Abs(calculatedDiameter) / 2;
 
-
-		float d = angleStart + angleThrough * a;
+		float d = this.calculatedAngleStart + AngleToggleReflexAndDirection(this.calculatedAngleThrough, flipAngle, flipDirection) * a;
 
 		Vector3 P = Vector3.zero;
-		P.x = m.x + (r * Mathf.Cos(d));
-		P.y = m.y + (r * Mathf.Sin(d));
+		P.x = this.calculatedMiddle.x + (r * Mathf.Cos(d));
+		P.y = this.calculatedMiddle.y + (r * Mathf.Sin(d));
 		
 		return P;
+	}
+
+	// ## Miscellaneous calculations
+
+	float AngleToggleReflexAndDirection(float a, bool flipAngle, bool flipDirection) {
+		// The ordering is important. AngleToggleReflex() must come before AngleToggleDirection()
+		return AngleToggleDirection(AngleToggleReflex(a, flipAngle), flipDirection);
+	}
+
+	float AngleToggleReflex(float a, bool flipAngle) {
+		// If flipAngle is true, angle a is subtracted from 360 degrees
+		// This makes a non-reflex angle become reflex
+		return flipAngle ? (360 * Mathf.Deg2Rad) - a : a;
+	}
+
+	float AngleToggleDirection(float a, bool flipDirection) {
+		// If flipDirection is true, the angle is made negative
+		// This makes a clockwise angle become anti-clockwise, or vice versa
+		return flipDirection ? -a : a;
 	}
 
 	float ShortAngleBetweenAngles(float a1, float a2) {
