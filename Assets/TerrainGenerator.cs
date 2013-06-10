@@ -399,7 +399,8 @@ public class CurveBezierCubic {
 	}
 	
 	public float CalculateLength() {
-		return CalculateLength(segments);
+		// Calculate length using 100 segments for a good length estimate
+		return CalculateLength(100);
 	}
 	
 	public float CalculateLength(int segmentsToMeasure) {
@@ -429,8 +430,14 @@ public class CurveBezierCubic {
 public class CurveCircularArc {
 	private Vector3[] p = new Vector3[3];
 
-	float calculatedDiameter;
-	Vector3 calculatedMiddle;
+	// These values are set by CalculateDiameter() and CalculateMiddle()
+	private float calculatedDiameter;
+	private Vector3 calculatedMiddle;
+
+	// These values are set by CalculateArcType()
+	private bool calculatedArcExists;      // True = an arc exists (will be false if diameter is too large)
+	private bool calculatedArcIsReflex;    // True = reflex angle, false = non-reflex angle
+	private bool calculatedArcIsClockwise; // True = clockwise, false = anti-clockwise
 	
 	public CurveCircularArc(Vector3 A, Vector3 B, Vector3 C) {
 		SetPointA(A);
@@ -472,9 +479,9 @@ public class CurveCircularArc {
 		this.p[2] = C;
 	}
 	
-	// ## Updating internal calculations
+	// ## Calculating
 	
-	public void UpdateCalculatedDiameter() {
+	public void CalculateDiameter() {
 		// Diameter = length of side / sine of opposite angle
 		float l = (p[0] - p[1]).magnitude;
 		
@@ -483,11 +490,10 @@ public class CurveCircularArc {
 		
 		float s = Mathf.Sin(a0 - a1);
 		
-		calculatedDiameter = l / s;
-		//return l / s;
+		this.calculatedDiameter = l / s;
 	}
 	
-	public void UpdateCalculatedMiddle() {
+	public void CalculateMiddle() {
 		// Calculate center relative to A (p[0]):
 		//Bd = B - A
 		//Cd = C - A
@@ -502,17 +508,13 @@ public class CurveCircularArc {
 		float Uy = (Bd.x * (Cd.x * Cd.x + Cd.y * Cd.y) - Cd.x * (Bd.x * Bd.x + Bd.y * Bd.y)) / Dd;
 		
 		// Center was calculated relative to A (p[0]) so add it back
-		calculatedMiddle = p[0] + new Vector3(Ux, Uy, 0);
-		//return p[0] + new Vector3(Ux, Uy, 0);
+		this.calculatedMiddle = p[0] + new Vector3(Ux, Uy, 0);
 	}
-
-	// ## Calculating
 	
-	public Vector3[] CalculateCurvePoints() {
-		// This function first finds the correct pair of values for variables `flipAngle` and `flipDirection`
+	public void CalculateArcType() {
+		// This function finds the correct pair of values for variables `flipAngle` and `flipDirection`
 		// through brute force. This is done by generatating a high detailed curve for all 4 combinations
-		// and finding which one is the correct arc. Finally, the arc is generated in a lower detail and
-		// the result is returned. This function is probably not very fast.
+		// and finding which one is the correct arc.
 
 		// The maximum arc diameter allowed. Any arc above this simply becomes a straight line
 		const float maxDiameter = 200f;
@@ -520,15 +522,12 @@ public class CurveCircularArc {
 		// The number of segments used for the arc when brute forcing the solution
 		const int bruteForceCurveSegments = 100;
 
-		// The number of segments used for the finished solution with the correct found boolean pairs
-		const int solutionCurveSegments = 20;
-
 		// Ensure internal calculates are up to date
-		UpdateCalculatedDiameter();
-		UpdateCalculatedMiddle();
+		CalculateDiameter();
+		CalculateMiddle();
 
-		bool flipAngle = false;
-		bool flipDirection = false;
+		bool flipAngle = false;     // True if angle is reflex, false if angle is not reflex (obtuse, right-angle, acute)
+		bool flipDirection = false; // True if angle is clockwise, false if angle is anti-clockwise
 
 		bool foundCorrectBools = false;
 		if (Mathf.Abs(calculatedDiameter) < maxDiameter) {
@@ -581,14 +580,24 @@ public class CurveCircularArc {
 			foundCorrectBools = false;
 		}
 
+		this.calculatedArcExists = foundCorrectBools;
+		this.calculatedArcIsReflex = flipAngle;
+		this.calculatedArcIsClockwise = flipDirection;
+	}
+
+	public Vector3[] CalculateCurvePoints() {
+		CalculateArcType();
+
 		Vector3[] points;
 
-		if (foundCorrectBools) {
-			int num = solutionCurveSegments;
+		if (this.calculatedArcExists) {
+			int num = 20;
 			points = new Vector3[num];
 			
+			//Debug.Log((flipAngle ? "Angle is reflex" : "Angle not reflex") + (flipDirection ? " and clockwise." : " and anti-clockwise."));
+
 			for (int i = 0; i < num; i ++) {
-				points[i] = CalculateCurvePointRaw((float) i / (float) (num-1), flipAngle, flipDirection);
+				points[i] = CalculateCurvePointRaw((float) i / (float) (num-1), this.calculatedArcIsReflex, this.calculatedArcIsClockwise);
 			}
 		} else {
 			// No fitting arc could be found, so just generate a straight line
