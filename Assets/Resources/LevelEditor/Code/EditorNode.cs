@@ -5,6 +5,12 @@ public enum EditorNodeControlRestriction{None, PerpendicularToMiddleOfAC};
 
 public class EditorNode : MonoBehaviour {
 	
+	const KeyCode inputNodeModify = KeyCode.Mouse0;        // Moving and reshaping a node
+	const KeyCode inputNodeSnapGrid = KeyCode.LeftControl; // Snapping a node to the grid
+	const KeyCode inputNodeSnapNode = KeyCode.LeftShift;   // Snapping a node to another node
+	const KeyCode inputNodeSegmentsIncrease = KeyCode.X;
+	const KeyCode inputNodeSegmentsDecrease = KeyCode.Z;
+
 	EditorController editorController;
 	
 	// The object that we should tell when we update
@@ -119,11 +125,10 @@ public class EditorNode : MonoBehaviour {
 	}
 	
 	void UpdateHandles() {
-		if (Input.GetMouseButtonDown(0)) {
+		if (Input.GetKeyDown(inputNodeModify)) {
 			// Clicked somewhere, so if it clicked on a vertex or control
 			
-			Vector3 m = editorController.GetCamera().ScreenToWorldPoint(Input.mousePosition);
-			m.z = transform.position.z;
+			Vector3 m = GetMousePosition(false);
 			
 			// First check if it clicked any of the control points
 			for (int i = 0; i < numControls; i++) {
@@ -150,7 +155,7 @@ public class EditorNode : MonoBehaviour {
 			}
 		}
 		
-		if (!Input.GetMouseButton(0)) {
+		if (!Input.GetKey(inputNodeModify)) {
 			if (mouseHolding > -2) {
 				// If release button, drop whatever is being moved
 				mouseHolding = -2;
@@ -161,9 +166,8 @@ public class EditorNode : MonoBehaviour {
 		
 		if (mouseHolding > -2) {
 			// Something is being held, so move it
-			
-			Vector3 m = editorController.GetCamera().ScreenToWorldPoint(Input.mousePosition);
-			m.z = transform.position.z;
+
+			Vector3 m = GetMousePosition(Input.GetKey(inputNodeSnapGrid));
 			
 			if (mouseHolding == -1) {
 				//nodeVertex.transform.position = m;
@@ -175,6 +179,17 @@ public class EditorNode : MonoBehaviour {
 			// Now tell our TerrainPartObject to update
 			if (terrainPartObject != null)
 				terrainPartObject.Regenerate();
+
+			// Being held, so also update segment length if necessary
+			if (Input.GetKeyDown(inputNodeSegmentsIncrease)) {
+				terrainPartObject.SegmentLengthIncrease();
+				terrainPartObject.Regenerate();
+			}
+
+			if (Input.GetKeyDown(inputNodeSegmentsDecrease)) {
+				terrainPartObject.SegmentLengthDecrease();
+				terrainPartObject.Regenerate();
+			}
 		}
 	}
 	
@@ -257,5 +272,22 @@ public class EditorNode : MonoBehaviour {
 		Vector3 vClosest = A + v3;
 		
 		return vClosest;
+	}
+
+	Vector3 GetMousePosition() {
+		return GetMousePosition(false);
+	}
+
+	Vector3 GetMousePosition(bool snapToGrid) {
+		Vector3 m = editorController.GetCamera().ScreenToWorldPoint(Input.mousePosition);
+		m.z = transform.position.z;
+
+		if (snapToGrid) {
+			float gridResolution = 2f;
+			m.x = Mathf.Round(m.x / gridResolution) * gridResolution;
+			m.y = Mathf.Round(m.y / gridResolution) * gridResolution;
+		}
+
+		return m;
 	}
 }

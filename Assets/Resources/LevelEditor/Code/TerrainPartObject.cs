@@ -7,6 +7,8 @@ public class TerrainPartObject : MonoBehaviour {
 	EditorNode[] nodes;
 	
 	GameObject prefabNode;
+
+	private float segmentLength = 3f;
 	
 	void Awake() {
 		prefabNode = Resources.Load("LevelEditor/EditorNode") as GameObject;
@@ -65,14 +67,14 @@ public class TerrainPartObject : MonoBehaviour {
 			this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetControlPosition(0));
 			this.terrainPart.blueprintPart.SetNodePosition(3, nodes[1].GetVertexPosition());
 
-			this.terrainPart.blueprintPart.SetSegmentLength(3f);
+			this.terrainPart.blueprintPart.SetSegmentLength(segmentLength);
 			break;
 		case BlueprintPartType.CurveCircularArc:
 			this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
 			this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
 			this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetVertexPosition());
 
-			this.terrainPart.blueprintPart.SetSegmentLength(3f);
+			this.terrainPart.blueprintPart.SetSegmentLength(segmentLength);
 			break;
 		default:
 			Debug.LogError("BlueprintPartType " + this.terrainPart.blueprintPart.GetType() + " does not exist.");
@@ -81,5 +83,19 @@ public class TerrainPartObject : MonoBehaviour {
 		
 		// Then, regenerate the terrain
 		this.terrainPart.Regenerate();
+	}
+
+	public void SegmentLengthIncrease() {
+		segmentLength += 0.5f;
+		if (segmentLength > 10f)
+			segmentLength = 10f;
+		//Debug.Log(segmentLength);
+	}
+
+	public void SegmentLengthDecrease() {
+		segmentLength -= 0.5f;
+		if (segmentLength < 1f)
+			segmentLength = 1f;
+		//Debug.Log(segmentLength);
 	}
 }
