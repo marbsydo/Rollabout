@@ -10,9 +10,15 @@ public class TerrainPart {
 	Transform parent;
 	GameObject[] objs;
 	int objPos = 0;
+
+	GameObject terrainLine;
+	GameObject terrainCircle;
 	
 	public TerrainPart(BlueprintPart blueprintPart) {
 		this.blueprintPart = blueprintPart;
+
+		terrainLine = Resources.Load("Terrain/Sprites/TerrainGrassLine") as GameObject;
+		terrainCircle = Resources.Load("Terrain/Sprites/TerrainGrassCircle") as GameObject;
 	}
 	
 	public void SetParent(Transform parent) {
@@ -25,10 +31,28 @@ public class TerrainPart {
 		// For (x) fenceposts, we need (x * 2 - 1) fences and fenceposts
 		ObjsReset(p.Length * 2 - 1);
 		
-		ObjsAppend(CreateSphereAt(p[0]));
+		// The first sphere is rotated at the angle of the first line
+		float sphereAngle = Mathf.Atan2(p[1].y - p[0].y, p[1].x - p[0].x);
+		ObjsAppend(CreateSphereAt(p[0], sphereAngle));
 		for (int i = 1; i < p.Length; i++) {
 			ObjsAppend(CreateBlockBetween(p[i-1], p[i]));
-			ObjsAppend(CreateSphereAt(p[i]));
+
+			// The middle spheres are rotated at the average of their adjacent two lines
+			if ((i - 1) >= 0 && (i + 1) < p.Length) {
+				// Get angle before (a1) and angle after (a2) this sphere
+				float a1 = Mathf.Atan2(p[i].y - p[i-1].y, p[i].x - p[i-1].x);
+				float a2 = Mathf.Atan2(p[i+1].y - p[i].y, p[i+1].x - p[i].x);
+
+				// Get the average of these two angles
+				sphereAngle = Mathf.Atan2(Mathf.Sin(a1) + Mathf.Sin(a2), Mathf.Cos(a1) + Mathf.Cos(a2));
+			}
+
+			// The final sphere is rotate at the angle of the final line
+			if (i == p.Length - 1) {
+				sphereAngle = Mathf.Atan2(p[p.Length - 1].y - p[p.Length - 2].y, p[p.Length - 1].x - p[p.Length - 2].x);
+			}
+
+			ObjsAppend(CreateSphereAt(p[i], sphereAngle));
 		}
 	}
 	
@@ -52,8 +76,16 @@ public class TerrainPart {
 		objPos = 0;
 	}
 	
-	GameObject CreateSphereAt(Vector3 pos) {
+	GameObject CreateSphereAt(Vector3 pos, float angle) {
 		GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+
+		// Sprite
+		GameObject.Destroy(s.GetComponent<MeshRenderer>());
+		GameObject sprite = (GameObject.Instantiate(terrainCircle, Vector3.zero, Quaternion.identity) as GameObject);
+		sprite.transform.parent = s.transform;
+		sprite.transform.eulerAngles = new Vector3(0, 0, angle * Mathf.Rad2Deg);
+		sprite.transform.position = new Vector3(0, 0, 0.5f);
+
 		s.transform.position = pos;
 		
 		if (parent != null)
@@ -64,6 +96,12 @@ public class TerrainPart {
 	
 	GameObject CreateBlockBetween(Vector3 pos1, Vector3 pos2) {
 		GameObject b = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+		// Sprite
+		GameObject.Destroy(b.GetComponent<MeshRenderer>());
+		GameObject sprite = (GameObject.Instantiate(terrainLine, Vector3.zero, Quaternion.identity) as GameObject);
+		sprite.transform.parent = b.transform;
+
 		b.transform.position = (pos1 + pos2) / 2;
 		
 		// Rotate block
@@ -73,6 +111,10 @@ public class TerrainPart {
 		// Change its length
 		float d = (pos1 - pos2).magnitude;
 		b.transform.localScale = new Vector3(d, 1, 1);
+
+		// Set x scale of sprite to 1 / 4 where 4 is the width of the line
+		//TODO: Make it automatically get the correct line length from the blueprint, rather than just using 4
+		sprite.transform.localScale = new Vector3(1f / 4f, 1, 1);
 		
 		if (parent != null)
 			b.transform.parent = parent;
