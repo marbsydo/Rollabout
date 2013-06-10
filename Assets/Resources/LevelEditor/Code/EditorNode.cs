@@ -168,28 +168,55 @@ public class EditorNode : MonoBehaviour {
 			// Something is being held, so move it
 
 			Vector3 m = GetMousePosition(Input.GetKey(inputNodeSnapGrid));
-			
-			if (mouseHolding == -1) {
-				//nodeVertex.transform.position = m;
-				MoveVertex(m);
-			} else {
-				MoveControl(mouseHolding, m);
-			}
-			
-			// Now tell our TerrainPartObject to update
-			if (terrainPartObject != null)
-				terrainPartObject.Regenerate();
 
 			// Being held, so also update segment length if necessary
 			if (Input.GetKeyDown(inputNodeSegmentsIncrease)) {
 				terrainPartObject.SegmentLengthIncrease();
-				terrainPartObject.Regenerate();
 			}
 
 			if (Input.GetKeyDown(inputNodeSegmentsDecrease)) {
 				terrainPartObject.SegmentLengthDecrease();
-				terrainPartObject.Regenerate();
 			}
+
+			bool snappedToNode = false;
+			if (Input.GetKey(inputNodeSnapNode)) {
+				// Snap to nearby thingies
+
+				// Find all nodes
+				EditorNode[] nodes = GameObject.FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
+				foreach (EditorNode node in nodes) {
+					if (!snappedToNode && node.gameObject.GetInstanceID() != gameObject.GetInstanceID()) {
+						Debug.Log("Looking at: " + node.gameObject.name);
+						//Vector3 p = node.transform.position;
+						Vector3 p1 = node.GetVertexPosition();
+						Vector3 p2 = GetMousePosition();//this.GetVertexPosition();
+						p1.z = p2.z = 0;
+						if ((p1 - p2).magnitude < 1f) {
+							snappedToNode = true;
+							// Snap to thingy
+							if (mouseHolding == -1) {
+								MoveVertex(p1);
+							} else {
+								MoveControl(mouseHolding, p1);
+							}
+						}
+					}
+				}
+			}
+
+			// Didn't snap to anything, so move it normally
+			if (!snappedToNode) {
+				// Move without snapping
+				if (mouseHolding == -1) {
+					MoveVertex(m);
+				} else {
+					MoveControl(mouseHolding, m);
+				}
+			}
+
+			// Now tell our TerrainPartObject to update
+			if (terrainPartObject != null)
+				terrainPartObject.Regenerate();
 		}
 	}
 	
