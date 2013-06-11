@@ -3,6 +3,13 @@ using System.Collections;
 
 public class EditorController : TerrainGenerator {
 	
+	// Input
+	const KeyCode inputLevelSave = KeyCode.P;
+	const KeyCode inputLevelLoad = KeyCode.O;
+
+	// LevelIO
+	LevelIO levelIO = new LevelIO();
+
 	// Camera
 	Camera editorCamera;
 	float editorCameraSpeed;
@@ -36,6 +43,12 @@ public class EditorController : TerrainGenerator {
 		
 		UpdateCameraMovement();
 		UpdatePlaceBall();
+
+		if (Input.GetKeyDown(inputLevelSave)) {
+			levelIO.Save("test.txt");
+		} else if (Input.GetKeyDown(inputLevelLoad)) {
+			levelIO.Load("test.txt");
+		}
 	}
 	
 	void LateUpdate() {
@@ -147,5 +160,87 @@ public class EditorController : TerrainGenerator {
 		Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
 		m.z = 0;
 		return m;
+	}
+}
+
+public class LevelIO {
+	public void Save(string filename) {
+		string levelString = ConvertLevelToString();
+
+		// Write levelString to file
+		System.IO.File.WriteAllText("Levels/" + filename, levelString);
+	}
+
+	public void Load(string filename) {
+		string levelString;
+
+		// Read levelString from file
+		levelString = System.IO.File.ReadAllText("Levels/" + filename);
+
+		GenerateLevelFromString(levelString);
+	}
+
+	public void LoadFromResources(string filename) {
+		// Read levelString from Resources
+		string levelString = (Resources.Load(filename, typeof(TextAsset)) as TextAsset).text;
+
+		GenerateLevelFromString(levelString);
+	}
+
+	string ConvertLevelToString() {
+		LevelData levelData = new LevelData();
+
+		//TODO: Write level data to levelData
+
+		return levelData.ReadAll();
+	}
+
+	void GenerateLevelFromString(string levelString) {
+		Debug.Log("Generating level from levelString: " + levelString);
+
+		LevelData levelData = new LevelData(levelString);
+
+		//TODO: Generate level from levelData
+	}
+}
+
+public class LevelData {
+	string levelString;
+	bool read;
+
+	// If constructed with a string, you can:
+	// * Read from string in sections
+	// * Read the entire string
+	public LevelData(string levelString) {
+		this.levelString = levelString;
+		read = true;
+	}
+
+	// If constructed without a string, you can:
+	// * Write to string in sections
+	// * Read the entire string
+	public LevelData() {
+		this.levelString = "";
+		read = false;
+	}
+
+	public string ReadAll() {
+		return levelString;
+	}
+
+	//TODO: Functions for writing to level data sequentially in sections
+
+	//TODO: Functions for reading from level data sequentially in sections
+
+	// Conversion functions
+	int StringToInt(string s) {
+		int i = -1;
+		if (!int.TryParse(s, out i))
+			Debug.LogWarning("Could not convert integer [" + i + "] to string!");
+		return i;
+	}
+
+	string IntToString(int i) {
+		return i.ToString();
 	}
 }
