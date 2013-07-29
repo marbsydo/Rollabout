@@ -138,7 +138,12 @@ public class EditorController : TerrainGenerator {
 
 				if (Input.GetKey(KeyCode.Z)) {
 					// Curve bezier cubic
-					part = new BlueprintPart(BlueprintPartType.CurveBezierCubic, drawPoints[0], drawPoints[0] + new Vector3(8, 0, 0), drawPoints[1] - new Vector3(8, 0, 0) ,drawPoints[1]);
+
+					// Calculate where the two nodes should be: they go part way inbetween each end point
+					Vector3 drawPointDiff = drawPoints[1] - drawPoints[0];
+
+					part = new BlueprintPart(BlueprintPartType.CurveBezierCubic, drawPoints[0], drawPoints[0] + drawPointDiff * 0.25f, drawPoints[0] + drawPointDiff * 0.75f, drawPoints[0] + drawPointDiff * 1);
+					//part = new BlueprintPart(BlueprintPartType.CurveBezierCubic, drawPoints[0], drawPoints[0] + new Vector3(8, 0, 0), drawPoints[1] - new Vector3(8, 0, 0) ,drawPoints[1]);
 				} else if (Input.GetKey(KeyCode.X)) {
 					// Circular arc
 					part = new BlueprintPart(BlueprintPartType.CurveCircularArc, drawPoints[0], drawPoints[0] + (drawPoints[1] - drawPoints[0]) / 2, drawPoints[1]);
@@ -149,6 +154,7 @@ public class EditorController : TerrainGenerator {
 
 				// Assign the blueprint to a terrain object
 				TerrainPartObject terrain = (GameObject.Instantiate(prefabTerrainPartObject, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<TerrainPartObject>();
+				//terrain.gameObject.name = "TerrainPartObject";
 				terrain.AssignBlueprint(part);
 				
 				MouseReleaseNextFrame(gameObject);
@@ -191,6 +197,12 @@ public class LevelIO {
 		LevelData levelData = new LevelData();
 
 		//TODO: Write level data to levelData
+
+		// Find all TerrainPartObjects
+		TerrainPartObject[] terrains = GameObject.FindObjectsOfType(typeof(TerrainPartObject)) as TerrainPartObject[];
+		foreach (TerrainPartObject terrain in terrains) {
+
+		}
 
 		return levelData.ReadAll();
 	}

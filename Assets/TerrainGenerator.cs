@@ -182,6 +182,26 @@ public class BlueprintPart {
 		}
 	}
 
+	public Vector3 GetNodePosition(int node) {
+		Vector3 np;
+		switch (type) {
+		case BlueprintPartType.StraightLine:
+			np = straightLine.GetPoint(node);
+			break;
+		case BlueprintPartType.CurveBezierCubic:
+			np = curveBezierCubic.GetPoint(node);
+			break;
+		case BlueprintPartType.CurveCircularArc:
+			np = curveCircularArc.GetPoint(node);
+			break;
+		default:
+			np = Vector3.zero;
+			Debug.Log("BlueprintPartType " + type + " does not exist.");
+			break;
+		}
+		return np;
+	}
+
 	public void SetSegmentLength(float segmentLength) {
 		switch (type) {
 			case BlueprintPartType.StraightLine:
@@ -281,6 +301,23 @@ public class StraightLine {
 	}
 	
 	// ## Getting
+
+	public Vector3 GetPoint(int point) {
+		Vector3 gp;
+		switch (point) {
+		case 0:
+			gp = GetPointA();
+			break;
+		case 1:
+			gp = GetPointB();
+			break;
+		default:
+			gp = Vector3.zero;
+			Debug.Log("There is no GetPoint for point " + point);
+			break;
+		}
+		return gp;
+	}
 	
 	public Vector3 GetPointA() {
 		return this.p[0];
@@ -367,7 +404,7 @@ public class CurveBezierCubic {
 			SetPointD(p);
 			break;
 		default:
-			Debug.Log("There is not SetPoint for " + point);
+			Debug.Log("There is not SetPoint for point " + point);
 			break;
 		}
 	}
@@ -411,6 +448,29 @@ public class CurveBezierCubic {
 	
 	// ## Getting
 	
+	public Vector3 GetPoint(int point) {
+		Vector3 gp;
+		switch (point) {
+		case 0:
+			gp = GetPointA();
+			break;
+		case 1:
+			gp = GetPointB();
+			break;
+		case 2:
+			gp = GetPointC();
+			break;
+		case 3:
+			gp = GetPointD();
+			break;
+		default:
+			gp = Vector3.zero;
+			Debug.Log("There is no GetPoint for point " + point);
+			break;
+		}
+		return gp;
+	}
+
 	public Vector3 GetPointA() {
 		return this.p[0];
 	}
@@ -523,7 +583,7 @@ public class CurveCircularArc {
 			SetPointC(p);
 			break;
 		default:
-			Debug.Log("There is not SetPoint for " + point);
+			Debug.Log("There is not SetPoint for point " + point);
 			break;
 		}
 	}
@@ -545,6 +605,40 @@ public class CurveCircularArc {
 
 	public void SetSegmentLength(float segmentLength) {
 		this.segmentLength = segmentLength;
+	}
+
+	// ## Getting
+
+	public Vector3 GetPoint(int point) {
+		Vector3 gp;
+		switch (point) {
+		case 0:
+			gp = GetPointA();
+			break;
+		case 1:
+			gp = GetPointB();
+			break;
+		case 2:
+			gp = GetPointC();
+			break;
+		default:
+			gp = Vector3.zero;
+			Debug.Log("There is no GetPoint for point " + point);
+			break;
+		}
+		return gp;
+	}
+
+	public Vector3 GetPointA() {
+		return this.p[0];
+	}
+	
+	public Vector3 GetPointB() {
+		return this.p[1];
+	}
+	
+	public Vector3 GetPointC() {
+		return this.p[2];
 	}
 	
 	// ## Calculating

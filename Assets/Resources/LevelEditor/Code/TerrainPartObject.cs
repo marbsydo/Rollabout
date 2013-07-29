@@ -21,25 +21,25 @@ public class TerrainPartObject : MonoBehaviour {
 		this.terrainPart.Regenerate();
 
 		// Create the relevant nodes for this object
-		// Todo: Is moving the vertices and controls based upon the path really the best solution?
-		// Should it not instead be able to directly read the initial position from the blueprint of these handles?
 		Vector3[] p = blueprintPart.CalculatePoints();
 		switch (blueprintPart.GetType()) {
 		case BlueprintPartType.StraightLine:
 			nodes = new EditorNode[2];
-			nodes[0] = CreateNode(p[0], 0);
-			nodes[1] = CreateNode(p[1], 0);
+			nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 0);
+			nodes[1] = CreateNode(blueprintPart.GetNodePosition(1), 0);
 			break;
 		case BlueprintPartType.CurveBezierCubic:
 			nodes = new EditorNode[2];
-			nodes[0] = CreateNode(p[0], 1);
-			nodes[1] = CreateNode(p[p.Length - 1], 1);
+			nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 1);
+			nodes[0].MoveControl(0, blueprintPart.GetNodePosition(1));
+			nodes[1] = CreateNode(blueprintPart.GetNodePosition(3), 1);
+			nodes[1].MoveControl(0, blueprintPart.GetNodePosition(2));
 			break;
 		case BlueprintPartType.CurveCircularArc:
 			nodes = new EditorNode[2];
-			nodes[0] = CreateNode(p[0], 1);
-			nodes[0].MoveControl(0, p[0] + (p[p.Length - 1] - p[0])/2);
-			nodes[1] = CreateNode(p[p.Length - 1], 0);
+			nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 1);
+			nodes[0].MoveControl(0, blueprintPart.GetNodePosition(1));
+			nodes[1] = CreateNode(blueprintPart.GetNodePosition(2), 0);
 			break;
 		}
 	}
