@@ -18,7 +18,6 @@ public class TerrainPartObject : MonoBehaviour {
 		// Convert the blueprint into a physical thing
 		this.terrainPart = new TerrainPart(blueprintPart);
 		this.terrainPart.SetParent(transform);
-		this.terrainPart.Regenerate();
 
 		// Create the relevant nodes for this object
 		Vector3[] p = blueprintPart.CalculatePoints();
@@ -42,6 +41,9 @@ public class TerrainPartObject : MonoBehaviour {
 			nodes[1] = CreateNode(blueprintPart.GetNodePosition(2), 0);
 			break;
 		}
+
+		// Create the terrain with the correct segment lengths
+		this.Regenerate();
 	}
 	
 	EditorNode CreateNode(Vector3 pos, int numControls) {

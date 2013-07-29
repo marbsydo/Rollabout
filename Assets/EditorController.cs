@@ -139,16 +139,16 @@ public class EditorController : TerrainGenerator {
 				if (Input.GetKey(KeyCode.Z)) {
 					// Curve bezier cubic
 
-					// Calculate where the two nodes should be: they go part way inbetween each end point
 					Vector3 drawPointDiff = drawPoints[1] - drawPoints[0];
-
 					part = new BlueprintPart(BlueprintPartType.CurveBezierCubic, drawPoints[0], drawPoints[0] + drawPointDiff * 0.25f, drawPoints[0] + drawPointDiff * 0.75f, drawPoints[0] + drawPointDiff * 1);
-					//part = new BlueprintPart(BlueprintPartType.CurveBezierCubic, drawPoints[0], drawPoints[0] + new Vector3(8, 0, 0), drawPoints[1] - new Vector3(8, 0, 0) ,drawPoints[1]);
 				} else if (Input.GetKey(KeyCode.X)) {
 					// Circular arc
-					part = new BlueprintPart(BlueprintPartType.CurveCircularArc, drawPoints[0], drawPoints[0] + (drawPoints[1] - drawPoints[0]) / 2, drawPoints[1]);
+					
+					Vector3 drawPointDiff = drawPoints[1] - drawPoints[0];
+					part = new BlueprintPart(BlueprintPartType.CurveCircularArc, drawPoints[0], drawPoints[0] + drawPointDiff * 0.5f, drawPoints[0] + drawPointDiff * 1);
 				} else {
 					// Straight line
+					
 					part = new BlueprintPart(BlueprintPartType.StraightLine, drawPoints[0], drawPoints[1]);
 				}
 
