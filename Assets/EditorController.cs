@@ -210,8 +210,13 @@ public class LevelIO {
 
 		foreach (TerrainPartObject terrain in terrains) {
 			// Loop through each terrain
-			BlueprintPartType type = terrain.terrainPart.blueprintPart.GetType();
+			BlueprintPartType type = terrain.terrainPart.blueprintPart.GetPartType();
 			levelData.WriteInt((int) type);
+
+			// Write points
+			for (int i = 0; i < terrain.terrainPart.blueprintPart.NumPoints(); i++) {
+				//levelData.WriteVector2((Vector2) terrain.terrainPart.blueprintPart.GetPoint(i));
+			}
 		}
 
 		return levelData.ReadAll();
@@ -308,9 +313,21 @@ public class LevelDataRead : LevelData {
 		return StringToInt(i_s);
 	}
 
+	public float ReadFloat() {
+		string f_s = ReadUntilSpace();
+		return StringToFloat(f_s);
+	}
+
 	public string ReadString() {
 		int l = ReadInt();
 		return ReadNumChars(l);
+	}
+
+	public Vector2 ReadVector2() {
+		float vx, vy;
+		vx = ReadFloat();
+		vy = ReadFloat();
+		return new Vector2(vx, vy);
 	}
 }
 
@@ -342,5 +359,10 @@ public class LevelDataWrite : LevelData {
 		// Convert float to string
 		WriteRaw(FloatToString(f));
 		WriteRaw(" ");
+	}
+
+	public void WriteVector2(Vector2 v) {
+		WriteFloat(v.x);
+		WriteFloat(v.y);
 	}
 }

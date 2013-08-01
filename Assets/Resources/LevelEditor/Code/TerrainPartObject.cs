@@ -20,8 +20,8 @@ public class TerrainPartObject : MonoBehaviour {
 		this.terrainPart.SetParent(transform);
 
 		// Create the relevant nodes for this object
-		Vector3[] p = blueprintPart.CalculatePoints();
-		switch (blueprintPart.GetType()) {
+		//Vector3[] p = blueprintPart.CalculatePoints();
+		switch (blueprintPart.GetPartType()) {
 		case BlueprintPartType.StraightLine:
 			nodes = new EditorNode[2];
 			nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 0);
@@ -58,7 +58,7 @@ public class TerrainPartObject : MonoBehaviour {
 	// Called by EditorNode.cs when the nodes have changed
 	public void Regenerate() {
 		// First, modify the blueprint
-		switch (this.terrainPart.blueprintPart.GetType()) {
+		switch (this.terrainPart.blueprintPart.GetPartType()) {
 		case BlueprintPartType.StraightLine:
 			this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
 			this.terrainPart.blueprintPart.SetNodePosition(1, nodes[1].GetVertexPosition());

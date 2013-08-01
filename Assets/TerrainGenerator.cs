@@ -160,8 +160,28 @@ public class BlueprintPart {
 		}
 	}
 	
-	public BlueprintPartType GetType() {
+	public BlueprintPartType GetPartType() {
 		return type;
+	}
+
+	public int NumPoints() {
+		int n;
+		switch (type) {
+		case BlueprintPartType.StraightLine:
+			n = straightLine.NumPoints();
+			break;
+		case BlueprintPartType.CurveBezierCubic:
+			n = curveBezierCubic.NumPoints();
+			break;
+		case BlueprintPartType.CurveCircularArc:
+			n = curveCircularArc.NumPoints();
+			break;
+		default:
+			n = 0;
+			Debug.Log("BlueprintPartType " + type + " does not exist.");
+			break;
+		}
+		return n;
 	}
 	
 	public void SetNodePosition(int node, Vector3 pos) {
@@ -272,6 +292,12 @@ public class StraightLine {
 	public StraightLine(Vector3 A, Vector3 B) {
 		SetPointA(A);
 		SetPointB(B);
+	}
+
+	// ## Meta
+
+	public int NumPoints() {
+		return 2;
 	}
 	
 	// ## Setting
@@ -385,6 +411,12 @@ public class CurveBezierCubic {
 		SetPointC(C);
 		SetPointD(D);
 		SetSegmentNum(segments);
+	}
+
+	// ## Meta
+
+	public int NumPoints() {
+		return 4;
 	}
 	
 	// ## Setting
@@ -567,6 +599,12 @@ public class CurveCircularArc {
 		SetPointA(A);
 		SetPointB(B);
 		SetPointC(C);
+	}
+
+	// ## Meta
+
+	public int NumPoints() {
+		return 3;
 	}
 	
 	// ## Setting
