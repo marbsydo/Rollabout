@@ -155,146 +155,10 @@ abstract public class BlueprintPart {
 		}
 	}
 }
-/*
-public class BlueprintPart {
-	
-	BlueprintPartType type;
-	StraightLine straightLine;
-	CurveBezierCubic curveBezierCubic;
-	CurveCircularArc curveCircularArc;
-	// See also: TerrainPartObject.cs
-	
-	public BlueprintPart(BlueprintPartType type, Vector3 A, Vector3 B) {
-		if (type == BlueprintPartType.StraightLine) {
-			this.straightLine = new StraightLine(A, B);
-			this.type = type;
-		} else {
-			Debug.LogError("No BlueprintPart of type " + type + " exists for these arguments");
-		}
-	}
-	
-	public BlueprintPart(BlueprintPartType type, Vector3 A, Vector3 B, Vector3 C) {
-		if (type == BlueprintPartType.CurveCircularArc) {
-			this.curveCircularArc = new CurveCircularArc(A, B, C);
-			this.type = type;
-		} else {
-			Debug.LogError("No BlueprintPart of type " + type + " exists for these arguments");
-		}
-	}
-	
-	public BlueprintPart(BlueprintPartType type, Vector3 A, Vector3 B, Vector3 C, Vector3 D) {
-		if (type == BlueprintPartType.CurveBezierCubic) {
-			this.curveBezierCubic = new CurveBezierCubic(A, B, C, D, 20);
-			this.type = type;
-		} else {
-			Debug.LogError("No BlueprintPart of type " + type + " exists for these arguments");
-		}
-	}
-	
-	public BlueprintPartType GetPartType() {
-		return type;
-	}
-
-	public int NumPoints() {
-		int n;
-		switch (type) {
-		case BlueprintPartType.StraightLine:
-			n = straightLine.NumPoints();
-			break;
-		case BlueprintPartType.CurveBezierCubic:
-			n = curveBezierCubic.NumPoints();
-			break;
-		case BlueprintPartType.CurveCircularArc:
-			n = curveCircularArc.NumPoints();
-			break;
-		default:
-			n = 0;
-			Debug.Log("BlueprintPartType " + type + " does not exist.");
-			break;
-		}
-		return n;
-	}
-	
-	public void SetNodePosition(int node, Vector3 pos) {
-		// Update the position of one of the nodes defining the shape
-		switch (type) {
-		case BlueprintPartType.StraightLine:
-			straightLine.SetPoint(node, pos);
-			break;
-		case BlueprintPartType.CurveBezierCubic:
-			curveBezierCubic.SetPoint(node, pos);
-			break;
-		case BlueprintPartType.CurveCircularArc:
-			curveCircularArc.SetPoint(node, pos);
-			break;
-		default:
-			Debug.Log("BlueprintPartType " + type + " does not exist.");
-			break;
-		}
-	}
-
-	public Vector3 GetNodePosition(int node) {
-		Vector3 np;
-		switch (type) {
-		case BlueprintPartType.StraightLine:
-			np = straightLine.GetPoint(node);
-			break;
-		case BlueprintPartType.CurveBezierCubic:
-			np = curveBezierCubic.GetPoint(node);
-			break;
-		case BlueprintPartType.CurveCircularArc:
-			np = curveCircularArc.GetPoint(node);
-			break;
-		default:
-			np = Vector3.zero;
-			Debug.Log("BlueprintPartType " + type + " does not exist.");
-			break;
-		}
-		return np;
-	}
-
-	public void SetSegmentLength(float segmentLength) {
-		switch (type) {
-			case BlueprintPartType.StraightLine:
-				// Do nothing
-				break;
-			case BlueprintPartType.CurveBezierCubic:
-				curveBezierCubic.SetSegmentLength(segmentLength);
-				break;
-			case BlueprintPartType.CurveCircularArc:
-				curveCircularArc.SetSegmentLength(segmentLength);
-				break;
-		}
-	}
-	
-	// Returns all points necessary for generating this part
-	public Vector3[] CalculatePoints() {
-		Vector3[] p;
-		switch (type) {
-		case BlueprintPartType.StraightLine:
-			p = new Vector3[2];
-			p[0] = straightLine.GetPointA();
-			p[1] = straightLine.GetPointB();
-			break;
-		case BlueprintPartType.CurveBezierCubic:
-			p = curveBezierCubic.CalculateCurvePoints();
-			break;
-		case BlueprintPartType.CurveCircularArc:
-			p = curveCircularArc.CalculateCurvePoints();
-			break;
-		default:
-			p = new Vector3[1];
-			Debug.LogError("Invalid type: " + type);
-			break;
-		}
-		return p;
-	}
-}
-*/
 
 public class StraightLine : BlueprintPart {
-	//private Vector3[] p = new Vector3[2];
-	
+	float segmentLength = 4f;
+
 	// # Constructor
 	
 	public StraightLine(Vector3 A, Vector3 B) {
@@ -302,8 +166,6 @@ public class StraightLine : BlueprintPart {
 		p = new Vector3[2];
 		SetNodePosition(0, A);
 		SetNodePosition(1, B);
-		//SetPointA(A);
-		//SetPointB(B);
 	}
 
 	// ## Meta
@@ -313,70 +175,24 @@ public class StraightLine : BlueprintPart {
 	}
 
 	override public Vector3[] CalculatePoints() {
-		Vector3[] P = new Vector3[2];
-		P[0] = this.GetNodePosition(0);
-		P[1] = this.GetNodePosition(1);
+		Vector3 A = this.GetNodePosition(0);
+		Vector3 B = this.GetNodePosition(1);
+		Vector3 d = (B - A);
+		int segments = (int) (d.magnitude / segmentLength);
+		if (segments < 1)
+			segments = 1;
+
+		Vector3[] P = new Vector3[segments + 1];
+		for (int i = 0; i <= segments; i++) {
+			P[i] = A + (d / segments) * i;
+		}
+
 		return P;
 	}
 	
 	override public void SetSegmentLength(float segmentLength) {
-		//TODO
+		this.segmentLength = segmentLength;
 	}
-
-	// ## Setting
-/*
-	public void SetPoint(int point, Vector3 p) {
-		switch (point) {
-		case 0:
-			SetPointA(p);
-			break;
-		case 1:
-			SetPointB(p);
-			break;
-		default:
-			Debug.Log("There is not SetPoint for " + point);
-			break;
-		}
-	}
-	
-	public void SetPointA(Vector3 A) {
-		A.z = 0;
-		this.p[0] = A;
-	}
-	
-	public void SetPointB(Vector3 B) {
-		B.z = 0;
-		this.p[1] = B;
-	}
-*/
-	// ## Getting
-
-/*
-	public Vector3 GetPoint(int point) {
-		Vector3 gp;
-		switch (point) {
-		case 0:
-			gp = GetPointA();
-			break;
-		case 1:
-			gp = GetPointB();
-			break;
-		default:
-			gp = Vector3.zero;
-			Debug.Log("There is no GetPoint for point " + point);
-			break;
-		}
-		return gp;
-	}
-	
-	public Vector3 GetPointA() {
-		return this.p[0];
-	}
-	
-	public Vector3 GetPointB() {
-		return this.p[1];
-	}
-*/
 
 	// ## Calculating
 	
@@ -385,47 +201,7 @@ public class StraightLine : BlueprintPart {
 	}
 }
 
-/*
-# BezierCubic
-Contains data structure for storing the 4 points a cubic bezier requires,
-and also how many segments the resulting curve should have. There is also a
-function to adjust the number of segments according to how long you desire
-each segment to be.
-
-## Constructor
-Requires the four points (A, B, C and D) for a cubic bezier. Also requires the
-number of segments the resulting curve should have.
-
-## Setting
-After creation, each individual point (A, B, C and D) can be adjusted, using
-the following functions:
-* SetPoint()
-* SetPointA()
-* SetPointB()
-* SetPointC()
-* SetPointD()
-The number of segments can be adjusted, according to how many you desire in
-total, or how long you wish each segment to be (matched best as possible)
-using the following functions:
-* SetSegmentNum()
-* SetSegmentLength()
-
-## Getting
-All the cubic curve data can be read using the following functions:
-* GetPointA()
-* GetPointB()
-* GetPointC()
-* GetPointD()
-* GetSegmentNum()
-
-## Calculating
-Some more information can be calculated. These functions should be called
-sparingly because the result has to be generated each time:
-* CalculateCurvePoint()
-* CalculateLength()
-*/
 public class CurveBezierCubic : BlueprintPart {
-	//private Vector3[] p = new Vector3[4];
 	private int segments = 1;
 	
 	// ## Constructor
@@ -437,11 +213,6 @@ public class CurveBezierCubic : BlueprintPart {
 		SetNodePosition(1, B);
 		SetNodePosition(2, C);
 		SetNodePosition(3, D);
-		//SetPointA(A);
-		//SetPointB(B);
-		//SetPointC(C);
-		//SetPointD(D);
-		//SetSegmentNum(segments);
 	}
 
 	// ## Meta
@@ -449,50 +220,6 @@ public class CurveBezierCubic : BlueprintPart {
 	override public int NumPoints() {
 		return 4;
 	}
-	
-	// ## Setting
-
-/*
-	public void SetPoint(int point, Vector3 p) {
-		switch (point) {
-		case 0:
-			SetPointA(p);
-			break;
-		case 1:
-			SetPointB(p);
-			break;
-		case 2:
-			SetPointC(p);
-			break;
-		case 3:
-			SetPointD(p);
-			break;
-		default:
-			Debug.Log("There is not SetPoint for point " + point);
-			break;
-		}
-	}
-	
-	public void SetPointA(Vector3 A) {
-		A.z = 0;
-		this.p[0] = A;
-	}
-	
-	public void SetPointB(Vector3 B) {
-		B.z = 0;
-		this.p[1] = B;
-	}
-	
-	public void SetPointC(Vector3 C) {
-		C.z = 0;
-		this.p[2] = C;
-	}
-	
-	public void SetPointD(Vector3 D) {
-		D.z = 0;
-		this.p[3] = D;
-	}
-*/
 	
 	public void SetSegmentNum(int segments) {
 		if (segments >= 1) {
@@ -510,52 +237,7 @@ public class CurveBezierCubic : BlueprintPart {
 			segments = 1;
 		SetSegmentNum(segments);
 	}
-	
-	// ## Getting
-/*
-	public Vector3 GetPoint(int point) {
-		Vector3 gp;
-		switch (point) {
-		case 0:
-			gp = GetPointA();
-			break;
-		case 1:
-			gp = GetPointB();
-			break;
-		case 2:
-			gp = GetPointC();
-			break;
-		case 3:
-			gp = GetPointD();
-			break;
-		default:
-			gp = Vector3.zero;
-			Debug.Log("There is no GetPoint for point " + point);
-			break;
-		}
-		return gp;
-	}
 
-	public Vector3 GetPointA() {
-		return this.p[0];
-	}
-	
-	public Vector3 GetPointB() {
-		return this.p[1];
-	}
-	
-	public Vector3 GetPointC() {
-		return this.p[2];
-	}
-	
-	public Vector3 GetPointD() {
-		return this.p[3];
-	}
-	
-	public int GetSegmentNum() {
-		return segments;
-	}
-*/
 	// ## Calculating
 	
 	override public Vector3[] CalculatePoints() {
@@ -609,7 +291,6 @@ public class CurveBezierCubic : BlueprintPart {
 }
 
 public class CurveCircularArc : BlueprintPart {
-	//private Vector3[] p = new Vector3[3];
 	private float segmentLength = 2f; // Number of segments is calculated based upon segmentLength during CalculatePoints()
 
 	// These values are set by CalculateDiameter() and CalculateMiddle()
@@ -634,9 +315,6 @@ public class CurveCircularArc : BlueprintPart {
 		SetNodePosition(0, A);
 		SetNodePosition(1, B);
 		SetNodePosition(2, C);
-		//SetPointA(A);
-		//SetPointB(B);
-		//SetPointC(C);
 	}
 
 	// ## Meta
@@ -644,79 +322,11 @@ public class CurveCircularArc : BlueprintPart {
 	override public int NumPoints() {
 		return 3;
 	}
-	
-	// ## Setting
-/*
-	public void SetPoint(int point, Vector3 p) {
-		switch (point) {
-		case 0:
-			SetPointA(p);
-			break;
-		case 1:
-			SetPointB(p);
-			break;
-		case 2:
-			SetPointC(p);
-			break;
-		default:
-			Debug.Log("There is not SetPoint for point " + point);
-			break;
-		}
-	}
-	
-	public void SetPointA(Vector3 A) {
-		A.z = 0;
-		this.p[0] = A;
-	}
-	
-	public void SetPointB(Vector3 B) {
-		B.z = 0;
-		this.p[1] = B;
-	}
-	
-	public void SetPointC(Vector3 C) {
-		C.z = 0;
-		this.p[2] = C;
-	}
-*/
+
 	override public void SetSegmentLength(float segmentLength) {
 		this.segmentLength = segmentLength;
 	}
-/*
-	// ## Getting
 
-	public Vector3 GetPoint(int point) {
-		Vector3 gp;
-		switch (point) {
-		case 0:
-			gp = GetPointA();
-			break;
-		case 1:
-			gp = GetPointB();
-			break;
-		case 2:
-			gp = GetPointC();
-			break;
-		default:
-			gp = Vector3.zero;
-			Debug.Log("There is no GetPoint for point " + point);
-			break;
-		}
-		return gp;
-	}
-
-	public Vector3 GetPointA() {
-		return this.p[0];
-	}
-	
-	public Vector3 GetPointB() {
-		return this.p[1];
-	}
-	
-	public Vector3 GetPointC() {
-		return this.p[2];
-	}
-*/
 	// ## Calculating
 	
 	public void CalculateDiameter() {
