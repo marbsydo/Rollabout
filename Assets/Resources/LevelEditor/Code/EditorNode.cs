@@ -5,10 +5,10 @@ public enum EditorNodeControlRestriction{None, PerpendicularToMiddleOfAC};
 
 public class EditorNode : MonoBehaviour {
 	
-	const KeyCode inputNodeModify = KeyCode.Mouse0;            // Moving and reshaping a node
-	const KeyCode inputNodeSnapGrid = KeyCode.LeftControl;     // Snapping a node to the grid
-	const KeyCode inputNodeSnapNode = KeyCode.LeftShift;       // Snapping a node to another node
-	const KeyCode inputNodeSelectIndividual = KeyCode.LeftAlt; // Selecting multiple nodes in one go
+	const KeyCode inputNodeModify = KeyCode.Mouse0;              // Moving and reshaping a node
+	const KeyCode inputNodeSnapGrid = KeyCode.LeftControl;       // Snapping a node to the grid
+	const KeyCode inputNodeSnapNode = KeyCode.LeftShift;         // Snapping a node to another node
+	const KeyCode inputNodeSelectIndividual = KeyCode.LeftShift; // Selecting multiple nodes in one go
 	const KeyCode inputNodeSegmentsIncrease = KeyCode.X;
 	const KeyCode inputNodeSegmentsDecrease = KeyCode.Z;
 
@@ -167,7 +167,6 @@ public class EditorNode : MonoBehaviour {
 								p1.z = p2.z = 0;
 								if ((p1 - p2).magnitude < 0.1f) {
 									if (additionalNodesLength < additionalNodesMax) {
-										Debug.Log("Selected additional node");
 										// This other node is at our position, so select it too
 										additionalNodes[additionalNodesLength] = node;
 										additionalNodesLength++;
@@ -223,25 +222,38 @@ public class EditorNode : MonoBehaviour {
 				// Find all nodes
 				EditorNode[] nodes = GameObject.FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
 				foreach (EditorNode node in nodes) {
+					// Compare GetInstanceID() to ensure we don't snap to ourselves
 					if (!snappedToNode && node.gameObject.GetInstanceID() != gameObject.GetInstanceID()) {
-						//Debug.Log("Looking at: " + node.gameObject.name);
-						//Vector3 p = node.transform.position;
-						Vector3 p1 = node.GetVertexPosition();
-						Vector3 p2 = GetMousePosition();//this.GetVertexPosition();
-						p1.z = p2.z = 0;
-						if ((p1 - p2).magnitude < snapMinDist) {
-							snappedToNode = true;
-							// Snap to thingy
-							if (mouseHolding == -1) {
-								MoveVertex(p1);
 
-								// If moving multiple nodes, move them too
-								for (int i = 0; i < additionalNodesLength; i++) {
-									additionalNodes[i].MoveVertex(p1);
-									additionalNodes[i].Regenerate();
+						// Compare GetInstanceID() to ensure we don't snap with other nodes we are moving
+						bool isOtherNodeWeAreMoving = false;
+						for (int i = 0; i < additionalNodesLength; i++) {
+							if (additionalNodes[i].gameObject.GetInstanceID() == node.gameObject.GetInstanceID()) {
+								isOtherNodeWeAreMoving = true;
+							}
+						}
+
+						Debug.Log(isOtherNodeWeAreMoving);
+
+						if (!isOtherNodeWeAreMoving) {
+							Vector3 p1 = node.GetVertexPosition();
+							Vector3 p2 = GetMousePosition();//this.GetVertexPosition();
+							p1.z = p2.z = 0;
+							if ((p1 - p2).magnitude < snapMinDist) {
+								snappedToNode = true;
+								
+								// Snap to thingy
+								if (mouseHolding == -1) {
+									MoveVertex(p1);
+
+									// If moving multiple nodes, move them too
+									for (int i = 0; i < additionalNodesLength; i++) {
+										additionalNodes[i].MoveVertex(p1);
+										additionalNodes[i].Regenerate();
+									}
+								} else {
+									MoveControl(mouseHolding, p1);
 								}
-							} else {
-								MoveControl(mouseHolding, p1);
 							}
 						}
 					}
