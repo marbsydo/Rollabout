@@ -233,8 +233,6 @@ public class EditorNode : MonoBehaviour {
 							}
 						}
 
-						Debug.Log(isOtherNodeWeAreMoving);
-
 						if (!isOtherNodeWeAreMoving) {
 							Vector3 p1 = node.GetVertexPosition();
 							Vector3 p2 = GetMousePosition();//this.GetVertexPosition();
