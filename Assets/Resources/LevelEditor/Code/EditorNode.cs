@@ -5,9 +5,10 @@ public enum EditorNodeControlRestriction{None, PerpendicularToMiddleOfAC};
 
 public class EditorNode : MonoBehaviour {
 	
-	const KeyCode inputNodeModify = KeyCode.Mouse0;        // Moving and reshaping a node
-	const KeyCode inputNodeSnapGrid = KeyCode.LeftControl; // Snapping a node to the grid
-	const KeyCode inputNodeSnapNode = KeyCode.LeftShift;   // Snapping a node to another node
+	const KeyCode inputNodeModify = KeyCode.Mouse0;            // Moving and reshaping a node
+	const KeyCode inputNodeSnapGrid = KeyCode.LeftControl;     // Snapping a node to the grid
+	const KeyCode inputNodeSnapNode = KeyCode.LeftShift;       // Snapping a node to another node
+	const KeyCode inputNodeSelectIndividual = KeyCode.LeftAlt; // Selecting multiple nodes in one go
 	const KeyCode inputNodeSegmentsIncrease = KeyCode.X;
 	const KeyCode inputNodeSegmentsDecrease = KeyCode.Z;
 
@@ -27,7 +28,15 @@ public class EditorNode : MonoBehaviour {
 	GameObject[] nodeLine;
 	int numControls = 3;
 	
-	
+	// Snapping
+	bool snapByDefault = true;
+	float snapMinDist = 0.5f;
+
+	// For moving multiple nodes
+	EditorNode[] additionalNodes;
+	int additionalNodesLength;
+	const int additionalNodesMax = 3; // Max number of nodes that can be moved together
+
 	// Mouse clicking stuff
 	// -2 = nothing
 	// -1 = nodeVertex
@@ -141,9 +150,36 @@ public class EditorNode : MonoBehaviour {
 			// Next check if it clicked the vertex
 			if (mouseHolding < 0) {
 				if ((m - nodeVertex.transform.position).magnitude < 1) {
+					// Did click on the vertex
 					mouseHolding = -1;
+
+					// If moving multiple vertices, check for others at same position
+					if (!Input.GetKey(inputNodeSelectIndividual)) {
+
+						additionalNodes = new EditorNode[additionalNodesMax];
+						additionalNodesLength = 0;
+
+						EditorNode[] nodes = GameObject.FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
+						foreach (EditorNode node in nodes) {
+							if (node.gameObject.GetInstanceID() != gameObject.GetInstanceID()) { // Don't select ourselves
+								Vector3 p1 = node.GetVertexPosition();
+								Vector3 p2 = this.GetVertexPosition();//GetMousePosition();
+								p1.z = p2.z = 0;
+								if ((p1 - p2).magnitude < 0.1f) {
+									if (additionalNodesLength < additionalNodesMax) {
+										Debug.Log("Selected additional node");
+										// This other node is at our position, so select it too
+										additionalNodes[additionalNodesLength] = node;
+										additionalNodesLength++;
+									}
+								}
+							}
+						}
+					}
 				} else {
+					// Did not click on the vertex
 					mouseHolding = -2;
+					additionalNodesLength = 0;
 				}
 			}
 			
@@ -151,6 +187,7 @@ public class EditorNode : MonoBehaviour {
 				// If we cannot claim the mouse, do not being holding
 				if (!editorController.MouseClaim(gameObject)) {
 					mouseHolding = -2;
+					additionalNodesLength = 0;
 				}
 			}
 		}
@@ -159,6 +196,7 @@ public class EditorNode : MonoBehaviour {
 			if (mouseHolding > -2) {
 				// If release button, drop whatever is being moved
 				mouseHolding = -2;
+				additionalNodesLength = 0;
 				
 				editorController.MouseRelease(gameObject);
 			}
@@ -179,23 +217,29 @@ public class EditorNode : MonoBehaviour {
 			}
 
 			bool snappedToNode = false;
-			if (Input.GetKey(inputNodeSnapNode)) {
+			if (Input.GetKey(inputNodeSnapNode) ^ snapByDefault) {
 				// Snap to nearby thingies
 
 				// Find all nodes
 				EditorNode[] nodes = GameObject.FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
 				foreach (EditorNode node in nodes) {
 					if (!snappedToNode && node.gameObject.GetInstanceID() != gameObject.GetInstanceID()) {
-						Debug.Log("Looking at: " + node.gameObject.name);
+						//Debug.Log("Looking at: " + node.gameObject.name);
 						//Vector3 p = node.transform.position;
 						Vector3 p1 = node.GetVertexPosition();
 						Vector3 p2 = GetMousePosition();//this.GetVertexPosition();
 						p1.z = p2.z = 0;
-						if ((p1 - p2).magnitude < 1f) {
+						if ((p1 - p2).magnitude < snapMinDist) {
 							snappedToNode = true;
 							// Snap to thingy
 							if (mouseHolding == -1) {
 								MoveVertex(p1);
+
+								// If moving multiple nodes, move them too
+								for (int i = 0; i < additionalNodesLength; i++) {
+									additionalNodes[i].MoveVertex(p1);
+									additionalNodes[i].Regenerate();
+								}
 							} else {
 								MoveControl(mouseHolding, p1);
 							}
@@ -209,15 +253,25 @@ public class EditorNode : MonoBehaviour {
 				// Move without snapping
 				if (mouseHolding == -1) {
 					MoveVertex(m);
+
+					// If moving multiple nodes, move them too
+					for (int i = 0; i < additionalNodesLength; i++) {
+						additionalNodes[i].MoveVertex(m);
+						additionalNodes[i].Regenerate();
+					}
 				} else {
 					MoveControl(mouseHolding, m);
 				}
 			}
 
 			// Now tell our TerrainPartObject to update
+			Regenerate();
+		}
+	}
+
+	public void Regenerate() {
 			if (terrainPartObject != null)
 				terrainPartObject.Regenerate();
-		}
 	}
 	
 	public void MoveVertex(Vector3 pos) {
