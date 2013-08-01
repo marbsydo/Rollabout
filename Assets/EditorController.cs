@@ -148,7 +148,7 @@ public class EditorController : TerrainGenerator {
 					part = new BlueprintPart(BlueprintPartType.CurveCircularArc, drawPoints[0], drawPoints[0] + drawPointDiff * 0.5f, drawPoints[0] + drawPointDiff * 1);
 				} else {
 					// Straight line
-					
+
 					part = new BlueprintPart(BlueprintPartType.StraightLine, drawPoints[0], drawPoints[1]);
 				}
 
@@ -197,6 +197,7 @@ public class LevelIO {
 		LevelData levelData = new LevelData();
 
 		//TODO: Write level data to levelData
+		levelData.WriteString("RLF v0.1");
 
 		// Find all TerrainPartObjects
 		TerrainPartObject[] terrains = GameObject.FindObjectsOfType(typeof(TerrainPartObject)) as TerrainPartObject[];
@@ -242,7 +243,30 @@ public class LevelData {
 
 	//TODO: Functions for writing to level data sequentially in sections
 
+	public void WriteRaw(string r) {
+		this.levelString += r;
+	}
+
+	public void WriteString(string s) {
+		// Write string length as integer, then space, then the string itself
+		WriteRaw(IntToString(s.Length));
+		WriteRaw(" ");
+		WriteRaw(s);
+	}
+
+	public void WriteInt(int i) {
+		// Convert integer to string
+		WriteRaw(IntToString(i));
+	}
+
+	public void WriteFloat(float f) {
+		// Convert float to string
+		WriteRaw(FloatToString(f));
+	}
+
 	//TODO: Functions for reading from level data sequentially in sections
+
+
 
 	// Conversion functions
 	int StringToInt(string s) {
@@ -254,5 +278,16 @@ public class LevelData {
 
 	string IntToString(int i) {
 		return i.ToString();
+	}
+
+	float StringToFloat(string s) {
+		float f = -1.0f;
+		if (!float.TryParse(s, out f))
+			Debug.LogWarning("Could not convert float [" + f + "] to string!");
+		return f;
+	}
+
+	string FloatToString(float f) {
+		return f.ToString();
 	}
 }
