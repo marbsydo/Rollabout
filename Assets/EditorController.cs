@@ -194,15 +194,24 @@ public class LevelIO {
 	}
 
 	string ConvertLevelToString() {
-		LevelData levelData = new LevelData();
+		LevelDataWrite levelData = new LevelDataWrite();
 
 		//TODO: Write level data to levelData
-		levelData.WriteString("RLF v0.1");
+
+		// 1) Write file format and version
+		levelData.WriteRaw("RLF");
+		levelData.WriteString("0.1");
 
 		// Find all TerrainPartObjects
 		TerrainPartObject[] terrains = GameObject.FindObjectsOfType(typeof(TerrainPartObject)) as TerrainPartObject[];
-		foreach (TerrainPartObject terrain in terrains) {
 
+		// 2) Write how many terrains there are
+		levelData.WriteInt(terrains.Length);
+
+		foreach (TerrainPartObject terrain in terrains) {
+			// Loop through each terrain
+			BlueprintPartType type = terrain.terrainPart.blueprintPart.GetType();
+			levelData.WriteInt((int) type);
 		}
 
 		return levelData.ReadAll();
@@ -211,34 +220,103 @@ public class LevelIO {
 	void GenerateLevelFromString(string levelString) {
 		Debug.Log("Generating level from levelString: " + levelString);
 
-		LevelData levelData = new LevelData(levelString);
+		LevelDataRead levelData = new LevelDataRead(levelString);
 
 		//TODO: Generate level from levelData
+
+		// 1) Read file format and version
+		string ff = levelData.ReadNumChars(3);
+
+		if (ff != "RLF") {
+			Debug.LogError("Invalid file format!");
+		}
+
+		string version = levelData.ReadString();
+
+		Debug.Log("Version is: " + version);
+
+		// 2) Read how many terrains there are
+		int numTerrains = levelData.ReadInt();
+
+		for (int t = 0; t < numTerrains; t++) {
+			// Loop though each terrain
+			
+			BlueprintPartType type = (BlueprintPartType) levelData.ReadInt();
+			Debug.Log(type);
+		}
 	}
 }
 
-public class LevelData {
-	string levelString;
-	bool read;
-
-	// If constructed with a string, you can:
-	// * Read from string in sections
-	// * Read the entire string
-	public LevelData(string levelString) {
-		this.levelString = levelString;
-		read = true;
-	}
-
-	// If constructed without a string, you can:
-	// * Write to string in sections
-	// * Read the entire string
-	public LevelData() {
-		this.levelString = "";
-		read = false;
-	}
+abstract public class LevelData {
+	protected string levelString;
 
 	public string ReadAll() {
 		return levelString;
+	}
+
+	// Conversion functions
+	protected int StringToInt(string s) {
+		int i = -1;
+		if (!int.TryParse(s, out i))
+			Debug.LogWarning("Could not convert integer [" + i + "] to string!");
+		return i;
+	}
+
+	protected string IntToString(int i) {
+		return i.ToString();
+	}
+
+	protected float StringToFloat(string s) {
+		float f = -1.0f;
+		if (!float.TryParse(s, out f))
+			Debug.LogWarning("Could not convert float [" + f + "] to string!");
+		return f;
+	}
+
+	protected string FloatToString(float f) {
+		return f.ToString();
+	}
+}
+
+public class LevelDataRead : LevelData {
+	int pos = 0;
+
+	public LevelDataRead(string levelString) {
+		this.levelString = levelString;
+	}
+
+	//TODO: Functions for reading from level data sequentially in sections
+
+	public string ReadUntilSpace() {
+		string r = "";
+		char lastChar = '?';
+		while (pos < levelString.Length && lastChar != ' ') {
+			lastChar = levelString[pos];
+			r += lastChar;
+			pos++;
+		}
+		return r;
+	}
+
+	public string ReadNumChars(int num) {
+		pos += num;
+		return levelString.Substring(pos - num, num);
+	}
+
+	public int ReadInt() {
+		string i_s = ReadUntilSpace();
+		return StringToInt(i_s);
+	}
+
+	public string ReadString() {
+		int l = ReadInt();
+		return ReadNumChars(l);
+	}
+}
+
+public class LevelDataWrite : LevelData {
+	public LevelDataWrite() {
+		this.levelString = "";
 	}
 
 	//TODO: Functions for writing to level data sequentially in sections
@@ -257,37 +335,12 @@ public class LevelData {
 	public void WriteInt(int i) {
 		// Convert integer to string
 		WriteRaw(IntToString(i));
+		WriteRaw(" ");
 	}
 
 	public void WriteFloat(float f) {
 		// Convert float to string
 		WriteRaw(FloatToString(f));
-	}
-
-	//TODO: Functions for reading from level data sequentially in sections
-
-
-
-	// Conversion functions
-	int StringToInt(string s) {
-		int i = -1;
-		if (!int.TryParse(s, out i))
-			Debug.LogWarning("Could not convert integer [" + i + "] to string!");
-		return i;
-	}
-
-	string IntToString(int i) {
-		return i.ToString();
-	}
-
-	float StringToFloat(string s) {
-		float f = -1.0f;
-		if (!float.TryParse(s, out f))
-			Debug.LogWarning("Could not convert float [" + f + "] to string!");
-		return f;
-	}
-
-	string FloatToString(float f) {
-		return f.ToString();
+		WriteRaw(" ");
 	}
 }

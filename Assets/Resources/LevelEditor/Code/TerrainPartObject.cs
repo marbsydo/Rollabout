@@ -2,9 +2,9 @@ using UnityEngine;
 using System.Collections;
 
 public class TerrainPartObject : MonoBehaviour {
-	TerrainPart terrainPart;
+	public TerrainPart terrainPart;
 	
-	EditorNode[] nodes;
+	public EditorNode[] nodes;
 	
 	GameObject prefabNode;
 
