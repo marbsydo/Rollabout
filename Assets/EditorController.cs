@@ -168,7 +168,6 @@ public class EditorController : TerrainGenerator {
 
 				// Assign the blueprint to a terrain object
 				TerrainPartObject terrain = (GameObject.Instantiate(prefabTerrainPartObject, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<TerrainPartObject>();
-				//terrain.gameObject.name = "TerrainPartObject";
 				terrain.AssignBlueprint(part);
 				
 				MouseReleaseNextFrame(gameObject);
@@ -182,37 +181,7 @@ public class EditorController : TerrainGenerator {
 		return m;
 	}
 }
-/*
-public class LevelTerrain {
 
-	int[] points;
-
-	public LevelTerrain() {
-		CalculateNumPoints();
-	}
-
-	private void CalculateNumPoints() {
-		const n = 3;
-		points = new int[n];
-		BlueprintPart part;
-		for (int i = 0; i < n; i++) {
-			switch (i) {
-			case 0:
-				part = new 
-				points[0] = 
-			}
-		}
-	}
-
-	public void Create(BlueprintPartType type, Vector3[] points) {
-
-	}
-
-	public int NumPoints(BlueprintPartType type) {
-		// Returns how many Vector3 points are required for BlueprintPartType type
-	}
-}
-*/
 public class LevelIO {
 	public void Save(string filename) {
 		string levelString = ConvertLevelToString();
@@ -291,20 +260,11 @@ public class LevelIO {
 			// Loop though each terrain
 			
 			BlueprintPartType type = (BlueprintPartType) levelData.ReadInt();
-
-			/*
-			// Create the thing
-			BlueprintPart part;
-
-			switch (type) {
-			case BlueprintPartType.StraightLine:
-				break;
-			case BlueprintPartType.CurveBezierCubic:
-				break;
-			case BlueprintPartType.CurveCircularArc:
-				break;
+			TerrainPartMaker terrainPartMaker = new TerrainPartMaker(type);
+			for (int i = 0; i < terrainPartMaker.GetNodeAmount(); i++) {
+				terrainPartMaker.AddNode(new Vector3(levelData.ReadFloat(), levelData.ReadFloat(), 0.0f));
 			}
-			*/
+			TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
 		}
 	}
 }

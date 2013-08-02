@@ -101,3 +101,66 @@ public class TerrainPartObject : MonoBehaviour {
 		//Debug.Log(segmentLength);
 	}
 }
+
+public class TerrainPartMaker {
+	BlueprintPart part;
+	Vector3[] nodes;
+	int nodeCurrent = 0;
+
+	GameObject prefabTerrainPartObject;
+
+	public TerrainPartMaker(BlueprintPartType type) {
+
+		// Load the template terrain prefab
+		prefabTerrainPartObject = Resources.Load("LevelEditor/TerrainPartObject") as GameObject;
+
+		// Create the blank blueprint
+		switch (type) {
+		case BlueprintPartType.StraightLine:
+			part = new StraightLine();
+			break;
+		case BlueprintPartType.CurveBezierCubic:
+			part = new CurveBezierCubic();
+			break;
+		case BlueprintPartType.CurveCircularArc:
+			part = new CurveCircularArc();
+			break;
+		default:
+			Debug.LogError("Unknown part [" + part + "]. Defaulting to StraightLine.");
+			part = new StraightLine();
+			break;
+		}
+
+		nodes = new Vector3[part.GetNodeAmount()];
+	}
+
+	public int GetNodeAmount() {
+
+		// Get how many nodes the blueprint requires in total
+		return nodes.Length;
+	}
+
+	public void AddNode(Vector3 v) {
+		
+		// Add a node to the list of nodes for the blueprint
+		if (nodeCurrent >= nodes.Length) {
+			Debug.LogError("Trying to add too many nodes!");
+		} else {
+			nodes[nodeCurrent] = v;
+			nodeCurrent++;
+		}
+	}
+
+	public TerrainPartObject CreateTerrain() {
+
+		// Add all nodes to the blueprint
+		this.part.SetNodePositions(nodes);
+
+		// Create the terrain obejct
+		TerrainPartObject terrain = (GameObject.Instantiate(prefabTerrainPartObject, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<TerrainPartObject>();
+		terrain.AssignBlueprint(part);
+
+		// Return it
+		return terrain;
+	}
+}
