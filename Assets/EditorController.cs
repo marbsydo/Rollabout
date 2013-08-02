@@ -133,43 +133,39 @@ public class EditorController : TerrainGenerator {
 				drawPoints[1] = m;
 				
 				// Create the desired blueprint
-				
-				BlueprintPart part;
-				Vector3[] partPoints;
-				Vector3 partPointsDiff;
+				BlueprintPartType type;
 
 				if (Input.GetKey(KeyCode.Z)) {
-					// Curve bezier cubic
-					part = new CurveBezierCubic();
-					partPoints = new Vector3[part.GetNodeAmount()];
-					partPointsDiff = drawPoints[1] - drawPoints[0];
-					partPoints[0] = drawPoints[0];
-					partPoints[1] = drawPoints[0] + partPointsDiff * 0.25f;
-					partPoints[2] = drawPoints[0] + partPointsDiff * 0.75f;
-					partPoints[3] = drawPoints[1];
-					part.SetNodePositions(partPoints);
+					type = BlueprintPartType.CurveBezierCubic;
 				} else if (Input.GetKey(KeyCode.X)) {
-					// Circular arc
-					part = new CurveCircularArc();
-					partPoints = new Vector3[part.GetNodeAmount()];
-					partPointsDiff = drawPoints[1] - drawPoints[0];
-					partPoints[0] = drawPoints[0];
-					partPoints[1] = drawPoints[0] + partPointsDiff * 0.5f;
-					partPoints[2] = drawPoints[1];
-					part.SetNodePositions(partPoints);
+					type = BlueprintPartType.CurveCircularArc;
 				} else {
-					// Straight line
-					part = new StraightLine();
-					partPoints = new Vector3[part.GetNodeAmount()];
-					partPoints[0] = drawPoints[0];
-					partPoints[1] = drawPoints[1];
-					part.SetNodePositions(partPoints);
+					type = BlueprintPartType.StraightLine;
 				}
 
-				// Assign the blueprint to a terrain object
-				TerrainPartObject terrain = (GameObject.Instantiate(prefabTerrainPartObject, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<TerrainPartObject>();
-				terrain.AssignBlueprint(part);
-				
+				TerrainPartMaker terrainPartMaker = new TerrainPartMaker(type);
+
+				Vector3 partPointsDiff = drawPoints[1] - drawPoints[0];
+				switch (type) {
+				case BlueprintPartType.CurveBezierCubic:
+					terrainPartMaker.AddNode(drawPoints[0]);
+					terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.25f);
+					terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.75f);
+					terrainPartMaker.AddNode(drawPoints[1]);
+					break;
+				case BlueprintPartType.CurveCircularArc:
+					terrainPartMaker.AddNode(drawPoints[0]);
+					terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.5f);
+					terrainPartMaker.AddNode(drawPoints[1]);
+					break;
+				case BlueprintPartType.StraightLine:
+					terrainPartMaker.AddNode(drawPoints[0]);
+					terrainPartMaker.AddNode(drawPoints[1]);
+					break;
+				}
+
+				TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
+
 				MouseReleaseNextFrame(gameObject);
 			}
 		}
@@ -257,8 +253,8 @@ public class LevelIO {
 		int numTerrains = levelData.ReadInt();
 
 		for (int t = 0; t < numTerrains; t++) {
-			// Loop though each terrain
-			
+
+			// Create each terrain
 			BlueprintPartType type = (BlueprintPartType) levelData.ReadInt();
 			TerrainPartMaker terrainPartMaker = new TerrainPartMaker(type);
 			for (int i = 0; i < terrainPartMaker.GetNodeAmount(); i++) {
