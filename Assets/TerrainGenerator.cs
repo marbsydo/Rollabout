@@ -133,12 +133,23 @@ abstract public class BlueprintPart {
 		return type;
 	}
 
-	abstract public int NumPoints();
+	abstract public int GetNodeAmount();
 	abstract public void SetSegmentLength(float segmentLength);
 	abstract public Vector3[] CalculatePoints();
 
+	public void SetNodePositions(Vector3[] v) {
+		if (v.Length == GetNodeAmount()) {
+			p = new Vector3[GetNodeAmount()];
+			for (int i = 0; i < GetNodeAmount(); i++) {
+				SetNodePosition(i, v[i]);
+			}
+		} else {
+			Debug.LogWarning("Incorrect number of points supplied. Required [" + GetNodeAmount() + "] instead of [" + v.Length + "]");
+		}
+	}
+
 	public Vector3 GetNodePosition(int node) {
-		if (node >= 0 && node <= this.NumPoints()) {
+		if (node >= 0 && node <= this.GetNodeAmount()) {
 			return this.p[node];
 		} else {
 			Debug.LogWarning("There is no GetNodePosition() for node " + node);
@@ -147,7 +158,7 @@ abstract public class BlueprintPart {
 	}
 
 	public void SetNodePosition(int node, Vector3 pos) {
-		if (node >= 0 && node <= this.NumPoints()) {
+		if (node >= 0 && node <= this.GetNodeAmount()) {
 			pos.z = 0;
 			this.p[node] = pos;
 		} else {
@@ -157,22 +168,28 @@ abstract public class BlueprintPart {
 }
 
 public class StraightLine : BlueprintPart {
+	const int nodeAmount = 2;
 	float segmentLength = 4f;
 
 	// # Constructor
 	
-	public StraightLine(Vector3 A, Vector3 B) {
+	public StraightLine() {
 		type = BlueprintPartType.StraightLine;
-		p = new Vector3[2];
-		SetNodePosition(0, A);
-		SetNodePosition(1, B);
 	}
 
 	// ## Meta
 
-	override public int NumPoints() {
-		return 2;
+	override public int GetNodeAmount() {
+		return nodeAmount;
 	}
+
+	// ## Segments
+
+	override public void SetSegmentLength(float segmentLength) {
+		this.segmentLength = segmentLength;
+	}
+
+	// ## Calculating
 
 	override public Vector3[] CalculatePoints() {
 		Vector3 A = this.GetNodePosition(0);
@@ -190,36 +207,28 @@ public class StraightLine : BlueprintPart {
 		return P;
 	}
 	
-	override public void SetSegmentLength(float segmentLength) {
-		this.segmentLength = segmentLength;
-	}
-
-	// ## Calculating
-	
 	public Vector3 CalculateLinePoint(float a) {
 		return p[0] + (p[1] - p[0]) * a;
 	}
 }
 
 public class CurveBezierCubic : BlueprintPart {
+	const int nodeAmount = 4;
 	private int segments = 1;
 	
 	// ## Constructor
 	
-	public CurveBezierCubic(Vector3 A, Vector3 B, Vector3 C, Vector3 D) {
+	public CurveBezierCubic() {
 		type = BlueprintPartType.CurveBezierCubic;
-		p = new Vector3[4];
-		SetNodePosition(0, A);
-		SetNodePosition(1, B);
-		SetNodePosition(2, C);
-		SetNodePosition(3, D);
 	}
 
 	// ## Meta
 
-	override public int NumPoints() {
-		return 4;
+	override public int GetNodeAmount() {
+		return nodeAmount;
 	}
+
+	// ## Segments
 	
 	public void SetSegmentNum(int segments) {
 		if (segments >= 1) {
@@ -291,6 +300,7 @@ public class CurveBezierCubic : BlueprintPart {
 }
 
 public class CurveCircularArc : BlueprintPart {
+	const int nodeAmount = 3;
 	private float segmentLength = 2f; // Number of segments is calculated based upon segmentLength during CalculatePoints()
 
 	// These values are set by CalculateDiameter() and CalculateMiddle()
@@ -309,19 +319,19 @@ public class CurveCircularArc : BlueprintPart {
 	// This value are set by CalculateLength()
 	private float calculatedLength;
 	
-	public CurveCircularArc(Vector3 A, Vector3 B, Vector3 C) {
+	// ## Constructor
+
+	public CurveCircularArc() {
 		type = BlueprintPartType.CurveCircularArc;
-		p = new Vector3[3];
-		SetNodePosition(0, A);
-		SetNodePosition(1, B);
-		SetNodePosition(2, C);
 	}
 
 	// ## Meta
 
-	override public int NumPoints() {
-		return 3;
+	override public int GetNodeAmount() {
+		return nodeAmount;
 	}
+
+	// ## Segments
 
 	override public void SetSegmentLength(float segmentLength) {
 		this.segmentLength = segmentLength;

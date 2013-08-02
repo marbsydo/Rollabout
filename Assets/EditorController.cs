@@ -135,24 +135,35 @@ public class EditorController : TerrainGenerator {
 				// Create the desired blueprint
 				
 				BlueprintPart part;
+				Vector3[] partPoints;
+				Vector3 partPointsDiff;
 
 				if (Input.GetKey(KeyCode.Z)) {
 					// Curve bezier cubic
-
-					Vector3 drawPointDiff = drawPoints[1] - drawPoints[0];
-					part = new CurveBezierCubic(drawPoints[0], drawPoints[0] + drawPointDiff * 0.25f, drawPoints[0] + drawPointDiff * 0.75f, drawPoints[0] + drawPointDiff * 1);
-					//part = new BlueprintPart(BlueprintPartType.CurveBezierCubic, drawPoints[0], drawPoints[0] + drawPointDiff * 0.25f, drawPoints[0] + drawPointDiff * 0.75f, drawPoints[0] + drawPointDiff * 1);
+					part = new CurveBezierCubic();
+					partPoints = new Vector3[part.GetNodeAmount()];
+					partPointsDiff = drawPoints[1] - drawPoints[0];
+					partPoints[0] = drawPoints[0];
+					partPoints[1] = drawPoints[0] + partPointsDiff * 0.25f;
+					partPoints[2] = drawPoints[0] + partPointsDiff * 0.75f;
+					partPoints[3] = drawPoints[1];
+					part.SetNodePositions(partPoints);
 				} else if (Input.GetKey(KeyCode.X)) {
 					// Circular arc
-					
-					Vector3 drawPointDiff = drawPoints[1] - drawPoints[0];
-					part = new CurveCircularArc(drawPoints[0], drawPoints[0] + drawPointDiff * 0.5f, drawPoints[0] + drawPointDiff * 1);
-					//part = new BlueprintPart(BlueprintPartType.CurveCircularArc, drawPoints[0], drawPoints[0] + drawPointDiff * 0.5f, drawPoints[0] + drawPointDiff * 1);
+					part = new CurveCircularArc();
+					partPoints = new Vector3[part.GetNodeAmount()];
+					partPointsDiff = drawPoints[1] - drawPoints[0];
+					partPoints[0] = drawPoints[0];
+					partPoints[1] = drawPoints[0] + partPointsDiff * 0.5f;
+					partPoints[2] = drawPoints[1];
+					part.SetNodePositions(partPoints);
 				} else {
 					// Straight line
-
-					part = new StraightLine(drawPoints[0], drawPoints[1]);
-					//part = new BlueprintPart(BlueprintPartType.StraightLine, drawPoints[0], drawPoints[1]);
+					part = new StraightLine();
+					partPoints = new Vector3[part.GetNodeAmount()];
+					partPoints[0] = drawPoints[0];
+					partPoints[1] = drawPoints[1];
+					part.SetNodePositions(partPoints);
 				}
 
 				// Assign the blueprint to a terrain object
@@ -171,7 +182,37 @@ public class EditorController : TerrainGenerator {
 		return m;
 	}
 }
+/*
+public class LevelTerrain {
 
+	int[] points;
+
+	public LevelTerrain() {
+		CalculateNumPoints();
+	}
+
+	private void CalculateNumPoints() {
+		const n = 3;
+		points = new int[n];
+		BlueprintPart part;
+		for (int i = 0; i < n; i++) {
+			switch (i) {
+			case 0:
+				part = new 
+				points[0] = 
+			}
+		}
+	}
+
+	public void Create(BlueprintPartType type, Vector3[] points) {
+
+	}
+
+	public int NumPoints(BlueprintPartType type) {
+		// Returns how many Vector3 points are required for BlueprintPartType type
+	}
+}
+*/
 public class LevelIO {
 	public void Save(string filename) {
 		string levelString = ConvertLevelToString();
@@ -217,8 +258,8 @@ public class LevelIO {
 			levelData.WriteInt((int) type);
 
 			// Write points
-			for (int i = 0; i < terrain.terrainPart.blueprintPart.NumPoints(); i++) {
-				//levelData.WriteVector2((Vector2) terrain.terrainPart.blueprintPart.GetPoint(i));
+			for (int i = 0; i < terrain.terrainPart.blueprintPart.GetNodeAmount(); i++) {
+				levelData.WriteVector2((Vector2) terrain.terrainPart.blueprintPart.GetNodePosition(i));
 			}
 		}
 
@@ -250,7 +291,20 @@ public class LevelIO {
 			// Loop though each terrain
 			
 			BlueprintPartType type = (BlueprintPartType) levelData.ReadInt();
-			Debug.Log(type);
+
+			/*
+			// Create the thing
+			BlueprintPart part;
+
+			switch (type) {
+			case BlueprintPartType.StraightLine:
+				break;
+			case BlueprintPartType.CurveBezierCubic:
+				break;
+			case BlueprintPartType.CurveCircularArc:
+				break;
+			}
+			*/
 		}
 	}
 }
