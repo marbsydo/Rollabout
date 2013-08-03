@@ -14,7 +14,7 @@ public class EditorNode : MonoBehaviour {
 	const KeyCode inputDelete = KeyCode.Delete;
 
 	Color colorModifyControl = new Color(1, 0.6f, 0.1f, 1);
-	Color colorModifyVertex = new Color(1, 0.6f, 0.1f, 1);
+	Color colorModifyVertex = new Color(0.6f, 0.6f, 0.6f, 1);
 
 	EditorController editorController;
 	
