@@ -128,15 +128,20 @@ public enum BlueprintPartType {StraightLine, CurveBezierCubic, CurveCircularArc}
 abstract public class BlueprintPart {
 	protected BlueprintPartType type;
 	protected Vector3[] p;
+	protected float segmentLength = 1f;
 
 	public BlueprintPartType GetPartType() {
 		return type;
 	}
 
+	abstract public Vector3[] CalculatePoints();
 	abstract public int GetNodeAmount();
 	abstract public void SetSegmentLength(float segmentLength);
-	abstract public Vector3[] CalculatePoints();
 
+	public float GetSegmentLength() {
+		return this.segmentLength;
+	}
+	
 	public void SetNodePositions(Vector3[] v) {
 		if (v.Length == GetNodeAmount()) {
 			p = new Vector3[GetNodeAmount()];
@@ -169,7 +174,6 @@ abstract public class BlueprintPart {
 
 public class StraightLine : BlueprintPart {
 	const int nodeAmount = 2;
-	float segmentLength = 4f;
 
 	// # Constructor
 	
@@ -301,7 +305,7 @@ public class CurveBezierCubic : BlueprintPart {
 
 public class CurveCircularArc : BlueprintPart {
 	const int nodeAmount = 3;
-	private float segmentLength = 2f; // Number of segments is calculated based upon segmentLength during CalculatePoints()
+	//private float segmentLength = 1f; // Number of segments is calculated based upon segmentLength during CalculatePoints()
 
 	// These values are set by CalculateDiameter() and CalculateMiddle()
 	private float calculatedDiameter;

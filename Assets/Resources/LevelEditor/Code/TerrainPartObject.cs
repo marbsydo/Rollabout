@@ -9,7 +9,7 @@ public class TerrainPartObject : MonoBehaviour {
 	
 	GameObject prefabNode;
 
-	private float segmentLength = 3f;
+	private float segmentLength = 1f;
 	private Color partColor = Color.white;
 	
 	// Init() is used instead of a constructor because parameters cannot be passed through AddComponent<>()
@@ -85,15 +85,11 @@ public class TerrainPartObject : MonoBehaviour {
 				this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
 				this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetControlPosition(0));
 				this.terrainPart.blueprintPart.SetNodePosition(3, nodes[1].GetVertexPosition());
-
-				this.terrainPart.blueprintPart.SetSegmentLength(segmentLength);
 				break;
 			case BlueprintPartType.CurveCircularArc:
 				this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
 				this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
 				this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetVertexPosition());
-
-				this.terrainPart.blueprintPart.SetSegmentLength(segmentLength);
 				break;
 			default:
 				Debug.LogError("BlueprintPartType " + this.terrainPart.blueprintPart.GetType() + " does not exist.");
@@ -101,11 +97,18 @@ public class TerrainPartObject : MonoBehaviour {
 			}
 		}
 
+		// Set segment length
+		this.terrainPart.blueprintPart.SetSegmentLength(segmentLength);
+
 		// Then, regenerate the terrain
 		this.terrainPart.Regenerate();
 
 		// Finally, apply the colour
 		ApplyColor();
+	}
+
+	public void SetSegmentLength(float segmentLength) {
+		this.segmentLength = segmentLength;
 	}
 
 	public void SegmentLengthIncrease() {
@@ -132,10 +135,36 @@ public class TerrainPartObject : MonoBehaviour {
 	}
 }
 
+/*
+Example usage:
+
+// Set up inputs
+BlueprintPartType blueprintPartType = BlueprintPartType.CurveCircularArc;
+float segmentLength = 4f;
+bool edit = false;
+Vector3 p1 = new Vector3(1, 2, 3);
+Vector3 p2 = new Vector3(4, 5, 6);
+Vector3 p3 = new Vector3(7, 8, 9);
+
+// Pass inputs to the maker
+TerrainPartMaker terrainPartMaker = new TerrainPartMaker(blueprintPartType);
+terrainPartMaker.AddNode(p1);
+terrainPartMaker.AddNode(p2);
+terrainPartMaker.AddNode(p3);
+terrainPartMaker.SetSegmentLength(segmentLength);
+terrainPartMaker.SetIsEditable(edit);
+
+// Maker returns finished part
+TerrainPartObject part = terrainPartMaker.CreateTerrain();
+
+*/
 public class TerrainPartMaker {
 	BlueprintPart part;
 	Vector3[] nodes;
 	int nodeCurrent = 0;
+
+	float segmentLength = 1f;
+	bool edit;
 
 	public TerrainPartMaker(BlueprintPartType type) {
 
@@ -176,7 +205,15 @@ public class TerrainPartMaker {
 		}
 	}
 
-	public TerrainPartObject CreateTerrain(bool edit) {
+	public void SetSegmentLength(float segmentLength) {
+		this.segmentLength = segmentLength;
+	}
+
+	public void SetIsEditable(bool edit) {
+		this.edit = edit;
+	}
+
+	public TerrainPartObject CreateTerrain() {
 
 		// Add all nodes to the blueprint
 		this.part.SetNodePositions(nodes);
@@ -187,6 +224,8 @@ public class TerrainPartMaker {
 		terrain.Init(edit);
 
 		terrain.AssignBlueprint(part);
+
+		terrain.SetSegmentLength(segmentLength);
 
 		// Return it
 		return terrain;

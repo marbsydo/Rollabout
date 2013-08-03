@@ -56,6 +56,9 @@ public class LevelIO {
 			for (int i = 0; i < terrain.terrainPart.blueprintPart.GetNodeAmount(); i++) {
 				levelData.WriteVector2((Vector2) terrain.terrainPart.blueprintPart.GetNodePosition(i));
 			}
+
+			//TODO: Write segments
+			//levelData.WriteFloat(terrain.terrainPart.blueprintPart.)
 		}
 
 		return levelData.ReadAll();
@@ -85,7 +88,12 @@ public class LevelIO {
 			for (int i = 0; i < terrainPartMaker.GetNodeAmount(); i++) {
 				terrainPartMaker.AddNode(new Vector3(levelData.ReadFloat(), levelData.ReadFloat(), 0.0f));
 			}
-			TerrainPartObject terrain = terrainPartMaker.CreateTerrain(edit);
+
+			//TODO: Read segments
+
+			terrainPartMaker.SetIsEditable(edit);
+
+			TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
 		}
 	}
 }

@@ -167,7 +167,10 @@ public class EditorController : TerrainGenerator {
 					break;
 				}
 
-				TerrainPartObject terrain = terrainPartMaker.CreateTerrain(true);
+				terrainPartMaker.SetSegmentLength(2f);
+				terrainPartMaker.SetIsEditable(true);
+
+				TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
 
 				MouseReleaseNextFrame(gameObject);
 			}
