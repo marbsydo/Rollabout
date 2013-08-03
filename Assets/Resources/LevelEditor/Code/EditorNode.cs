@@ -12,6 +12,9 @@ public class EditorNode : MonoBehaviour {
 	const KeyCode inputNodeSegmentsIncrease = KeyCode.X;
 	const KeyCode inputNodeSegmentsDecrease = KeyCode.Z;
 
+	Color colorModifyControl = new Color(1, 0.6f, 0.1f, 1);
+	Color colorModifyVertex = new Color(1, 0.6f, 0.1f, 1);
+
 	EditorController editorController;
 	
 	// The object that we should tell when we update
@@ -143,6 +146,10 @@ public class EditorNode : MonoBehaviour {
 			for (int i = 0; i < numControls; i++) {
 				if ((m - nodeControl[i].transform.position).magnitude < 1) {
 					mouseHolding = i;
+
+					// Highlight terrainPartObject to show it is being modified
+					terrainPartObject.SetColor(colorModifyControl);
+
 					break;
 				}
 			}
@@ -152,6 +159,9 @@ public class EditorNode : MonoBehaviour {
 				if ((m - nodeVertex.transform.position).magnitude < 1) {
 					// Did click on the vertex
 					mouseHolding = -1;
+
+					// Highlight terrainPartObject to show it is being modified
+					terrainPartObject.SetColor(colorModifyVertex);
 
 					// If moving multiple vertices, check for others at same position
 					if (!Input.GetKey(inputNodeSelectIndividual)) {
@@ -183,10 +193,16 @@ public class EditorNode : MonoBehaviour {
 			}
 			
 			if (mouseHolding > -2) {
-				// If we cannot claim the mouse, do not being holding
+				// If we cannot claim the mouse, drop whatever is being moved
 				if (!editorController.MouseClaim(gameObject)) {
 					mouseHolding = -2;
 					additionalNodesLength = 0;
+
+					// If the thing that claimed the mouse is NOT controlling the same object, return its colour to normal
+					if (editorController.MouseClaimant().transform.parent.GetInstanceID() != this.transform.parent.GetInstanceID()) {
+						terrainPartObject.SetColor(Color.white);
+						terrainPartObject.Regenerate();
+					}
 				}
 			}
 		}
@@ -196,6 +212,8 @@ public class EditorNode : MonoBehaviour {
 				// If release button, drop whatever is being moved
 				mouseHolding = -2;
 				additionalNodesLength = 0;
+				terrainPartObject.SetColor(Color.white);
+				terrainPartObject.Regenerate();
 				
 				editorController.MouseRelease(gameObject);
 			}

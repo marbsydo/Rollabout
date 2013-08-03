@@ -66,6 +66,10 @@ public class EditorController : TerrainGenerator {
 		}
 	}
 	
+	public GameObject MouseClaimant() {
+		return this.mouseClaimant;
+	}
+
 	// Called by other scripts that want to use the mouse
 	// They will be denied if the mouse is already in use
 	public bool MouseClaim(GameObject mouseClaimant) {

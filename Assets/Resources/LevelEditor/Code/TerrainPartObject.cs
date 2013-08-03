@@ -52,6 +52,10 @@ public class TerrainPartObject : MonoBehaviour {
 		node.SetPosition(pos);
 		node.CreateHandles(numControls);
 		node.SetTerrainPartObject(this);
+
+		// Make the node be a child of the terrain object
+		g.transform.parent = this.transform;
+
 		return node;
 	}
 	
