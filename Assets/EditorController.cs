@@ -47,7 +47,7 @@ public class EditorController : TerrainGenerator {
 		if (Input.GetKeyDown(inputLevelSave)) {
 			levelIO.Save("test.txt");
 		} else if (Input.GetKeyDown(inputLevelLoad)) {
-			levelIO.Load("test.txt");
+			levelIO.Load("test.txt", true);
 		}
 	}
 	
@@ -168,7 +168,7 @@ public class EditorController : TerrainGenerator {
 					break;
 				}
 
-				TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
+				TerrainPartObject terrain = terrainPartMaker.CreateTerrain(true);
 
 				MouseReleaseNextFrame(gameObject);
 			}
@@ -193,7 +193,7 @@ public class LevelIO {
 		System.IO.File.WriteAllText(filepath + filename, levelString);
 	}
 
-	public void Load(string filename) {
+	public void Load(string filename, bool edit) {
 		string levelString;
 
 		// Check the file exists
@@ -201,17 +201,17 @@ public class LevelIO {
 			// Read levelString from file
 			levelString = System.IO.File.ReadAllText(filepath + filename);
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-			GenerateLevelFromString(levelString);
+			GenerateLevelFromString(levelString, edit);
 		} else {
 			Debug.LogWarning("Could not open file [" + filename + "]. Does not exist!");
 		}
 	}
 
-	public void LoadFromResources(string filename) {
+	public void LoadFromResources(string filename, bool edit) {
 		// Read levelString from Resources
 		string levelString = (Resources.Load(filename, typeof(TextAsset)) as TextAsset).text;
 
-		GenerateLevelFromString(levelString);
+		GenerateLevelFromString(levelString, edit);
 	}
 
 	string ConvertLevelToString() {
@@ -242,7 +242,7 @@ public class LevelIO {
 		return levelData.ReadAll();
 	}
 
-	void GenerateLevelFromString(string levelString) {
+	void GenerateLevelFromString(string levelString, bool edit) {
 		Debug.Log("Generating level from levelString: " + levelString);
 
 		LevelDataRead levelData = new LevelDataRead(levelString);
@@ -266,7 +266,7 @@ public class LevelIO {
 			for (int i = 0; i < terrainPartMaker.GetNodeAmount(); i++) {
 				terrainPartMaker.AddNode(new Vector3(levelData.ReadFloat(), levelData.ReadFloat(), 0.0f));
 			}
-			TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
+			TerrainPartObject terrain = terrainPartMaker.CreateTerrain(edit);
 		}
 	}
 }

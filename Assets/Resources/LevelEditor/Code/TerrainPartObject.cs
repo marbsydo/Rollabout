@@ -4,6 +4,7 @@ using System.Collections;
 public class TerrainPartObject : MonoBehaviour {
 	public TerrainPart terrainPart;
 	
+	private bool requireNodes;
 	public EditorNode[] nodes;
 	
 	GameObject prefabNode;
@@ -11,35 +12,46 @@ public class TerrainPartObject : MonoBehaviour {
 	private float segmentLength = 3f;
 	private Color partColor = Color.white;
 	
+	// Init() is used instead of a constructor because parameters cannot be passed through AddComponent<>()
+	// and this class is created in the CreateTerrain() function of class TerrainPartMaker using AddComponent<>()
+	// It is necessary that Init() is called before any other functions in this class
+	public void Init(bool requireNodes) {
+		// If set to true, nodes will be created when AssignBlueprint() is called
+		// If set to false, nodes will not be created
+		this.requireNodes = requireNodes;
+	}
+
 	void Awake() {
 		prefabNode = Resources.Load("LevelEditor/EditorNode") as GameObject;
 	}
-	
+
 	public void AssignBlueprint(BlueprintPart blueprintPart) {
 		// Convert the blueprint into a physical thing
 		this.terrainPart = new TerrainPart(blueprintPart);
 		this.terrainPart.SetParent(transform);
 
-		// Create the relevant nodes for this object
-		switch (blueprintPart.GetPartType()) {
-		case BlueprintPartType.StraightLine:
-			nodes = new EditorNode[2];
-			nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 0);
-			nodes[1] = CreateNode(blueprintPart.GetNodePosition(1), 0);
-			break;
-		case BlueprintPartType.CurveBezierCubic:
-			nodes = new EditorNode[2];
-			nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 1);
-			nodes[0].MoveControl(0, blueprintPart.GetNodePosition(1));
-			nodes[1] = CreateNode(blueprintPart.GetNodePosition(3), 1);
-			nodes[1].MoveControl(0, blueprintPart.GetNodePosition(2));
-			break;
-		case BlueprintPartType.CurveCircularArc:
-			nodes = new EditorNode[2];
-			nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 1);
-			nodes[0].MoveControl(0, blueprintPart.GetNodePosition(1));
-			nodes[1] = CreateNode(blueprintPart.GetNodePosition(2), 0);
-			break;
+		if (requireNodes) {
+			// Create the relevant nodes for this object
+			switch (blueprintPart.GetPartType()) {
+			case BlueprintPartType.StraightLine:
+				nodes = new EditorNode[2];
+				nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 0);
+				nodes[1] = CreateNode(blueprintPart.GetNodePosition(1), 0);
+				break;
+			case BlueprintPartType.CurveBezierCubic:
+				nodes = new EditorNode[2];
+				nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 1);
+				nodes[0].MoveControl(0, blueprintPart.GetNodePosition(1));
+				nodes[1] = CreateNode(blueprintPart.GetNodePosition(3), 1);
+				nodes[1].MoveControl(0, blueprintPart.GetNodePosition(2));
+				break;
+			case BlueprintPartType.CurveCircularArc:
+				nodes = new EditorNode[2];
+				nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 1);
+				nodes[0].MoveControl(0, blueprintPart.GetNodePosition(1));
+				nodes[1] = CreateNode(blueprintPart.GetNodePosition(2), 0);
+				break;
+			}
 		}
 
 		// Create the terrain with the correct segment lengths
@@ -61,32 +73,34 @@ public class TerrainPartObject : MonoBehaviour {
 	
 	// Called by EditorNode.cs when the nodes have changed
 	public void Regenerate() {
-		// First, modify the blueprint
-		switch (this.terrainPart.blueprintPart.GetPartType()) {
-		case BlueprintPartType.StraightLine:
-			this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
-			this.terrainPart.blueprintPart.SetNodePosition(1, nodes[1].GetVertexPosition());
-			break;
-		case BlueprintPartType.CurveBezierCubic:
-			this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
-			this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
-			this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetControlPosition(0));
-			this.terrainPart.blueprintPart.SetNodePosition(3, nodes[1].GetVertexPosition());
+		if (requireNodes) {
+			// First, modify the blueprint
+			switch (this.terrainPart.blueprintPart.GetPartType()) {
+			case BlueprintPartType.StraightLine:
+				this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
+				this.terrainPart.blueprintPart.SetNodePosition(1, nodes[1].GetVertexPosition());
+				break;
+			case BlueprintPartType.CurveBezierCubic:
+				this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
+				this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
+				this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetControlPosition(0));
+				this.terrainPart.blueprintPart.SetNodePosition(3, nodes[1].GetVertexPosition());
 
-			this.terrainPart.blueprintPart.SetSegmentLength(segmentLength);
-			break;
-		case BlueprintPartType.CurveCircularArc:
-			this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
-			this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
-			this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetVertexPosition());
+				this.terrainPart.blueprintPart.SetSegmentLength(segmentLength);
+				break;
+			case BlueprintPartType.CurveCircularArc:
+				this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
+				this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
+				this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetVertexPosition());
 
-			this.terrainPart.blueprintPart.SetSegmentLength(segmentLength);
-			break;
-		default:
-			Debug.LogError("BlueprintPartType " + this.terrainPart.blueprintPart.GetType() + " does not exist.");
-			break;
+				this.terrainPart.blueprintPart.SetSegmentLength(segmentLength);
+				break;
+			default:
+				Debug.LogError("BlueprintPartType " + this.terrainPart.blueprintPart.GetType() + " does not exist.");
+				break;
+			}
 		}
-		
+
 		// Then, regenerate the terrain
 		this.terrainPart.Regenerate();
 
@@ -168,13 +182,16 @@ public class TerrainPartMaker {
 		}
 	}
 
-	public TerrainPartObject CreateTerrain() {
+	public TerrainPartObject CreateTerrain(bool edit) {
 
 		// Add all nodes to the blueprint
 		this.part.SetNodePositions(nodes);
 
-		// Create the terrain obejct
-		TerrainPartObject terrain = (GameObject.Instantiate(prefabTerrainPartObject, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<TerrainPartObject>();
+		// Create the terrain object
+		GameObject obj = new GameObject() as GameObject;
+		TerrainPartObject terrain = obj.AddComponent<TerrainPartObject>();
+		terrain.Init(edit);
+
 		terrain.AssignBlueprint(part);
 
 		// Return it
