@@ -9,6 +9,7 @@ public class TerrainPartObject : MonoBehaviour {
 	GameObject prefabNode;
 
 	private float segmentLength = 3f;
+	private Color partColor = Color.white;
 	
 	void Awake() {
 		prefabNode = Resources.Load("LevelEditor/EditorNode") as GameObject;
@@ -20,7 +21,6 @@ public class TerrainPartObject : MonoBehaviour {
 		this.terrainPart.SetParent(transform);
 
 		// Create the relevant nodes for this object
-		//Vector3[] p = blueprintPart.CalculatePoints();
 		switch (blueprintPart.GetPartType()) {
 		case BlueprintPartType.StraightLine:
 			nodes = new EditorNode[2];
@@ -85,20 +85,33 @@ public class TerrainPartObject : MonoBehaviour {
 		
 		// Then, regenerate the terrain
 		this.terrainPart.Regenerate();
+
+		// Finally, apply the colour
+		ApplyColor();
 	}
 
 	public void SegmentLengthIncrease() {
+		SetColor(Color.red);
 		segmentLength += 0.5f;
 		if (segmentLength > 10f)
 			segmentLength = 10f;
-		//Debug.Log(segmentLength);
 	}
 
 	public void SegmentLengthDecrease() {
 		segmentLength -= 0.5f;
 		if (segmentLength < 1f)
 			segmentLength = 1f;
-		//Debug.Log(segmentLength);
+	}
+
+	public void SetColor(Color c) {
+		this.partColor = c;
+	}
+
+	private void ApplyColor() {
+		exSprite[] sprites = GetComponentsInChildren<exSprite>();
+		foreach (exSprite sprite in sprites) {
+			sprite.color = partColor;
+		}
 	}
 }
 
