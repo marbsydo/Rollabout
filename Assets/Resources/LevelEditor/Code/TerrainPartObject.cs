@@ -223,9 +223,9 @@ public class TerrainPartMaker {
 		TerrainPartObject terrain = obj.AddComponent<TerrainPartObject>();
 		terrain.Init(edit);
 
-		terrain.AssignBlueprint(part);
-
 		terrain.SetSegmentLength(segmentLength);
+
+		terrain.AssignBlueprint(part);
 
 		// Return it
 		return terrain;

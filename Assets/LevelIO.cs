@@ -57,8 +57,8 @@ public class LevelIO {
 				levelData.WriteVector2((Vector2) terrain.terrainPart.blueprintPart.GetNodePosition(i));
 			}
 
-			//TODO: Write segments
-			//levelData.WriteFloat(terrain.terrainPart.blueprintPart.)
+			// Write segment length
+			levelData.WriteFloat(terrain.terrainPart.blueprintPart.GetSegmentLength());
 		}
 
 		return levelData.ReadAll();
@@ -89,7 +89,9 @@ public class LevelIO {
 				terrainPartMaker.AddNode(new Vector3(levelData.ReadFloat(), levelData.ReadFloat(), 0.0f));
 			}
 
-			//TODO: Read segments
+			// Read segments length
+			float segmentLength = levelData.ReadFloat();
+			terrainPartMaker.SetSegmentLength(segmentLength);
 
 			terrainPartMaker.SetIsEditable(edit);
 
