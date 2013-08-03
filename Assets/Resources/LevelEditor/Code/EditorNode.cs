@@ -46,6 +46,9 @@ public class EditorNode : MonoBehaviour {
 	// -1 = nodeVertex
 	//  x = nodeControl[x]
 	int mouseHolding = -2;
+
+	// The offset between a node and the mouse when the mouse first selects the node
+	Vector3 mousePosOffset;
 	
 	void Awake() {
 		
@@ -141,11 +144,12 @@ public class EditorNode : MonoBehaviour {
 		if (Input.GetKeyDown(inputNodeModify)) {
 			// Clicked somewhere, so if it clicked on a vertex or control
 			
-			Vector3 m = GetMousePosition(false);
+			Vector3 mousePos = GetMousePosition(false);
 			
 			// First check if it clicked any of the control points
 			for (int i = 0; i < numControls; i++) {
-				if ((m - nodeControl[i].transform.position).magnitude < 1) {
+				if ((mousePos - nodeControl[i].transform.position).magnitude < 1) {
+					mousePosOffset = nodeControl[i].transform.position - mousePos;
 					mouseHolding = i;
 
 					// Highlight terrainPartObject to show it is being modified
@@ -157,7 +161,8 @@ public class EditorNode : MonoBehaviour {
 			
 			// Next check if it clicked the vertex
 			if (mouseHolding < 0) {
-				if ((m - nodeVertex.transform.position).magnitude < 1) {
+				if ((mousePos - nodeVertex.transform.position).magnitude < 1) {
+					mousePosOffset = nodeVertex.transform.position - mousePos;
 					// Did click on the vertex
 					mouseHolding = -1;
 
@@ -223,7 +228,7 @@ public class EditorNode : MonoBehaviour {
 		if (mouseHolding > -2) {
 			// Something is being held, so move it
 
-			Vector3 m = GetMousePosition(Input.GetKey(inputNodeSnapGrid));
+			Vector3 mousePosWithOffset = GetMousePosition(Input.GetKey(inputNodeSnapGrid)) + mousePosOffset;
 
 			if (Input.GetKeyDown(inputDelete)) {
 				Destroy(this.transform.parent.gameObject);
@@ -287,15 +292,15 @@ public class EditorNode : MonoBehaviour {
 			if (!snappedToNode) {
 				// Move without snapping
 				if (mouseHolding == -1) {
-					MoveVertex(m);
+					MoveVertex(mousePosWithOffset);
 
 					// If moving multiple nodes, move them too
 					for (int i = 0; i < additionalNodesLength; i++) {
-						additionalNodes[i].MoveVertex(m);
+						additionalNodes[i].MoveVertex(mousePosWithOffset);
 						additionalNodes[i].Regenerate();
 					}
 				} else {
-					MoveControl(mouseHolding, m);
+					MoveControl(mouseHolding, mousePosWithOffset);
 				}
 			}
 
