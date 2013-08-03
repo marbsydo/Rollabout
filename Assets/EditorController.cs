@@ -16,9 +16,6 @@ public class EditorController : TerrainGenerator {
 	float editorCameraSpeedNormal = 0.5f;
 	float editorCameraSpeedShift = 2f;
 	
-	// Prefabs
-	GameObject prefabTerrainPartObject;
-	
 	// Who has claimed to mouse?
 	public bool mouseClaimed = false;
 	public GameObject mouseClaimant;
@@ -33,8 +30,6 @@ public class EditorController : TerrainGenerator {
 	
 	void Start() {
 		editorCamera = GameObject.Find("EditorCamera").GetComponent<Camera>();
-		
-		prefabTerrainPartObject = Resources.Load("LevelEditor/TerrainPartObject") as GameObject;
 	}
 	
 	void Update() {

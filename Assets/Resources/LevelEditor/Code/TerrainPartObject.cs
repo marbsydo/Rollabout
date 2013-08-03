@@ -109,7 +109,6 @@ public class TerrainPartObject : MonoBehaviour {
 	}
 
 	public void SegmentLengthIncrease() {
-		SetColor(Color.red);
 		segmentLength += 0.5f;
 		if (segmentLength > 10f)
 			segmentLength = 10f;
@@ -138,12 +137,7 @@ public class TerrainPartMaker {
 	Vector3[] nodes;
 	int nodeCurrent = 0;
 
-	GameObject prefabTerrainPartObject;
-
 	public TerrainPartMaker(BlueprintPartType type) {
-
-		// Load the template terrain prefab
-		prefabTerrainPartObject = Resources.Load("LevelEditor/TerrainPartObject") as GameObject;
 
 		// Create the blank blueprint
 		switch (type) {
