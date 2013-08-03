@@ -179,20 +179,28 @@ public class EditorController : TerrainGenerator {
 }
 
 public class LevelIO {
+
+	private const string filepath = "Levels/";
+
 	public void Save(string filename) {
 		string levelString = ConvertLevelToString();
 
 		// Write levelString to file
-		System.IO.File.WriteAllText("Levels/" + filename, levelString);
+		System.IO.File.WriteAllText(filepath + filename, levelString);
 	}
 
 	public void Load(string filename) {
 		string levelString;
 
-		// Read levelString from file
-		levelString = System.IO.File.ReadAllText("Levels/" + filename);
-
-		GenerateLevelFromString(levelString);
+		// Check the file exists
+		if (System.IO.File.Exists(filepath + filename)) {
+			// Read levelString from file
+			levelString = System.IO.File.ReadAllText(filepath + filename);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+			GenerateLevelFromString(levelString);
+		} else {
+			Debug.LogWarning("Could not open file [" + filename + "]. Does not exist!");
+		}
 	}
 
 	public void LoadFromResources(string filename) {
@@ -207,9 +215,8 @@ public class LevelIO {
 
 		//TODO: Write level data to levelData
 
-		// 1) Write file format and version
-		levelData.WriteRaw("RLF");
-		levelData.WriteString("0.1");
+		// 1) Write version
+		levelData.WriteString("v0.1");
 
 		// Find all TerrainPartObjects
 		TerrainPartObject[] terrains = GameObject.FindObjectsOfType(typeof(TerrainPartObject)) as TerrainPartObject[];
@@ -238,12 +245,7 @@ public class LevelIO {
 
 		//TODO: Generate level from levelData
 
-		// 1) Read file format and version
-		string ff = levelData.ReadNumChars(3);
-
-		if (ff != "RLF") {
-			Debug.LogError("Invalid file format!");
-		}
+		// 1) Read version
 
 		string version = levelData.ReadString();
 
