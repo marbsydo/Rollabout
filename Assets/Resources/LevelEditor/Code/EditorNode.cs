@@ -11,6 +11,7 @@ public class EditorNode : MonoBehaviour {
 	const KeyCode inputNodeSelectIndividual = KeyCode.LeftShift; // Selecting multiple nodes in one go
 	const KeyCode inputNodeSegmentsIncrease = KeyCode.X;
 	const KeyCode inputNodeSegmentsDecrease = KeyCode.Z;
+	const KeyCode inputDelete = KeyCode.Delete;
 
 	Color colorModifyControl = new Color(1, 0.6f, 0.1f, 1);
 	Color colorModifyVertex = new Color(1, 0.6f, 0.1f, 1);
@@ -223,6 +224,12 @@ public class EditorNode : MonoBehaviour {
 			// Something is being held, so move it
 
 			Vector3 m = GetMousePosition(Input.GetKey(inputNodeSnapGrid));
+
+			if (Input.GetKeyDown(inputDelete)) {
+				Destroy(this.transform.parent.gameObject);
+
+				editorController.MouseRelease(gameObject);
+			}
 
 			// Being held, so also update segment length if necessary
 			if (Input.GetKeyDown(inputNodeSegmentsIncrease)) {
