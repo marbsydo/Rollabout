@@ -39,7 +39,7 @@ public class EditorController : TerrainGenerator {
 		
 		UpdateCameraMovement();
 		UpdatePlaceBall();
-
+		/*
 		if (Input.GetKeyDown(inputLevelSave)) {
 			levelIO.Save("test.txt");
 		} else if (Input.GetKeyDown(inputLevelLoad)) {
@@ -48,6 +48,7 @@ public class EditorController : TerrainGenerator {
 			levelIO.Save("play.txt");
 			Application.LoadLevel("LevelPlay");
 		}
+		*/
 	}
 	
 	void LateUpdate() {
