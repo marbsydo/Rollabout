@@ -4,7 +4,7 @@ using System.Collections;
 public class GameController : MonoBehaviour {
 	void Awake() {
 		LevelIO levelIO = new LevelIO();
-		levelIO.Load("play.txt", false);
+		levelIO.Load("play" + levelIO.GetLevelFileExtension(), true, false);
 	}
 
 	void Update() {

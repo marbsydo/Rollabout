@@ -2,23 +2,34 @@ using UnityEngine;
 using System.Collections;
 
 public class LevelIO {
-
-	private const string filepath = "Levels/";
-
-	public void Save(string filename) {
+	
+	public string GetFilepath(bool temp) {
+		string p = Application.dataPath;
+		if (!temp)
+			p += "/levels/";
+		else
+			p += "/levels/temp/";
+		return p;
+	}
+	
+	public string GetLevelFileExtension() {
+		return ".ewfg";
+	}
+	
+	public void Save(string filename, bool temp) {
 		string levelString = ConvertLevelToString();
 
 		// Write levelString to file
-		System.IO.File.WriteAllText(filepath + filename, levelString);
+		System.IO.File.WriteAllText(GetFilepath(temp) + filename, levelString);
 	}
 
-	public void Load(string filename, bool edit) {
+	public void Load(string filename, bool temp, bool edit) {
 		string levelString;
 
 		// Check the file exists
-		if (System.IO.File.Exists(filepath + filename)) {
+		if (System.IO.File.Exists(GetFilepath(temp) + filename)) {
 			// Read levelString from file
-			levelString = System.IO.File.ReadAllText(filepath + filename);
+			levelString = System.IO.File.ReadAllText(GetFilepath(temp) + filename);
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
 			GenerateLevelFromString(levelString, edit);
 		} else {

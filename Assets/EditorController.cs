@@ -34,21 +34,31 @@ public class EditorController : TerrainGenerator {
 	}
 	
 	void Update() {
-		
 		UpdateMouseRelease();
 		
 		UpdateCameraMovement();
 		UpdatePlaceBall();
-		/*
-		if (Input.GetKeyDown(inputLevelSave)) {
-			levelIO.Save("test.txt");
-		} else if (Input.GetKeyDown(inputLevelLoad)) {
-			levelIO.Load("test.txt", true);
-		} else if (Input.GetKeyDown(inputLevelPlay)) {
-			levelIO.Save("play.txt");
-			Application.LoadLevel("LevelPlay");
-		}
-		*/
+	}
+	
+	public string GetLevelFilepath() {
+		return levelIO.GetFilepath(false);
+	}
+	
+	public string GetFileExtension() {
+		return levelIO.GetLevelFileExtension();
+	}
+	
+	public void LevelSave(string filename) {
+		levelIO.Save(filename + GetFileExtension(), false);
+	}
+	
+	public void LevelLoad(string filename) {
+		levelIO.Load(filename + GetFileExtension(), false, true);
+	}
+	
+	public void LevelPlay() {
+		levelIO.Save("play" + GetFileExtension(), true);
+		Application.LoadLevel("LevelPlay");
 	}
 	
 	void LateUpdate() {

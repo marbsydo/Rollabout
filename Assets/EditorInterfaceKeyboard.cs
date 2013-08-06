@@ -1,12 +1,23 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+
+// TODO:
+// Look at UpdateMenu()
+// Add section for TextMenu.Options
+// Within these options, add options for save, load and test
+// Link up these options to EditorController.cs, in the Update() function
+// The code there has been commented out but should be invoked from here instead
 
 [RequireComponent (typeof(GUIText))]
 public class EditorInterfaceKeyboard : MonoBehaviour {
 	
+	EditorController editorController;
+	
 	GUIText guiText;
 	
-	enum TextMenu {Main, Terrain, Scenery, Objects};
+	enum TextMenu {Main, Terrain, Scenery, Objects, Options, LevelLoad};
 	TextMenu menu = TextMenu.Main;
 	
 	enum TerrainStyle {Grass, Snow, Desert};
@@ -14,6 +25,8 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	
 	enum TerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc};
 	TerrainTool terrainTool = TerrainTool.StraightLine;
+	
+	int levelLoadLevelNum = 0;
 	
 	/*
 	 * Main menu:
@@ -38,6 +51,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	void Awake() {
 		transform.position = new Vector3(0.01f, 0.99f, 0);
 		guiText = GetComponent<GUIText>();
+		editorController = (GameObject.Find("EditorController") as GameObject).GetComponent<EditorController>() as EditorController;
 	}
 	
 	void Start() {
@@ -56,9 +70,76 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 			t = "?   - Help\n" +
 				"T   - Terrain\n" +
 				"S   - Scenery\n" +
-				"O   - Objects";
-			if (Input.GetKey(KeyCode.T)) {
+				"O   - Objects\n" +
+				"Esc - Options";
+			if (Input.GetKeyDown(KeyCode.T)) {
 				SetMenu(TextMenu.Terrain);
+			}
+			
+			if (Input.GetKeyDown(KeyCode.Escape)) {
+				SetMenu(TextMenu.Options);
+			}
+			break;
+		case TextMenu.Options:
+			t = "S   - Save\n" +
+				"L   - Load\n" +
+				"P   - Play\n" +
+				"Esc - Back";
+			
+			if (Input.GetKeyDown(KeyCode.S)) {
+				editorController.LevelSave("test_save");
+			}
+			
+			if (Input.GetKeyDown(KeyCode.L)) {
+				SetMenu(TextMenu.LevelLoad);
+			}
+			
+			if (Input.GetKeyDown(KeyCode.P)) {
+				editorController.LevelPlay();
+			}
+			
+			if (Input.GetKeyDown(KeyCode.Escape)) {
+				SetMenu(TextMenu.Main);
+			}
+			break;
+		case TextMenu.LevelLoad:
+
+			
+			// Show all files in directory
+			DirectoryInfo info = new DirectoryInfo(editorController.GetLevelFilepath());
+			FileInfo[] fileInfo = info.GetFiles();
+			List<string> files = new List<string>();
+			foreach (FileInfo file in fileInfo) {
+				if (file.Extension == editorController.GetFileExtension())
+					files.Add(Path.GetFileNameWithoutExtension(file.Name));
+					//t += "\n" + Path.GetFileNameWithoutExtension(file.Name);
+			}
+			
+			if (Input.GetKeyDown(KeyCode.DownArrow)) {
+				levelLoadLevelNum++;
+			}
+			if (Input.GetKeyDown(KeyCode.UpArrow)) {
+				levelLoadLevelNum--;
+			}
+			if (levelLoadLevelNum < 0)
+				levelLoadLevelNum = 0;
+			if (levelLoadLevelNum > (files.Count - 1))
+				levelLoadLevelNum = (files.Count - 1);
+			
+			t = files[levelLoadLevelNum];
+			
+			t += "\nDirectory contents:\n";
+			
+			foreach (string file in files) {
+				t += "\n" + file;
+			}
+			
+			if (Input.GetKeyDown(KeyCode.Return)) {
+				editorController.LevelLoad(files[levelLoadLevelNum]);
+			}
+			
+			if (Input.GetKeyDown(KeyCode.Escape)) {
+				SetMenu(TextMenu.Options);
 			}
 			break;
 		case TextMenu.Terrain:
@@ -71,7 +152,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 				"\n" +
 				"Use mouse to draw and modify terrain.";
 			
-			if (Input.GetKey(KeyCode.Escape)) {
+			if (Input.GetKeyDown(KeyCode.Escape)) {
 				SetMenu(TextMenu.Main);
 			}
 			
