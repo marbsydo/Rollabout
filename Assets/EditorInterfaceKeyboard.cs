@@ -17,7 +17,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	
 	GUIText guiText;
 	
-	enum TextMenu {Main, Terrain, Scenery, Objects, Options, LevelLoad};
+	enum TextMenu {Main, Terrain, Scenery, Objects, Options, LevelSave, LevelLoad};
 	TextMenu menu = TextMenu.Main;
 	
 	enum TerrainStyle {Grass, Snow, Desert};
@@ -27,6 +27,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	TerrainTool terrainTool = TerrainTool.StraightLine;
 	
 	int levelLoadLevelNum = 0;
+	string levelSaveLevelName = "";
 	
 	/*
 	 * Main menu:
@@ -87,7 +88,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 				"Esc - Back";
 			
 			if (Input.GetKeyDown(KeyCode.S)) {
-				editorController.LevelSave("test_save");
+				SetMenu(TextMenu.LevelSave);
 			}
 			
 			if (Input.GetKeyDown(KeyCode.L)) {
@@ -103,8 +104,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 			}
 			break;
 		case TextMenu.LevelLoad:
-
-			
+		case TextMenu.LevelSave:
 			// Show all files in directory
 			DirectoryInfo info = new DirectoryInfo(editorController.GetLevelFilepath());
 			FileInfo[] fileInfo = info.GetFiles();
@@ -115,31 +115,59 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 					//t += "\n" + Path.GetFileNameWithoutExtension(file.Name);
 			}
 			
-			if (Input.GetKeyDown(KeyCode.DownArrow)) {
-				levelLoadLevelNum++;
-			}
-			if (Input.GetKeyDown(KeyCode.UpArrow)) {
-				levelLoadLevelNum--;
-			}
-			if (levelLoadLevelNum < 0)
-				levelLoadLevelNum = 0;
-			if (levelLoadLevelNum > (files.Count - 1))
-				levelLoadLevelNum = (files.Count - 1);
+			t = "";
 			
-			t = files[levelLoadLevelNum];
+			if (menu == TextMenu.LevelSave) {
+				
+				foreach (char c in Input.inputString) {
+					if (c == "\b"[0]) {
+						// backspace
+						if (levelSaveLevelName.Length >= 1) {
+							levelSaveLevelName = levelSaveLevelName.Substring(0, levelSaveLevelName.Length - 1);
+						}
+					} else if (c == "\n"[0] || c == "\r"[0]) {
+						// return
+					} else {
+						levelSaveLevelName += c;
+					}
+				}
+				
+				t = levelSaveLevelName + "\n";
+				
+				if (Input.GetKeyDown(KeyCode.Return)) {
+					editorController.LevelSave(levelSaveLevelName);
+					SetMenu(TextMenu.Main);
+				}
+			}
+			
+			if (menu == TextMenu.LevelLoad) {
+				if (Input.GetKeyDown(KeyCode.DownArrow)) {
+					levelLoadLevelNum++;
+				}
+				if (Input.GetKeyDown(KeyCode.UpArrow)) {
+					levelLoadLevelNum--;
+				}
+				if (levelLoadLevelNum < 0)
+					levelLoadLevelNum = 0;
+				if (levelLoadLevelNum > (files.Count - 1))
+					levelLoadLevelNum = (files.Count - 1);
+				
+				t = files[levelLoadLevelNum] + "\n";
+				
+				if (Input.GetKeyDown(KeyCode.Return)) {
+					editorController.LevelLoad(files[levelLoadLevelNum]);
+					SetMenu(TextMenu.Main);
+				}
+			}
+			
+			if (Input.GetKeyDown(KeyCode.Escape)) {
+				SetMenu(TextMenu.Options);
+			}
 			
 			t += "\nDirectory contents:\n";
 			
 			foreach (string file in files) {
 				t += "\n" + file;
-			}
-			
-			if (Input.GetKeyDown(KeyCode.Return)) {
-				editorController.LevelLoad(files[levelLoadLevelNum]);
-			}
-			
-			if (Input.GetKeyDown(KeyCode.Escape)) {
-				SetMenu(TextMenu.Options);
 			}
 			break;
 		case TextMenu.Terrain:
@@ -227,6 +255,16 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	
 	void SetMenu(TextMenu menu) {
 		this.menu = menu;
+		
+		// Reset some variables to defaults
+		switch (this.menu) {
+		case TextMenu.LevelLoad:
+			levelLoadLevelNum = 0;
+			break;
+		case TextMenu.LevelSave:
+			levelSaveLevelName = "";
+			break;
+		}
 	}
 	
 	void SetText(string t) {
