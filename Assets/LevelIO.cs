@@ -105,8 +105,9 @@ public class LevelIO {
 			terrainPartMaker.SetSegmentLength(segmentLength);
 
 			terrainPartMaker.SetIsEditable(edit);
-
-			TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
+			
+			//TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
+			terrainPartMaker.CreateTerrain();
 		}
 	}
 }

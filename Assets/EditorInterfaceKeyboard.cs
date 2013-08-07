@@ -14,7 +14,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	
 	EditorController editorController;
 	
-	GUIText guiText;
+	//GUIText guiText;
 	
 	enum TextMenu {Main, Navigation, Terrain, Scenery, Objects, Options, LevelSave, LevelLoad};
 	TextMenu menu = TextMenu.Main;
@@ -58,7 +58,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	
 	void Awake() {
 		transform.position = new Vector3(0.01f, 0.99f, 0);
-		guiText = GetComponent<GUIText>();
+		//guiText = GetComponent<GUIText>(); // Redundant. guiText is defined by Unity
 		editorController = (GameObject.Find("EditorController") as GameObject).GetComponent<EditorController>() as EditorController;
 	}
 	
@@ -308,7 +308,8 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 					terrainPartMaker.SetSegmentLength(2f);
 					terrainPartMaker.SetIsEditable(true);
 	
-					TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
+					//TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
+					terrainPartMaker.CreateTerrain();
 	
 					editorController.MouseReleaseNextFrame(gameObject);
 				}
