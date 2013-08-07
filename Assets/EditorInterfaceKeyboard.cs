@@ -27,7 +27,6 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	TerrainTool terrainTool = TerrainTool.StraightLine;
 	int drawStage = 0;
 	Vector3[] drawPoints;
-	EditorNode[] nodes;
 	
 	//Options (save/load)
 	int levelLoadLevelNum = 0;
@@ -358,11 +357,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 		// Called when a menu ends
 		switch (this.menu) {
 		case TextMenu.Terrain:
-			// Deactivate all nodes
-			nodes = FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
-			foreach (EditorNode node in nodes) {
-				node.gameObject.SetActive(false);
-			}
+			editorController.NodesDeactivate();
 			break;
 		}
 		
@@ -371,12 +366,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 		// Called when a menu starts
 		switch (this.menu) {
 		case TextMenu.Terrain:
-			// Reactivate all nodes
-			if (nodes != null) {
-				foreach (EditorNode node in nodes) {
-					node.gameObject.SetActive(true);
-				}
-			}
+			editorController.NodesActivate();
 			break;
 		case TextMenu.LevelLoad:
 			levelLoadLevelNum = 0;

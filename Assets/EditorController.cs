@@ -20,6 +20,9 @@ public class EditorController : TerrainGenerator {
 	public bool mouseReleaseNextFrame = false;
 	public GameObject mouseReleaseNextFrameClaimant;
 	
+	// Terrain nodes
+	EditorNode[] nodes;
+	
 	void Start() {
 		editorCamera = GameObject.Find("EditorCamera").GetComponent<Camera>();
 	}
@@ -44,6 +47,10 @@ public class EditorController : TerrainGenerator {
 	
 	public void LevelLoad(string filename) {
 		levelIO.Load(filename + GetFileExtension(), false, true);
+		
+		// Activate and deactivate all nodes to ensure all nodes from loaded level are deactivated
+		NodesActivate();
+		NodesDeactivate();
 	}
 	
 	public void LevelPlay() {
@@ -111,67 +118,24 @@ public class EditorController : TerrainGenerator {
 			GameObject.Instantiate(ball, m, Quaternion.identity);
 		}
 	}
-	/*
-	void UpdateDrawBeziers() {
-		// Each new point is attached to the end of the last point
-		
-		if (Input.GetMouseButtonDown(0)) {
-			if (MouseClaim(gameObject)) {
-				drawStage = 1;
-				Vector3 m = GetMousePos();
-				drawPoints = new Vector3[2];
-				drawPoints[0] = m;
-			}
-		}
-		
-		if (Input.GetMouseButtonUp(0)) {
-			if (drawStage == 1) {
-				drawStage = 0;
-				Vector3 m = GetMousePos();
-				drawPoints[1] = m;
-				
-				// Create the desired blueprint
-				BlueprintPartType type;
 
-				if (Input.GetKey(KeyCode.Z)) {
-					type = BlueprintPartType.CurveBezierCubic;
-				} else if (Input.GetKey(KeyCode.X)) {
-					type = BlueprintPartType.CurveCircularArc;
-				} else {
-					type = BlueprintPartType.StraightLine;
-				}
-
-				TerrainPartMaker terrainPartMaker = new TerrainPartMaker(type);
-
-				Vector3 partPointsDiff = drawPoints[1] - drawPoints[0];
-				switch (type) {
-				case BlueprintPartType.CurveBezierCubic:
-					terrainPartMaker.AddNode(drawPoints[0]);
-					terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.25f);
-					terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.75f);
-					terrainPartMaker.AddNode(drawPoints[1]);
-					break;
-				case BlueprintPartType.CurveCircularArc:
-					terrainPartMaker.AddNode(drawPoints[0]);
-					terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.5f);
-					terrainPartMaker.AddNode(drawPoints[1]);
-					break;
-				case BlueprintPartType.StraightLine:
-					terrainPartMaker.AddNode(drawPoints[0]);
-					terrainPartMaker.AddNode(drawPoints[1]);
-					break;
-				}
-
-				terrainPartMaker.SetSegmentLength(2f);
-				terrainPartMaker.SetIsEditable(true);
-
-				TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
-
-				MouseReleaseNextFrame(gameObject);
+	public void NodesActivate() {
+		// Reactivate all nodes
+		if (nodes != null) {
+			foreach (EditorNode node in nodes) {
+				node.gameObject.SetActive(true);
 			}
 		}
 	}
-	*/
+	
+	public void NodesDeactivate() {
+		// Deactivate all nodes
+		nodes = FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
+		foreach (EditorNode node in nodes) {
+			node.gameObject.SetActive(false);
+		}
+	}
+	
 	public Vector3 GetMousePos() {
 		Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
 		m.z = 0;
