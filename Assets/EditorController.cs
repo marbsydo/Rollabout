@@ -13,21 +13,12 @@ public class EditorController : TerrainGenerator {
 
 	// Camera
 	Camera editorCamera;
-	float editorCameraSpeed;
-	float editorCameraSpeedNormal = 0.5f;
-	float editorCameraSpeedShift = 2f;
 	
 	// Who has claimed to mouse?
 	public bool mouseClaimed = false;
 	public GameObject mouseClaimant;
 	public bool mouseReleaseNextFrame = false;
 	public GameObject mouseReleaseNextFrameClaimant;
-	
-	// Drawing
-	Vector3[] bezierPoint = new Vector3[4];
-	int detail = 10;
-	int drawStage = 0;
-	Vector3[] drawPoints;
 	
 	void Start() {
 		editorCamera = GameObject.Find("EditorCamera").GetComponent<Camera>();
@@ -36,7 +27,6 @@ public class EditorController : TerrainGenerator {
 	void Update() {
 		UpdateMouseRelease();
 		
-		UpdateCameraMovement();
 		UpdatePlaceBall();
 	}
 	
@@ -65,7 +55,7 @@ public class EditorController : TerrainGenerator {
 		/* UpdateDrawBeziers() must be in LateUpdate because it takes second
 		 * priority after BezierNode.cs, who also wants to claim the mouse
 		 */
-		UpdateDrawBeziers();
+		//UpdateDrawBeziers();
 	}
 	
 	void UpdateMouseRelease() {
@@ -121,13 +111,7 @@ public class EditorController : TerrainGenerator {
 			GameObject.Instantiate(ball, m, Quaternion.identity);
 		}
 	}
-	
-	void UpdateCameraMovement() {
-		// Camera movement
-		editorCameraSpeed = Input.GetKey(KeyCode.LeftShift) ? editorCameraSpeedShift : editorCameraSpeedNormal;
-		editorCamera.gameObject.transform.position += new Vector3(Input.GetAxis("Horizontal") * editorCameraSpeed, Input.GetAxis ("Vertical") * editorCameraSpeed, 0);
-	}
-	
+	/*
 	void UpdateDrawBeziers() {
 		// Each new point is attached to the end of the last point
 		
@@ -187,8 +171,8 @@ public class EditorController : TerrainGenerator {
 			}
 		}
 	}
-	
-	Vector3 GetMousePos() {
+	*/
+	public Vector3 GetMousePos() {
 		Vector3 m = editorCamera.ScreenToWorldPoint(Input.mousePosition);
 		m.z = 0;
 		return m;

@@ -3,12 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-// TODO:
-// Look at UpdateMenu()
-// Add section for TextMenu.Options
-// Within these options, add options for save, load and test
-// Link up these options to EditorController.cs, in the Update() function
-// The code there has been commented out but should be invoked from here instead
+// Super important note:
+// This script (EditorInterfaceKeyboard.cs) must execute after EditorNode.cs
+// So if it stops working (i.e. cannot draw terrain), go to:
+// Edit -> Project Settings -> Script Execution Order
+// and ensure that EditorInterfaceKeyboard.cs is listed after EditorNode.cs
 
 [RequireComponent (typeof(GUIText))]
 public class EditorInterfaceKeyboard : MonoBehaviour {
@@ -17,17 +16,25 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	
 	GUIText guiText;
 	
-	enum TextMenu {Main, Terrain, Scenery, Objects, Options, LevelSave, LevelLoad};
+	enum TextMenu {Main, Navigation, Terrain, Scenery, Objects, Options, LevelSave, LevelLoad};
 	TextMenu menu = TextMenu.Main;
 	
 	enum TerrainStyle {Grass, Snow, Desert};
 	TerrainStyle terrainStyle = TerrainStyle.Grass;
 	
+	// Terrain
 	enum TerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc};
 	TerrainTool terrainTool = TerrainTool.StraightLine;
+	int drawStage = 0;
+	Vector3[] drawPoints;
 	
 	int levelLoadLevelNum = 0;
 	string levelSaveLevelName = "";
+	
+	// Navigation
+	float editorCameraSpeed;
+	float editorCameraSpeedNormal = 0.5f;
+	float editorCameraSpeedShift = 2f;
 	
 	/*
 	 * Main menu:
@@ -69,10 +76,16 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 		switch (menu) {
 		case TextMenu.Main:
 			t = "?   - Help\n" +
+				"N   - Navigation\n" +
 				"T   - Terrain\n" +
 				"S   - Scenery\n" +
 				"O   - Objects\n" +
 				"Esc - Options";
+			
+			if (Input.GetKeyDown(KeyCode.N)) {
+				SetMenu(TextMenu.Navigation);
+			}
+			
 			if (Input.GetKeyDown(KeyCode.T)) {
 				SetMenu(TextMenu.Terrain);
 			}
@@ -80,6 +93,20 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 			if (Input.GetKeyDown(KeyCode.Escape)) {
 				SetMenu(TextMenu.Options);
 			}
+			break;
+		case TextMenu.Navigation:
+			t = "WASD/Arrows - Move\n" +
+				"Shift       - Move faster\n" +
+				"Esc         - Back";
+			
+			// Move camera
+			editorCameraSpeed = Input.GetKey(KeyCode.LeftShift) ? editorCameraSpeedShift : editorCameraSpeedNormal;
+			editorController.GetCamera().gameObject.transform.position += new Vector3(Input.GetAxis("Horizontal") * editorCameraSpeed, Input.GetAxis ("Vertical") * editorCameraSpeed, 0);
+			
+			if (Input.GetKeyDown(KeyCode.Escape)) {
+				SetMenu(TextMenu.Main);
+			}
+			
 			break;
 		case TextMenu.Options:
 			t = "S   - Save\n" +
@@ -173,6 +200,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 		case TextMenu.Terrain:
 			t = "S/D - Select style\n" +
 				"T/Y - Select tool\n" +
+				"Del - Delete selected terrain\n" +
 				"Esc - Back\n" +
 				"\n" +
 				"Current style: " + TerrainStyleToText(terrainStyle) + "\n" +
@@ -205,6 +233,87 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 				if ((int)terrainTool < 0)
 					terrainTool = (TerrainTool)2;
 			}
+			
+			// Drawing
+			// Each new point is attached to the end of the last point
+			
+			if (Input.GetMouseButtonDown(0)) {
+				if (editorController.MouseClaim(gameObject)) {
+					drawStage = 1;
+					Vector3 m = editorController.GetMousePos();
+					drawPoints = new Vector3[2];
+					drawPoints[0] = m;
+				}
+			}
+			
+			if (Input.GetMouseButtonUp(0)) {
+				if (drawStage == 1) {
+					drawStage = 0;
+					Vector3 m = editorController.GetMousePos();
+					drawPoints[1] = m;
+					
+					//TODO: Use terrainStyle to select style e.g. grass, snow, etc.
+					
+					
+					// Create the desired blueprint
+					BlueprintPartType type;
+					
+					switch (terrainTool) {
+					case TerrainTool.StraightLine:
+						type = BlueprintPartType.StraightLine;
+						break;
+					case TerrainTool.CurveBezierCubic:
+						type = BlueprintPartType.CurveBezierCubic;
+						break;
+					case TerrainTool.CurveCircularArc:
+						type = BlueprintPartType.CurveCircularArc;
+						break;
+					default:
+						type = BlueprintPartType.StraightLine;
+						Debug.LogWarning("Unknown terrainTool [" + terrainTool + "]. Defaulting to StraightLine");
+						break;
+					}
+					
+					/*
+					if (Input.GetKey(KeyCode.Z)) {
+						type = BlueprintPartType.CurveBezierCubic;
+					} else if (Input.GetKey(KeyCode.X)) {
+						type = BlueprintPartType.CurveCircularArc;
+					} else {
+						type = BlueprintPartType.StraightLine;
+					}
+					*/
+	
+					TerrainPartMaker terrainPartMaker = new TerrainPartMaker(type);
+	
+					Vector3 partPointsDiff = drawPoints[1] - drawPoints[0];
+					switch (type) {
+					case BlueprintPartType.CurveBezierCubic:
+						terrainPartMaker.AddNode(drawPoints[0]);
+						terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.25f);
+						terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.75f);
+						terrainPartMaker.AddNode(drawPoints[1]);
+						break;
+					case BlueprintPartType.CurveCircularArc:
+						terrainPartMaker.AddNode(drawPoints[0]);
+						terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.5f);
+						terrainPartMaker.AddNode(drawPoints[1]);
+						break;
+					case BlueprintPartType.StraightLine:
+						terrainPartMaker.AddNode(drawPoints[0]);
+						terrainPartMaker.AddNode(drawPoints[1]);
+						break;
+					}
+	
+					terrainPartMaker.SetSegmentLength(2f);
+					terrainPartMaker.SetIsEditable(true);
+	
+					TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
+	
+					editorController.MouseReleaseNextFrame(gameObject);
+				}
+			}
+			
 			break;
 		default:
 			t = "ERROR\n" +
