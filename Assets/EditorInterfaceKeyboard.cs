@@ -27,7 +27,9 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	TerrainTool terrainTool = TerrainTool.StraightLine;
 	int drawStage = 0;
 	Vector3[] drawPoints;
+	EditorNode[] nodes;
 	
+	//Options (save/load)
 	int levelLoadLevelNum = 0;
 	string levelSaveLevelName = "";
 	
@@ -254,7 +256,6 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 					
 					//TODO: Use terrainStyle to select style e.g. grass, snow, etc.
 					
-					
 					// Create the desired blueprint
 					BlueprintPartType type;
 					
@@ -273,16 +274,6 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 						Debug.LogWarning("Unknown terrainTool [" + terrainTool + "]. Defaulting to StraightLine");
 						break;
 					}
-					
-					/*
-					if (Input.GetKey(KeyCode.Z)) {
-						type = BlueprintPartType.CurveBezierCubic;
-					} else if (Input.GetKey(KeyCode.X)) {
-						type = BlueprintPartType.CurveCircularArc;
-					} else {
-						type = BlueprintPartType.StraightLine;
-					}
-					*/
 	
 					TerrainPartMaker terrainPartMaker = new TerrainPartMaker(type);
 	
@@ -364,10 +355,29 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	}
 	
 	void SetMenu(TextMenu menu) {
+		// Called when a menu ends
+		switch (this.menu) {
+		case TextMenu.Terrain:
+			// Deactivate all nodes
+			nodes = FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
+			foreach (EditorNode node in nodes) {
+				node.gameObject.SetActive(false);
+			}
+			break;
+		}
+		
 		this.menu = menu;
 		
-		// Reset some variables to defaults
+		// Called when a menu starts
 		switch (this.menu) {
+		case TextMenu.Terrain:
+			// Reactivate all nodes
+			if (nodes != null) {
+				foreach (EditorNode node in nodes) {
+					node.gameObject.SetActive(true);
+				}
+			}
+			break;
 		case TextMenu.LevelLoad:
 			levelLoadLevelNum = 0;
 			break;
