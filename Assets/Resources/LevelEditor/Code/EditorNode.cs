@@ -265,7 +265,11 @@ public class EditorNode : MonoBehaviour {
 
 						if (!isOtherNodeWeAreMoving) {
 							Vector3 p1 = node.GetVertexPosition();
-							Vector3 p2 = GetMousePosition();//this.GetVertexPosition();
+							
+							// Make p2 be the center of the vertex
+							// simply using this.GetVertexPosition() will not work right
+							// because that will result in the vertex getting locked in place once a snap occurs
+							Vector3 p2 = GetMousePosition() + mousePosOffset;
 							p1.z = p2.z = 0;
 							if ((p1 - p2).magnitude < snapMinDist) {
 								snappedToNode = true;
