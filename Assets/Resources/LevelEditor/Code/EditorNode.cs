@@ -311,23 +311,23 @@ public class EditorNode : MonoBehaviour {
 					
 					Vector3 diff = p2 - p1; // so p2 = p1 + diff
 					
-					// To snap to nearest 90 degrees, find biggest magnitude axis and zero the other
-					if (Mathf.Abs(diff.x) > Mathf.Abs(diff.y))
-						diff = new Vector3(diff.x, 0, 0);
-					else
-						diff = new Vector3(0, diff.y, 0);
+					float biggestAngle = 0f;
+					float biggestAngleMagnitude = 0f;
+					float step = 22.5f;
+					for (float i = 0; i < 360; i+= step) {
+						Vector3 diffRotated = RotateVector3AroundZ(diff, i * Mathf.Deg2Rad);
+						if (Mathf.Abs(diffRotated.x) > biggestAngleMagnitude) {
+							biggestAngle = i;
+							biggestAngleMagnitude = Mathf.Abs(diffRotated.x);
+						}
+					}
+					
+					diff = RotateVector3AroundZ(diff, biggestAngle * Mathf.Deg2Rad);
+					diff = new Vector3(diff.x, 0, 0);
+					diff = RotateVector3AroundZ(diff, biggestAngle * Mathf.Deg2Rad * -1);
 					
 					mousePosWithOffset = p1 + diff;
 				}
-				
-				// Find other node for this terrain (assuming it only has two!)
-				//Vector3 p1 = this.GetVertexPosition();
-				//TODO: all this stuff!
-				// find pair
-				// find difference
-				// make it vector
-				// snap to nearest vector in right direction
-				//Vector3 p2 = this.
 			}
 
 			// Didn't snap to anything, so move it normally
@@ -349,6 +349,11 @@ public class EditorNode : MonoBehaviour {
 			// Now tell our TerrainPartObject to update
 			Regenerate();
 		}
+	}
+	
+	// Rotate Vector3 v around Z axis by angle a (radians)
+	private Vector3 RotateVector3AroundZ(Vector3 v, float a) {
+		return new Vector3(v.x * Mathf.Cos(a) - v.y * Mathf.Sin(a), v.x * Mathf.Sin(a) + v.y * Mathf.Cos(a), v.z);
 	}
 
 	public void Regenerate() {
