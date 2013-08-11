@@ -8,6 +8,7 @@ public class EditorNode : MonoBehaviour {
 	const KeyCode inputNodeModify = KeyCode.Mouse0;              // Moving and reshaping a node
 	const KeyCode inputNodeSnapGrid = KeyCode.LeftControl;       // Snapping a node to the grid
 	const KeyCode inputNodeSnapNode = KeyCode.LeftShift;         // Snapping a node to another node
+	const KeyCode inputNodeSnapLinear = KeyCode.LeftAlt;         // Snapping a node to lines forming spoking out
 	const KeyCode inputNodeSelectIndividual = KeyCode.LeftShift; // Selecting multiple nodes in one go
 	const KeyCode inputNodeSegmentsIncrease = KeyCode.X;
 	const KeyCode inputNodeSegmentsDecrease = KeyCode.Z;
@@ -244,10 +245,10 @@ public class EditorNode : MonoBehaviour {
 			if (Input.GetKeyDown(inputNodeSegmentsDecrease)) {
 				terrainPartObject.SegmentLengthDecrease();
 			}
-
+			
+			// Snap to nearby thingies
 			bool snappedToNode = false;
 			if (Input.GetKey(inputNodeSnapNode) ^ snapByDefault) {
-				// Snap to nearby thingies
 
 				// Find all nodes
 				EditorNode[] nodes = GameObject.FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
@@ -290,6 +291,43 @@ public class EditorNode : MonoBehaviour {
 						}
 					}
 				}
+			}
+			
+			// Snap linearly
+			if (Input.GetKey(inputNodeSnapLinear)) {
+				// Find all nodes
+				EditorNode[] nodes = this.transform.parent.GetComponentsInChildren<EditorNode>() as EditorNode[];
+				if (nodes.Length == 2) {
+					// There are exactly two nodes
+					Vector3 p2 = mousePosWithOffset;//this.GetVertexPosition();
+					Vector3 p1;
+					
+					// Could be replaced with tertiary thing, but this is easier to read and debug
+					if (nodes[0].GetInstanceID() == this.GetInstanceID()) {
+						p1 = nodes[1].GetVertexPosition();
+					} else {
+						p1 = nodes[0].GetVertexPosition();
+					}
+					
+					Vector3 diff = p2 - p1; // so p2 = p1 + diff
+					
+					// To snap to nearest 90 degrees, find biggest magnitude axis and zero the other
+					if (Mathf.Abs(diff.x) > Mathf.Abs(diff.y))
+						diff = new Vector3(diff.x, 0, 0);
+					else
+						diff = new Vector3(0, diff.y, 0);
+					
+					mousePosWithOffset = p1 + diff;
+				}
+				
+				// Find other node for this terrain (assuming it only has two!)
+				//Vector3 p1 = this.GetVertexPosition();
+				//TODO: all this stuff!
+				// find pair
+				// find difference
+				// make it vector
+				// snap to nearest vector in right direction
+				//Vector3 p2 = this.
 			}
 
 			// Didn't snap to anything, so move it normally
