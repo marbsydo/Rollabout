@@ -12,6 +12,7 @@ using System.IO;
 [RequireComponent (typeof(GUIText))]
 public class EditorInterfaceKeyboard : MonoBehaviour {
 	
+	MainController mainController;
 	EditorController editorController;
 	
 	//GUIText guiText;
@@ -59,8 +60,8 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	
 	void Awake() {
 		transform.position = new Vector3(0.01f, 0.99f, 0);
-		//guiText = GetComponent<GUIText>(); // Redundant. guiText is defined by Unity
 		editorController = (GameObject.Find("EditorController") as GameObject).GetComponent<EditorController>() as EditorController;
+		mainController = (GameObject.Find("MainController") as GameObject).GetComponent<MainController>() as MainController;
 	}
 	
 	void Start() {
@@ -134,13 +135,12 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 		case TextMenu.LevelLoad:
 		case TextMenu.LevelSave:
 			// Show all files in directory
-			DirectoryInfo info = new DirectoryInfo(editorController.GetLevelFilepath());
+			DirectoryInfo info = new DirectoryInfo(mainController.GetLevelFilePath());
 			FileInfo[] fileInfo = info.GetFiles();
 			List<string> files = new List<string>();
 			foreach (FileInfo file in fileInfo) {
-				if (file.Extension == editorController.GetFileExtension())
+				if (file.Extension == mainController.GetLevelFileExtension())
 					files.Add(Path.GetFileNameWithoutExtension(file.Name));
-					//t += "\n" + Path.GetFileNameWithoutExtension(file.Name);
 			}
 			
 			t = "";

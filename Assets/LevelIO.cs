@@ -3,33 +3,36 @@ using System.Collections;
 
 public class LevelIO {
 	
-	public string GetFilepath(bool temp) {
-		string p = Application.dataPath;
-		if (!temp)
-			p += "/levels/";
-		else
-			p += "/levels/temp/";
-		return p;
+	public string GetLevelFilePath() {
+		return Application.dataPath + "/levels/";
 	}
 	
 	public string GetLevelFileExtension() {
 		return ".ewfg";
 	}
 	
-	public void Save(string filename, bool temp) {
+	public void Save(string filename) {
 		string levelString = ConvertLevelToString();
-
+		
+		string fullPath = GetLevelFilePath() + filename + GetLevelFileExtension();
+		
+		Debug.Log("Saving: " + fullPath);
+		
 		// Write levelString to file
-		System.IO.File.WriteAllText(GetFilepath(temp) + filename, levelString);
+		System.IO.File.WriteAllText(fullPath, levelString);
 	}
 
-	public void Load(string filename, bool temp, bool edit) {
+	public void Load(string filename, bool edit) {
 		string levelString;
-
+		
+		string fullPath = GetLevelFilePath() + filename + GetLevelFileExtension();
+		
+		Debug.Log("Loading: " + fullPath);
+		
 		// Check the file exists
-		if (System.IO.File.Exists(GetFilepath(temp) + filename)) {
+		if (System.IO.File.Exists(fullPath)) {
 			// Read levelString from file
-			levelString = System.IO.File.ReadAllText(GetFilepath(temp) + filename);
+			levelString = System.IO.File.ReadAllText(fullPath);
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
 			GenerateLevelFromString(levelString, edit);
 		} else {

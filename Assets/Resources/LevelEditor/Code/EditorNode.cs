@@ -5,12 +5,12 @@ public enum EditorNodeControlRestriction{None, PerpendicularToMiddleOfAC};
 
 public class EditorNode : MonoBehaviour {
 	
-	const KeyCode inputNodeModify = KeyCode.Mouse0;               // Moving and reshaping a node
-	const KeyCode inputNodeSnapGrid = KeyCode.LeftAlt;        // Snapping a node to the grid (overridden by spoke snap)
-	const KeyCode inputNodeSnapNode = KeyCode.LeftShift;          // Snapping a node to another node
-	const KeyCode inputNodeSnapSpokeAngle = KeyCode.LeftControl;      // Snapping a node to a spoke (the angle of the spoke)
-	const KeyCode inputNodeSnapSpokeLinear = KeyCode.LeftAlt; // Snapping a node to a spoke (the distance along the spoke)
-	const KeyCode inputNodeSelectIndividual = KeyCode.LeftShift;  // Selecting multiple nodes in one go
+	const KeyCode inputNodeModify = KeyCode.Mouse0;              // Moving and reshaping a node
+	const KeyCode inputNodeSnapGrid = KeyCode.LeftAlt;           // Snapping a node to the grid (overridden by spoke snap)
+	const KeyCode inputNodeSnapNode = KeyCode.LeftShift;         // Snapping a node to another node
+	const KeyCode inputNodeSnapSpokeAngle = KeyCode.LeftControl; // Snapping a node to a spoke (the angle of the spoke)
+	const KeyCode inputNodeSnapSpokeLinear = KeyCode.LeftAlt;    // Snapping a node to a spoke (the distance along the spoke)
+	const KeyCode inputNodeSelectIndividual = KeyCode.LeftShift; // Selecting multiple nodes in one go
 	const KeyCode inputNodeSegmentsIncrease = KeyCode.X;
 	const KeyCode inputNodeSegmentsDecrease = KeyCode.Z;
 	const KeyCode inputDelete = KeyCode.Delete;

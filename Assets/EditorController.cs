@@ -3,13 +3,13 @@ using System.Collections;
 
 public class EditorController : TerrainGenerator {
 	
+	// Main controller
+	MainController mainController;
+	
 	// Input
 	const KeyCode inputLevelSave = KeyCode.P;
 	const KeyCode inputLevelLoad = KeyCode.O;
 	const KeyCode inputLevelPlay = KeyCode.T;
-
-	// LevelIO
-	LevelIO levelIO = new LevelIO();
 
 	// Camera
 	Camera editorCamera;
@@ -23,46 +23,38 @@ public class EditorController : TerrainGenerator {
 	// Terrain nodes
 	EditorNode[] nodes;
 	
+	void Awake() {
+		mainController = GameObject.Find("MainController").GetComponent<MainController>();
+	}
+	
 	void Start() {
 		editorCamera = GameObject.Find("EditorCamera").GetComponent<Camera>();
 	}
 	
 	void Update() {
 		UpdateMouseRelease();
-		
 		UpdatePlaceBall();
 	}
 	
-	public string GetLevelFilepath() {
-		return levelIO.GetFilepath(false);
-	}
-	
-	public string GetFileExtension() {
-		return levelIO.GetLevelFileExtension();
-	}
-	
 	public void LevelSave(string filename) {
-		levelIO.Save(filename + GetFileExtension(), false);
+		mainController.LevelSave(filename);
 	}
 	
 	public void LevelLoad(string filename) {
-		levelIO.Load(filename + GetFileExtension(), false, true);
-		
+		mainController.LevelLoadToEditAdditive(filename);
+		PostLevelLoad();
+	}
+	
+	// Should be called after a level is loaded
+	public void PostLevelLoad() {
 		// Activate and deactivate all nodes to ensure all nodes from loaded level are deactivated
 		NodesActivate();
 		NodesDeactivate();
 	}
 	
 	public void LevelPlay() {
-		levelIO.Save("play" + GetFileExtension(), true);
-		Application.LoadLevel("LevelPlay");
-	}
-	
-	void LateUpdate() {
-		/* UpdateDrawBeziers() must be in LateUpdate because it takes second
-		 * priority after BezierNode.cs, who also wants to claim the mouse
-		 */
-		//UpdateDrawBeziers();
+		mainController.LevelSave("__temp_level");
+		mainController.LevelLoadToPlay("__temp_level");
 	}
 	
 	void UpdateMouseRelease() {

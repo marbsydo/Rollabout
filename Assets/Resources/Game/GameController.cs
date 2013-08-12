@@ -2,14 +2,16 @@ using UnityEngine;
 using System.Collections;
 
 public class GameController : MonoBehaviour {
+	
+	MainController mainController;
+	
 	void Awake() {
-		LevelIO levelIO = new LevelIO();
-		levelIO.Load("play" + levelIO.GetLevelFileExtension(), true, false);
+		mainController = (GameObject.Find("MainController") as GameObject).GetComponent<MainController>() as MainController;
 	}
 
 	void Update() {
 		if (Input.GetKey(KeyCode.Escape)) {
-			Application.LoadLevel("LevelEditor");
+			mainController.LevelLoadToEdit(mainController.GetLevelFilenameLastLoaded());
 		}
 	}
 }
