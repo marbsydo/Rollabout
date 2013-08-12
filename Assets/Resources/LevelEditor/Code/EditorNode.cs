@@ -38,9 +38,9 @@ public class EditorNode : MonoBehaviour {
 	bool snapByDefault = true;
 	float snapMinDist = 0.5f;
 	
-	// Spoke
-	float gridResolution = 2f;        // Resolution of the main grid
-	float spokeLinearSnapLength = 2f; // Resolution of the spoke length
+	// grid resolutions
+	float gridMainResolution = 2f;  // Resolution of the main grid
+	float gridSpokeResolution = 2f; // Resolution of the spoke length
 
 	// For moving multiple nodes
 	EditorNode[] additionalNodes;
@@ -352,7 +352,7 @@ public class EditorNode : MonoBehaviour {
 					
 					// Snapping spoke linearly
 					if (Input.GetKey(inputNodeSnapSpokeLinear)) {
-						diff = diff.normalized * Mathf.Round(diff.magnitude / spokeLinearSnapLength) * spokeLinearSnapLength;
+						diff = diff.normalized * Mathf.Round(diff.magnitude / gridSpokeResolution) * gridSpokeResolution;
 					}
 					
 					mousePosWithOffset = p1 + diff;
@@ -481,8 +481,8 @@ public class EditorNode : MonoBehaviour {
 		m += offsetBeforeSnap;
 		
 		if (snapToGrid) {
-			m.x = Mathf.Round(m.x / gridResolution) * gridResolution;
-			m.y = Mathf.Round(m.y / gridResolution) * gridResolution;
+			m.x = Mathf.Round(m.x / gridMainResolution) * gridMainResolution;
+			m.y = Mathf.Round(m.y / gridMainResolution) * gridMainResolution;
 		}
 
 		return m;
