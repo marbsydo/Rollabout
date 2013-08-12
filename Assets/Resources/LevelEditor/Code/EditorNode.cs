@@ -5,11 +5,12 @@ public enum EditorNodeControlRestriction{None, PerpendicularToMiddleOfAC};
 
 public class EditorNode : MonoBehaviour {
 	
-	const KeyCode inputNodeModify = KeyCode.Mouse0;              // Moving and reshaping a node
-	const KeyCode inputNodeSnapGrid = KeyCode.LeftControl;       // Snapping a node to the grid
-	const KeyCode inputNodeSnapNode = KeyCode.LeftShift;         // Snapping a node to another node
-	const KeyCode inputNodeSnapLinear = KeyCode.LeftAlt;         // Snapping a node to lines forming spoking out
-	const KeyCode inputNodeSelectIndividual = KeyCode.LeftShift; // Selecting multiple nodes in one go
+	const KeyCode inputNodeModify = KeyCode.Mouse0;               // Moving and reshaping a node
+	const KeyCode inputNodeSnapGrid = KeyCode.LeftControl;        // Snapping a node to the grid (overridden by spoke snap)
+	const KeyCode inputNodeSnapNode = KeyCode.LeftShift;          // Snapping a node to another node
+	const KeyCode inputNodeSnapSpokeAngle = KeyCode.LeftAlt;      // Snapping a node to a spoke (the angle of the spoke)
+	const KeyCode inputNodeSnapSpokeLinear = KeyCode.LeftControl; // Snapping a node to a spoke (the distance along the spoke)
+	const KeyCode inputNodeSelectIndividual = KeyCode.LeftShift;  // Selecting multiple nodes in one go
 	const KeyCode inputNodeSegmentsIncrease = KeyCode.X;
 	const KeyCode inputNodeSegmentsDecrease = KeyCode.Z;
 	const KeyCode inputDelete = KeyCode.Delete;
@@ -36,6 +37,10 @@ public class EditorNode : MonoBehaviour {
 	// Snapping
 	bool snapByDefault = true;
 	float snapMinDist = 0.5f;
+	
+	// Spoke
+	float gridResolution = 2f;        // Resolution of the main grid
+	float spokeLinearSnapLength = 2f; // Resolution of the spoke length
 
 	// For moving multiple nodes
 	EditorNode[] additionalNodes;
@@ -228,8 +233,18 @@ public class EditorNode : MonoBehaviour {
 		
 		if (mouseHolding > -2) {
 			// Something is being held, so move it
-
-			Vector3 mousePosWithOffset = GetMousePosition(Input.GetKey(inputNodeSnapGrid), mousePosOffset);
+			
+			bool snappingToGrid = Input.GetKey(inputNodeSnapGrid);
+			bool snappingToSpokeAngle = Input.GetKey(inputNodeSnapSpokeAngle);
+			
+			Vector3 mousePosWithOffset;
+			
+			// Do not snap to grid if snapping to spoke
+			if (!snappingToSpokeAngle) {
+				mousePosWithOffset = GetMousePosition(snappingToGrid, mousePosOffset);
+			} else {
+				mousePosWithOffset = GetMousePosition(false, mousePosOffset);
+			}
 
 			if (Input.GetKeyDown(inputDelete)) {
 				Destroy(this.transform.parent.gameObject);
@@ -293,8 +308,8 @@ public class EditorNode : MonoBehaviour {
 				}
 			}
 			
-			// Snap linearly
-			if (Input.GetKey(inputNodeSnapLinear)) {
+			// Snap to spoke
+			if (snappingToSpokeAngle) {
 				// Find all nodes
 				EditorNode[] nodes = this.transform.parent.GetComponentsInChildren<EditorNode>() as EditorNode[];
 				if (nodes.Length == 2) {
@@ -304,7 +319,7 @@ public class EditorNode : MonoBehaviour {
 					
 					if (mouseHolding == -1) {
 						// If holding vertex, find the other vertex
-						// In this way, we snap linearly relative to the other vertex
+						// In this way, we snap relative to the other vertex
 						
 						// Could be replaced with tertiary thing, but this is easier to read and debug
 						if (nodes[0].GetInstanceID() == this.GetInstanceID()) {
@@ -314,7 +329,7 @@ public class EditorNode : MonoBehaviour {
 						}
 					} else {
 						// If holding control, find our vertex
-						// In this way, we snap linearly relative to our own vertex
+						// In this way, we snap relative to our own vertex
 						p1 = this.GetVertexPosition();
 					}
 						
@@ -334,6 +349,11 @@ public class EditorNode : MonoBehaviour {
 					diff = RotateVector3AroundZ(diff, biggestAngle * Mathf.Deg2Rad);
 					diff = new Vector3(diff.x, 0, 0);
 					diff = RotateVector3AroundZ(diff, biggestAngle * Mathf.Deg2Rad * -1);
+					
+					// Snapping spoke linearly
+					if (Input.GetKey(inputNodeSnapSpokeLinear)) {
+						diff = diff.normalized * Mathf.Round(diff.magnitude / spokeLinearSnapLength) * spokeLinearSnapLength;
+					}
 					
 					mousePosWithOffset = p1 + diff;
 				}
@@ -461,7 +481,6 @@ public class EditorNode : MonoBehaviour {
 		m += offsetBeforeSnap;
 		
 		if (snapToGrid) {
-			float gridResolution = 2f;
 			m.x = Mathf.Round(m.x / gridResolution) * gridResolution;
 			m.y = Mathf.Round(m.y / gridResolution) * gridResolution;
 		}
