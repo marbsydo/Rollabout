@@ -302,19 +302,28 @@ public class EditorNode : MonoBehaviour {
 					Vector3 p2 = mousePosWithOffset;//this.GetVertexPosition();
 					Vector3 p1;
 					
-					// Could be replaced with tertiary thing, but this is easier to read and debug
-					if (nodes[0].GetInstanceID() == this.GetInstanceID()) {
-						p1 = nodes[1].GetVertexPosition();
+					if (mouseHolding == -1) {
+						// If holding vertex, find the other vertex
+						// In this way, we snap linearly relative to the other vertex
+						
+						// Could be replaced with tertiary thing, but this is easier to read and debug
+						if (nodes[0].GetInstanceID() == this.GetInstanceID()) {
+							p1 = nodes[1].GetVertexPosition();
+						} else {
+							p1 = nodes[0].GetVertexPosition();
+						}
 					} else {
-						p1 = nodes[0].GetVertexPosition();
+						// If holding control, find our vertex
+						// In this way, we snap linearly relative to our own vertex
+						p1 = this.GetVertexPosition();
 					}
-					
+						
 					Vector3 diff = p2 - p1; // so p2 = p1 + diff
 					
 					float biggestAngle = 0f;
 					float biggestAngleMagnitude = 0f;
 					float step = 22.5f;
-					for (float i = 0; i < 360; i+= step) {
+					for (float i = 0; i < 360f; i+= step) {
 						Vector3 diffRotated = RotateVector3AroundZ(diff, i * Mathf.Deg2Rad);
 						if (Mathf.Abs(diffRotated.x) > biggestAngleMagnitude) {
 							biggestAngle = i;
