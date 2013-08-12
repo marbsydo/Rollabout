@@ -145,7 +145,7 @@ public class EditorNode : MonoBehaviour {
 		if (Input.GetKeyDown(inputNodeModify)) {
 			// Clicked somewhere, so if it clicked on a vertex or control
 			
-			Vector3 mousePos = GetMousePosition(false);
+			Vector3 mousePos = GetMousePosition(false, Vector3.zero);
 			
 			// First check if it clicked any of the control points
 			for (int i = 0; i < numControls; i++) {
@@ -229,7 +229,7 @@ public class EditorNode : MonoBehaviour {
 		if (mouseHolding > -2) {
 			// Something is being held, so move it
 
-			Vector3 mousePosWithOffset = GetMousePosition(Input.GetKey(inputNodeSnapGrid)) + mousePosOffset;
+			Vector3 mousePosWithOffset = GetMousePosition(Input.GetKey(inputNodeSnapGrid), mousePosOffset);
 
 			if (Input.GetKeyDown(inputDelete)) {
 				Destroy(this.transform.parent.gameObject);
@@ -270,7 +270,7 @@ public class EditorNode : MonoBehaviour {
 							// Make p2 be the center of the vertex
 							// simply using this.GetVertexPosition() will not work right
 							// because that will result in the vertex getting locked in place once a snap occurs
-							Vector3 p2 = GetMousePosition() + mousePosOffset;
+							Vector3 p2 = GetMousePosition(false, mousePosOffset);
 							p1.z = p2.z = 0;
 							if ((p1 - p2).magnitude < snapMinDist) {
 								snappedToNode = true;
@@ -322,7 +322,7 @@ public class EditorNode : MonoBehaviour {
 					
 					float biggestAngle = 0f;
 					float biggestAngleMagnitude = 0f;
-					float step = 22.5f;
+					float step = 15f;
 					for (float i = 0; i < 360f; i+= step) {
 						Vector3 diffRotated = RotateVector3AroundZ(diff, i * Mathf.Deg2Rad);
 						if (Mathf.Abs(diffRotated.x) > biggestAngleMagnitude) {
@@ -452,13 +452,14 @@ public class EditorNode : MonoBehaviour {
 	}
 
 	Vector3 GetMousePosition() {
-		return GetMousePosition(false);
+		return GetMousePosition(false, Vector3.zero);
 	}
 
-	Vector3 GetMousePosition(bool snapToGrid) {
+	Vector3 GetMousePosition(bool snapToGrid, Vector3 offsetBeforeSnap) {
 		Vector3 m = editorController.GetCamera().ScreenToWorldPoint(Input.mousePosition);
 		m.z = transform.position.z;
-
+		m += offsetBeforeSnap;
+		
 		if (snapToGrid) {
 			float gridResolution = 2f;
 			m.x = Mathf.Round(m.x / gridResolution) * gridResolution;
