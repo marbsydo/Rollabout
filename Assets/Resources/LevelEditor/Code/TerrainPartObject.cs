@@ -6,8 +6,6 @@ public class TerrainPartObject : MonoBehaviour {
 	
 	private bool requireNodes;
 	public EditorNode[] nodes;
-	
-	GameObject prefabNode;
 
 	private float segmentLength = 1f;
 	private Color partColor = Color.white;
@@ -19,10 +17,6 @@ public class TerrainPartObject : MonoBehaviour {
 		// If set to true, nodes will be created when AssignBlueprint() is called
 		// If set to false, nodes will not be created
 		this.requireNodes = requireNodes;
-	}
-
-	void Awake() {
-		prefabNode = Resources.Load("LevelEditor/EditorNode") as GameObject;
 	}
 
 	public void AssignBlueprint(BlueprintPart blueprintPart) {
@@ -59,8 +53,8 @@ public class TerrainPartObject : MonoBehaviour {
 	}
 	
 	EditorNode CreateNode(Vector3 pos, int numControls) {
-		GameObject g = (GameObject.Instantiate(prefabNode, Vector3.zero, Quaternion.identity) as GameObject);
-		EditorNode node = g.GetComponent<EditorNode>();
+		GameObject g = new GameObject();
+		EditorNode node = g.AddComponent<EditorNode>();
 		node.SetPosition(pos);
 		node.CreateHandles(numControls);
 		node.SetTerrainPartObject(this);
