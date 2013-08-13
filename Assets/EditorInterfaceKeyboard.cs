@@ -180,11 +180,20 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 				if (levelLoadLevelNum > (files.Count - 1))
 					levelLoadLevelNum = (files.Count - 1);
 				
-				t = files[levelLoadLevelNum] + "\n";
+				if (files.Count > 0) {
+					t = files[levelLoadLevelNum];
+				} else {
+					// No level files in directory so show blank
+					t = "";
+				}
+				t += "\n";
 				
 				if (Input.GetKeyDown(KeyCode.Return)) {
-					editorController.LevelLoad(files[levelLoadLevelNum]);
-					SetMenu(TextMenu.Main);
+					// Check the array of levels is not empty
+					if (files.Count > 0) {
+						editorController.LevelLoad(files[levelLoadLevelNum]);
+						SetMenu(TextMenu.Main);
+					}
 				}
 			}
 			
