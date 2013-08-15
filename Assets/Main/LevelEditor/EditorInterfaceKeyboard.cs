@@ -9,6 +9,10 @@ using System.IO;
 // Edit -> Project Settings -> Script Execution Order
 // and ensure that EditorInterfaceKeyboard.cs is listed after EditorNode.cs
 
+//TODO: All the code in UpdateMenu() could be split into classes
+// Each class would then have a Begin(), Update() and End() function
+// which would be called from UpdateMenu().
+
 [RequireComponent (typeof(GUIText))]
 public class EditorInterfaceKeyboard : MonoBehaviour {
 	
@@ -90,6 +94,10 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 			
 			if (Input.GetKeyDown(KeyCode.T)) {
 				SetMenu(TextMenu.Terrain);
+			}
+			
+			if (Input.GetKeyDown(KeyCode.O)) {
+				SetMenu(TextMenu.Objects);
 			}
 			
 			if (Input.GetKeyDown(KeyCode.Escape)) {
@@ -312,6 +320,14 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	
 					editorController.MouseReleaseNextFrame(gameObject);
 				}
+			}
+			
+			break;
+		case TextMenu.Objects:
+			t = "Asdf";
+			
+			if (Input.GetKeyDown(KeyCode.Escape)) {
+				SetMenu(TextMenu.Main);
 			}
 			
 			break;
