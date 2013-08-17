@@ -18,19 +18,22 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	MainController mainController;
 	EditorController editorController;
 	
-	//GUIText guiText;
-	
-	TextMenu menu = TextMenu.Main;
+	TextMenu menuCurrent = TextMenu.Main;
 	List<MenuAbstract> menus;
 	
 	void Awake() {
+		// Move text to top right corner
 		transform.position = new Vector3(0.01f, 0.99f, 0);
+		
+		// Get references
 		editorController = (GameObject.Find("EditorController") as GameObject).GetComponent<EditorController>() as EditorController;
 		mainController = (GameObject.Find("MainController") as GameObject).GetComponent<MainController>() as MainController;
-		//menus = new AbstractMenu[9];
-		menus = new List<MenuAbstract>();
 		
-		//NOTE: Must be same order as enum
+		// Create all objects for the various menus
+		// NOTE:
+		// Menu objects are accessed by casting `menuCurrent` to int for the array index
+		// As a result, the following Add()s must be in the same order as enum TextMenu
+		menus = new List<MenuAbstract>();
 		menus.Add(new MenuMain());
 		menus.Add(new MenuNavigation());
 		menus.Add(new MenuTerrain());
@@ -41,8 +44,9 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 		menus.Add(new MenuLevelLoad());
 		menus.Add(new MenuError());
 		
-		foreach (MenuAbstract m in menus) {
-			m.SetReferances(this, mainController, editorController);
+		// Give each menu object required references
+		foreach (MenuAbstract menu in menus) {
+			menu.SetReferances(this, mainController, editorController);
 		}
 	}
 	
@@ -51,21 +55,13 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	}
 	
 	void Update() {
-		UpdateMenu();
-	}
-	
-	void UpdateMenu() {
-		SetText(menus[(int)menu].Text());
+		guiText.text = menus[(int)menuCurrent].Text();
 	}
 	
 	public void SetMenu(TextMenu menu) {
-		menus[(int)this.menu].End();
-		this.menu = menu;
-		menus[(int)this.menu].Begin();
-	}
-	
-	void SetText(string t) {
-		guiText.text = t;
+		menus[(int)menuCurrent].End();
+		menuCurrent = menu;
+		menus[(int)menuCurrent].Begin();
 	}
 }
 
@@ -344,9 +340,8 @@ class MenuObjects : MenuAbstract {
 	override public string Text() {
 		string t;
 	
-		t = "P   - Player" +
-			"" +
-			"" +
+		t = "P   - Player\n" +
+			"\n" +
 			"Esc - Back\n";
 		
 		if (Input.GetKeyDown(KeyCode.Escape)) {
