@@ -334,15 +334,31 @@ class MenuScenery : MenuAbstract {
 }
 
 class MenuObjects : MenuAbstract {
+	
+	enum EditorObject {Player, Rock};
+	
+	EditorObject currentObject = EditorObject.Player;
+	
 	override public void Begin() {
 	}
 	
 	override public string Text() {
 		string t;
 	
-		t = "P   - Player\n" +
+		t = "Current object: " + EditorObjectToString(currentObject) + 
+			"\n" +
+			"P   - Player\n" +
+			"R   - Rock\n" +
 			"\n" +
 			"Esc - Back\n";
+		
+		if (Input.GetKeyDown(KeyCode.P)) {
+			SetCurrentObject(EditorObject.Player);
+		}
+		
+		if (Input.GetKeyDown(KeyCode.R)) {
+			SetCurrentObject(EditorObject.Rock);
+		}
 		
 		if (Input.GetKeyDown(KeyCode.Escape)) {
 			SetMenu(TextMenu.Main);
@@ -352,6 +368,23 @@ class MenuObjects : MenuAbstract {
 	}
 	
 	override public void End() {
+	}
+	
+	void SetCurrentObject(EditorObject currentObject) {
+		this.currentObject = currentObject;
+	}
+	
+	string EditorObjectToString(EditorObject editorObject) {
+		string t = "";
+		switch (editorObject) {
+		case EditorObject.Player:
+			t = "Player";
+			break;
+		case EditorObject.Rock:
+			t = "Rock";
+			break;
+		}
+		return t;
 	}
 }
 
