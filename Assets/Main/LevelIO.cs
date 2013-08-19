@@ -55,13 +55,13 @@ public class LevelIO {
 		// 1) Write version
 		levelData.WriteString("v0.1");
 
-		// Find all TerrainPartObjects
-		TerrainPartObject[] terrains = GameObject.FindObjectsOfType(typeof(TerrainPartObject)) as TerrainPartObject[];
+		// Find all TerrainObjects
+		TerrainObject[] terrains = GameObject.FindObjectsOfType(typeof(TerrainObject)) as TerrainObject[];
 
 		// 2) Write how many terrains there are
 		levelData.WriteInt(terrains.Length);
 
-		foreach (TerrainPartObject terrain in terrains) {
+		foreach (TerrainObject terrain in terrains) {
 			// Loop through each terrain
 			BlueprintPartType type = terrain.terrainPart.blueprintPart.GetPartType();
 			levelData.WriteInt((int) type);
@@ -98,19 +98,19 @@ public class LevelIO {
 
 			// Create each terrain
 			BlueprintPartType type = (BlueprintPartType) levelData.ReadInt();
-			TerrainPartMaker terrainPartMaker = new TerrainPartMaker(type);
-			for (int i = 0; i < terrainPartMaker.GetNodeAmount(); i++) {
-				terrainPartMaker.AddNode(new Vector3(levelData.ReadFloat(), levelData.ReadFloat(), 0.0f));
+			TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(type);
+			for (int i = 0; i < terrainObjectMaker.GetNodeAmount(); i++) {
+				terrainObjectMaker.AddNode(new Vector3(levelData.ReadFloat(), levelData.ReadFloat(), 0.0f));
 			}
 
 			// Read segments length
 			float segmentLength = levelData.ReadFloat();
-			terrainPartMaker.SetSegmentLength(segmentLength);
+			terrainObjectMaker.SetSegmentLength(segmentLength);
 
-			terrainPartMaker.SetIsEditable(edit);
+			terrainObjectMaker.SetIsEditable(edit);
 			
-			//TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
-			terrainPartMaker.CreateTerrain();
+			//TerrainObject terrain = terrainObjectMaker.CreateTerrain();
+			terrainObjectMaker.CreateTerrain();
 		}
 	}
 }

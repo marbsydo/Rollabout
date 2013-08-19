@@ -1,17 +1,17 @@
 using UnityEngine;
 using System.Collections;
 
-public class TerrainPartObject : MonoBehaviour {
+public class TerrainObject : MonoBehaviour {
 	public TerrainPart terrainPart;
 	
 	private bool requireNodes;
-	public EditorNode[] nodes;
+	public ObjectNode[] nodes;
 
 	private float segmentLength = 1f;
 	private Color partColor = Color.white;
 	
 	// Init() is used instead of a constructor because parameters cannot be passed through AddComponent<>()
-	// and this class is created in the CreateTerrain() function of class TerrainPartMaker using AddComponent<>()
+	// and this class is created in the CreateTerrain() function of class TerrainObjectMaker using AddComponent<>()
 	// It is necessary that Init() is called before any other functions in this class
 	public void Init(bool requireNodes) {
 		// If set to true, nodes will be created when AssignBlueprint() is called
@@ -28,19 +28,19 @@ public class TerrainPartObject : MonoBehaviour {
 			// Create the relevant nodes for this object
 			switch (blueprintPart.GetPartType()) {
 			case BlueprintPartType.StraightLine:
-				nodes = new EditorNode[2];
+				nodes = new ObjectNode[2];
 				nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 0);
 				nodes[1] = CreateNode(blueprintPart.GetNodePosition(1), 0);
 				break;
 			case BlueprintPartType.CurveBezierCubic:
-				nodes = new EditorNode[2];
+				nodes = new ObjectNode[2];
 				nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 1);
 				nodes[0].MoveControl(0, blueprintPart.GetNodePosition(1));
 				nodes[1] = CreateNode(blueprintPart.GetNodePosition(3), 1);
 				nodes[1].MoveControl(0, blueprintPart.GetNodePosition(2));
 				break;
 			case BlueprintPartType.CurveCircularArc:
-				nodes = new EditorNode[2];
+				nodes = new ObjectNode[2];
 				nodes[0] = CreateNode(blueprintPart.GetNodePosition(0), 1);
 				nodes[0].MoveControl(0, blueprintPart.GetNodePosition(1));
 				nodes[1] = CreateNode(blueprintPart.GetNodePosition(2), 0);
@@ -52,12 +52,12 @@ public class TerrainPartObject : MonoBehaviour {
 		this.Regenerate();
 	}
 	
-	EditorNode CreateNode(Vector3 pos, int numControls) {
+	ObjectNode CreateNode(Vector3 pos, int numControls) {
 		GameObject g = new GameObject();
-		EditorNode node = g.AddComponent<EditorNode>();
+		ObjectNode node = g.AddComponent<ObjectNode>();
 		node.SetPosition(pos);
 		node.CreateHandles(numControls);
-		node.SetTerrainPartObject(this);
+		node.SetTerrainObject(this);
 
 		// Make the node be a child of the terrain object
 		g.transform.parent = this.transform;
@@ -65,7 +65,7 @@ public class TerrainPartObject : MonoBehaviour {
 		return node;
 	}
 	
-	// Called by EditorNode.cs when the nodes have changed
+	// Called by ObjectNode.cs when the nodes have changed
 	public void Regenerate() {
 		if (requireNodes) {
 			// First, modify the blueprint
@@ -141,18 +141,18 @@ Vector3 p2 = new Vector3(4, 5, 6);
 Vector3 p3 = new Vector3(7, 8, 9);
 
 // Pass inputs to the maker
-TerrainPartMaker terrainPartMaker = new TerrainPartMaker(blueprintPartType);
-terrainPartMaker.AddNode(p1);
-terrainPartMaker.AddNode(p2);
-terrainPartMaker.AddNode(p3);
-terrainPartMaker.SetSegmentLength(segmentLength);
-terrainPartMaker.SetIsEditable(edit);
+TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(blueprintPartType);
+terrainObjectMaker.AddNode(p1);
+terrainObjectMaker.AddNode(p2);
+terrainObjectMaker.AddNode(p3);
+terrainObjectMaker.SetSegmentLength(segmentLength);
+terrainObjectMaker.SetIsEditable(edit);
 
 // Maker returns finished part
-TerrainPartObject part = terrainPartMaker.CreateTerrain();
+TerrainObject part = terrainObjectMaker.CreateTerrain();
 
 */
-public class TerrainPartMaker {
+public class TerrainObjectMaker {
 	BlueprintPart part;
 	Vector3[] nodes;
 	int nodeCurrent = 0;
@@ -160,7 +160,7 @@ public class TerrainPartMaker {
 	float segmentLength = 1f;
 	bool edit;
 
-	public TerrainPartMaker(BlueprintPartType type) {
+	public TerrainObjectMaker(BlueprintPartType type) {
 
 		// Create the blank blueprint
 		switch (type) {
@@ -207,14 +207,14 @@ public class TerrainPartMaker {
 		this.edit = edit;
 	}
 
-	public TerrainPartObject CreateTerrain() {
+	public TerrainObject CreateTerrain() {
 
 		// Add all nodes to the blueprint
 		this.part.SetNodePositions(nodes);
 
 		// Create the terrain object
 		GameObject obj = new GameObject() as GameObject;
-		TerrainPartObject terrain = obj.AddComponent<TerrainPartObject>();
+		TerrainObject terrain = obj.AddComponent<TerrainObject>();
 		terrain.Init(edit);
 
 		terrain.SetSegmentLength(segmentLength);

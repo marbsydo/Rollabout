@@ -244,32 +244,32 @@ class MenuTerrain : MenuAbstract {
 					break;
 				}
 
-				TerrainPartMaker terrainPartMaker = new TerrainPartMaker(type);
+				TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(type);
 
 				Vector3 partPointsDiff = drawPoints[1] - drawPoints[0];
 				switch (type) {
 				case BlueprintPartType.CurveBezierCubic:
-					terrainPartMaker.AddNode(drawPoints[0]);
-					terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.25f);
-					terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.75f);
-					terrainPartMaker.AddNode(drawPoints[1]);
+					terrainObjectMaker.AddNode(drawPoints[0]);
+					terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.25f);
+					terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.75f);
+					terrainObjectMaker.AddNode(drawPoints[1]);
 					break;
 				case BlueprintPartType.CurveCircularArc:
-					terrainPartMaker.AddNode(drawPoints[0]);
-					terrainPartMaker.AddNode(drawPoints[0] + partPointsDiff * 0.5f);
-					terrainPartMaker.AddNode(drawPoints[1]);
+					terrainObjectMaker.AddNode(drawPoints[0]);
+					terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.5f);
+					terrainObjectMaker.AddNode(drawPoints[1]);
 					break;
 				case BlueprintPartType.StraightLine:
-					terrainPartMaker.AddNode(drawPoints[0]);
-					terrainPartMaker.AddNode(drawPoints[1]);
+					terrainObjectMaker.AddNode(drawPoints[0]);
+					terrainObjectMaker.AddNode(drawPoints[1]);
 					break;
 				}
 
-				terrainPartMaker.SetSegmentLength(2f);
-				terrainPartMaker.SetIsEditable(true);
+				terrainObjectMaker.SetSegmentLength(2f);
+				terrainObjectMaker.SetIsEditable(true);
 
-				//TerrainPartObject terrain = terrainPartMaker.CreateTerrain();
-				terrainPartMaker.CreateTerrain();
+				//TerrainPartObject terrain = terrainObjectMaker.CreateTerrain();
+				terrainObjectMaker.CreateTerrain();
 
 				editorController.MouseReleaseNextFrame(editorInterfaceKeyboard.gameObject);
 			}

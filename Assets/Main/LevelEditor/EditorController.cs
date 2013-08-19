@@ -21,7 +21,7 @@ public class EditorController : TerrainGenerator {
 	public GameObject mouseReleaseNextFrameClaimant;
 	
 	// Terrain nodes
-	EditorNode[] nodes;
+	ObjectNode[] nodes;
 	
 	void Awake() {
 		mainController = GameObject.Find("MainController").GetComponent<MainController>();
@@ -114,7 +114,7 @@ public class EditorController : TerrainGenerator {
 	public void NodesActivate() {
 		// Reactivate all nodes
 		if (nodes != null) {
-			foreach (EditorNode node in nodes) {
+			foreach (ObjectNode node in nodes) {
 				node.gameObject.SetActive(true);
 			}
 		}
@@ -122,8 +122,8 @@ public class EditorController : TerrainGenerator {
 	
 	public void NodesDeactivate() {
 		// Deactivate all nodes
-		nodes = FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
-		foreach (EditorNode node in nodes) {
+		nodes = FindObjectsOfType(typeof(ObjectNode)) as ObjectNode[];
+		foreach (ObjectNode node in nodes) {
 			node.gameObject.SetActive(false);
 		}
 	}

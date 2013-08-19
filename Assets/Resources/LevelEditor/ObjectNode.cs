@@ -1,9 +1,9 @@
 using UnityEngine;
 using System.Collections;
 
-public enum EditorNodeControlRestriction{None, PerpendicularToMiddleOfAC};
+public enum ObjectNodeControlRestriction{None, PerpendicularToMiddleOfAC};
 
-public class EditorNode : MonoBehaviour {
+public class ObjectNode : MonoBehaviour {
 	
 	const KeyCode inputNodeModify = KeyCode.Mouse0;              // Moving and reshaping a node
 	const KeyCode inputNodeSnapGrid = KeyCode.LeftAlt;           // Snapping a node to the grid (overridden by spoke snap)
@@ -21,7 +21,7 @@ public class EditorNode : MonoBehaviour {
 	EditorController editorController;
 	
 	// The object that we should tell when we update
-	TerrainPartObject terrainPartObject;
+	TerrainObject terrainObject;
 	
 	GameObject spriteBezierControl;
 	GameObject spriteBezierVertex;
@@ -30,7 +30,7 @@ public class EditorNode : MonoBehaviour {
 	bool handlesHaveBeenCreated = false;
 	GameObject nodeVertex;
 	GameObject[] nodeControl;
-	EditorNodeControlRestriction[] nodeControlRestriction;
+	ObjectNodeControlRestriction[] nodeControlRestriction;
 	GameObject[] nodeLine;
 	int numControls = 3;
 	
@@ -43,7 +43,7 @@ public class EditorNode : MonoBehaviour {
 	float gridSpokeResolution = 2f; // Resolution of the spoke length
 
 	// For moving multiple nodes
-	EditorNode[] additionalNodes;
+	ObjectNode[] additionalNodes;
 	int additionalNodesLength;
 	const int additionalNodesMax = 3; // Max number of nodes that can be moved together
 
@@ -69,7 +69,7 @@ public class EditorNode : MonoBehaviour {
 	// (unless you feel like writing a function to destroy all handles)
 	public void CreateHandles(int numControls) {
 		nodeControl = new GameObject[numControls];
-		nodeControlRestriction = new EditorNodeControlRestriction[numControls];
+		nodeControlRestriction = new ObjectNodeControlRestriction[numControls];
 		nodeLine = new GameObject[numControls];
 		
 		this.numControls = numControls;
@@ -78,7 +78,7 @@ public class EditorNode : MonoBehaviour {
 		nodeVertex.transform.parent = transform;
 		
 		for (int i = 0; i < numControls; i++) {
-			nodeControlRestriction[i] = EditorNodeControlRestriction.None;
+			nodeControlRestriction[i] = ObjectNodeControlRestriction.None;
 			nodeControl[i] = GameObject.Instantiate(spriteBezierControl, transform.position, Quaternion.identity) as GameObject;
 			nodeLine[i] = GameObject.Instantiate(spriteBezierLine, transform.position, Quaternion.identity) as GameObject;
 			
@@ -124,11 +124,11 @@ public class EditorNode : MonoBehaviour {
 		//MoveVertex(pos);
 	}
 	
-	public void SetTerrainPartObject(TerrainPartObject terrainPartObject) {
-		this.terrainPartObject = terrainPartObject;
+	public void SetTerrainObject(TerrainObject terrainObject) {
+		this.terrainObject = terrainObject;
 	}
 	
-	public void SetControlRestriction(int control, EditorNodeControlRestriction r) {
+	public void SetControlRestriction(int control, ObjectNodeControlRestriction r) {
 		nodeControlRestriction[control] = r;
 	}
 	
@@ -158,8 +158,8 @@ public class EditorNode : MonoBehaviour {
 					mousePosOffset = nodeControl[i].transform.position - mousePos;
 					mouseHolding = i;
 
-					// Highlight terrainPartObject to show it is being modified
-					terrainPartObject.SetColor(colorModifyControl);
+					// Highlight terrainObject to show it is being modified
+					terrainObject.SetColor(colorModifyControl);
 
 					break;
 				}
@@ -172,17 +172,17 @@ public class EditorNode : MonoBehaviour {
 					// Did click on the vertex
 					mouseHolding = -1;
 
-					// Highlight terrainPartObject to show it is being modified
-					terrainPartObject.SetColor(colorModifyVertex);
+					// Highlight terrainObject to show it is being modified
+					terrainObject.SetColor(colorModifyVertex);
 
 					// If moving multiple vertices, check for others at same position
 					if (!Input.GetKey(inputNodeSelectIndividual)) {
 
-						additionalNodes = new EditorNode[additionalNodesMax];
+						additionalNodes = new ObjectNode[additionalNodesMax];
 						additionalNodesLength = 0;
 
-						EditorNode[] nodes = GameObject.FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
-						foreach (EditorNode node in nodes) {
+						ObjectNode[] nodes = GameObject.FindObjectsOfType(typeof(ObjectNode)) as ObjectNode[];
+						foreach (ObjectNode node in nodes) {
 							if (node.gameObject.GetInstanceID() != gameObject.GetInstanceID()) { // Don't select ourselves
 								Vector3 p1 = node.GetVertexPosition();
 								Vector3 p2 = this.GetVertexPosition();//GetMousePosition();
@@ -212,8 +212,8 @@ public class EditorNode : MonoBehaviour {
 
 					// If the thing that claimed the mouse is NOT controlling the same object, return its colour to normal
 					if (editorController.MouseClaimant().transform.parent.GetInstanceID() != this.transform.parent.GetInstanceID()) {
-						terrainPartObject.SetColor(Color.white);
-						terrainPartObject.Regenerate();
+						terrainObject.SetColor(Color.white);
+						terrainObject.Regenerate();
 					}
 				}
 			}
@@ -224,8 +224,8 @@ public class EditorNode : MonoBehaviour {
 				// If release button, drop whatever is being moved
 				mouseHolding = -2;
 				additionalNodesLength = 0;
-				terrainPartObject.SetColor(Color.white);
-				terrainPartObject.Regenerate();
+				terrainObject.SetColor(Color.white);
+				terrainObject.Regenerate();
 				
 				editorController.MouseRelease(gameObject);
 			}
@@ -254,11 +254,11 @@ public class EditorNode : MonoBehaviour {
 
 			// Being held, so also update segment length if necessary
 			if (Input.GetKeyDown(inputNodeSegmentsIncrease)) {
-				terrainPartObject.SegmentLengthIncrease();
+				terrainObject.SegmentLengthIncrease();
 			}
 
 			if (Input.GetKeyDown(inputNodeSegmentsDecrease)) {
-				terrainPartObject.SegmentLengthDecrease();
+				terrainObject.SegmentLengthDecrease();
 			}
 			
 			// Snap to nearby thingies
@@ -266,8 +266,8 @@ public class EditorNode : MonoBehaviour {
 			if (Input.GetKey(inputNodeSnapNode) ^ snapByDefault) {
 
 				// Find all nodes
-				EditorNode[] nodes = GameObject.FindObjectsOfType(typeof(EditorNode)) as EditorNode[];
-				foreach (EditorNode node in nodes) {
+				ObjectNode[] nodes = GameObject.FindObjectsOfType(typeof(ObjectNode)) as ObjectNode[];
+				foreach (ObjectNode node in nodes) {
 					// Compare GetInstanceID() to ensure we don't snap to ourselves
 					if (!snappedToNode && node.gameObject.GetInstanceID() != gameObject.GetInstanceID()) {
 
@@ -311,7 +311,7 @@ public class EditorNode : MonoBehaviour {
 			// Snap to spoke
 			if (snappingToSpokeAngle) {
 				// Find all nodes
-				EditorNode[] nodes = this.transform.parent.GetComponentsInChildren<EditorNode>() as EditorNode[];
+				ObjectNode[] nodes = this.transform.parent.GetComponentsInChildren<ObjectNode>() as ObjectNode[];
 				if (nodes.Length == 2) {
 					// There are exactly two nodes
 					Vector3 p2 = mousePosWithOffset;//this.GetVertexPosition();
@@ -375,7 +375,7 @@ public class EditorNode : MonoBehaviour {
 				}
 			}
 
-			// Now tell our TerrainPartObject to update
+			// Now tell our TerrainObject to update
 			Regenerate();
 		}
 	}
@@ -386,8 +386,8 @@ public class EditorNode : MonoBehaviour {
 	}
 
 	public void Regenerate() {
-			if (terrainPartObject != null)
-				terrainPartObject.Regenerate();
+			if (terrainObject != null)
+				terrainObject.Regenerate();
 	}
 	
 	public void MoveVertex(Vector3 pos) {
