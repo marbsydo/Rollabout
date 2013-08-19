@@ -197,7 +197,7 @@ class MenuTerrain : MenuAbstract {
 		if (Input.GetKeyDown(KeyCode.D)) {
 			terrainStyle--;
 			if ((int)terrainStyle < 0)
-				terrainStyle = (InterfaceTerrainStyle)terrainStyleMax;
+				terrainStyle = (InterfaceTerrainStyle)terrainStyleMax - 1;
 		}
 		
 		if (Input.GetKeyDown(KeyCode.T)) {
@@ -208,7 +208,7 @@ class MenuTerrain : MenuAbstract {
 		if (Input.GetKeyDown(KeyCode.Y)) {
 			terrainTool--;
 			if ((int)terrainTool < 0)
-				terrainTool = (InterfaceTerrainTool)terrainToolMax;
+				terrainTool = (InterfaceTerrainTool)terrainToolMax - 1;
 		}
 		
 		// Drawing
