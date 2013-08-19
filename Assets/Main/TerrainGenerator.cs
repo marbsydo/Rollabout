@@ -2,18 +2,16 @@ using UnityEngine;
 using System.Collections;
 
 public class TerrainGenerator : MonoBehaviour {
-
+	// This exists so that Unity is happy
 }
-
-//TODO: TerrainPart has been renamed GroundPart
-// A new class also called TerrainPart has been created to be the abstract for both GroundPart and RollerPart
 
 public abstract class TerrainPart {
 
 	public BlueprintPart blueprintPart;
 	protected Transform parent;
 
-	// Then update TerraiunObvject.cs to rename terrainPart to groundPart
+	GameObject[] objs;
+	int objPos = 0;
 
 	public TerrainPart(BlueprintPart blueprintPart) {
 		this.blueprintPart = blueprintPart;
@@ -23,13 +21,30 @@ public abstract class TerrainPart {
 		this.parent = parent;
 	}
 
+	protected void ObjsReset(int size) {
+		ObjsDestroy();
+		objs = new GameObject[size];
+	}
+	
+	protected void ObjsAppend(GameObject obj) {
+		objs[objPos] = obj;
+		objPos++;
+	}
+	
+	protected void ObjsDestroy() {
+		if (objs != null) {
+			for (int i = 0; i < objs.Length; i++) {
+				GameObject.Destroy(objs[i]);
+			}
+		}
+		objs = null;
+		objPos = 0;
+	}
+
 	public abstract void Regenerate();
 }
 
 public class GroundPart : TerrainPart {
-	GameObject[] objs;
-	int objPos = 0;
-
 	GameObject terrainLine;
 	GameObject terrainCircle;
 	
@@ -69,32 +84,12 @@ public class GroundPart : TerrainPart {
 		}
 	}
 	
-	void ObjsReset(int size) {
-		ObjsDestroy();
-		objs = new GameObject[size];
-	}
-	
-	void ObjsAppend(GameObject obj) {
-		objs[objPos] = obj;
-		objPos++;
-	}
-	
-	void ObjsDestroy() {
-		if (objs != null) {
-			for (int i = 0; i < objs.Length; i++) {
-				GameObject.Destroy(objs[i]);
-			}
-		}
-		objs = null;
-		objPos = 0;
-	}
-	
 	GameObject CreateSphereAt(Vector3 pos, float angle) {
 		GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 
 		// Sprite
 		GameObject.Destroy(s.GetComponent<MeshRenderer>());
-		GameObject sprite = (GameObject.Instantiate(terrainCircle, Vector3.zero, Quaternion.identity) as GameObject);
+		GameObject sprite = GameObject.Instantiate(terrainCircle, Vector3.zero, Quaternion.identity) as GameObject;
 		sprite.transform.parent = s.transform;
 		sprite.transform.eulerAngles = new Vector3(0, 0, angle * Mathf.Rad2Deg);
 		sprite.transform.position = new Vector3(0, 0, 0.5f);
@@ -112,7 +107,7 @@ public class GroundPart : TerrainPart {
 
 		// Sprite
 		GameObject.Destroy(b.GetComponent<MeshRenderer>());
-		GameObject sprite = (GameObject.Instantiate(terrainLine, Vector3.zero, Quaternion.identity) as GameObject);
+		GameObject sprite = GameObject.Instantiate(terrainLine, Vector3.zero, Quaternion.identity) as GameObject;
 		sprite.transform.parent = b.transform;
 
 		b.transform.position = (pos1 + pos2) / 2;
@@ -138,12 +133,39 @@ public class GroundPart : TerrainPart {
 
 public class RollerPart : TerrainPart {
 
+	GameObject spriteRoller;
+
 	public RollerPart(BlueprintPart blueprintPart) : base(blueprintPart) {
-		//TODO: Load references to sprites
+		spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerGeneral") as GameObject;
 	}
 
 	public override void Regenerate() {
 		//TODO: Generate rollers
+
+		Vector3[] p = blueprintPart.CalculatePoints();
+
+		ObjsReset(p.Length);
+
+		for (int i = 0; i < p.Length; i++) {
+			GameObject spriteObj = CreateRollerAt(p[i]);
+			ObjsAppend(spriteObj);
+		}
+
+	}
+
+	GameObject CreateRollerAt(Vector3 pos) {
+		GameObject spriteObj = new GameObject();
+
+		GameObject sprite = (GameObject.Instantiate(spriteRoller, Vector3.zero, Quaternion.identity) as GameObject);
+		sprite.transform.parent = spriteObj.transform;
+
+		spriteObj.transform.position = pos;
+
+		if (parent != null) {
+			spriteObj.transform.parent = parent;
+		}
+
+		return spriteObj;
 	}
 }
 
