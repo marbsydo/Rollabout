@@ -17,8 +17,8 @@ public class TerrainPart {
 	public TerrainPart(BlueprintPart blueprintPart) {
 		this.blueprintPart = blueprintPart;
 
-		terrainLine = Resources.Load("Terrain/Sprites/TerrainGrassLine") as GameObject;
-		terrainCircle = Resources.Load("Terrain/Sprites/TerrainGrassCircle") as GameObject;
+		terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundGrassLine") as GameObject;
+		terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundGrassCircle") as GameObject;
 	}
 	
 	public void SetParent(Transform parent) {
