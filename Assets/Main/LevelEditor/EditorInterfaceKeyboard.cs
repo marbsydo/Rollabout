@@ -9,7 +9,9 @@ using System.IO;
 // Edit -> Project Settings -> Script Execution Order
 // and ensure that EditorInterfaceKeyboard.cs is listed after EditorNode.cs
 
-public enum TerrainStyle {Grass, Snow, Desert};
+// The last item is set to __Length to so then the length can be read by doing (int)TerrainStyle.__Length
+public enum TerrainStyle {GroundGrass, RollersGeneral, __Length};
+public enum TerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc, __Length};
 public enum TextMenu {Main, Navigation, Terrain, Scenery, Objects, Options, LevelSave, LevelLoad};
 
 [RequireComponent (typeof(GUIText))]
@@ -156,8 +158,11 @@ class MenuNavigation : MenuAbstract {
 
 class MenuTerrain : MenuAbstract {
 	
-	TerrainStyle terrainStyle = TerrainStyle.Grass;
-	enum TerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc};
+	TerrainStyle terrainStyle = TerrainStyle.GroundGrass;
+
+	int terrainStyleMax = (int)TerrainStyle.__Length;
+	int terrainToolMax = (int)TerrainTool.__Length;
+
 	TerrainTool terrainTool = TerrainTool.StraightLine;
 	int drawStage = 0;
 	Vector3[] drawPoints;
@@ -185,24 +190,24 @@ class MenuTerrain : MenuAbstract {
 		
 		if (Input.GetKeyDown(KeyCode.S)) {
 			terrainStyle++;
-			if ((int)terrainStyle > 2)
+			if ((int)terrainStyle >= terrainStyleMax)
 				terrainStyle = (TerrainStyle)0;
 		}
 		if (Input.GetKeyDown(KeyCode.D)) {
 			terrainStyle--;
 			if ((int)terrainStyle < 0)
-				terrainStyle = (TerrainStyle)2;
+				terrainStyle = (TerrainStyle)terrainStyleMax;
 		}
 		
 		if (Input.GetKeyDown(KeyCode.T)) {
 			terrainTool++;
-			if ((int)terrainTool > 2)
+			if ((int)terrainTool >= terrainToolMax)
 				terrainTool = (TerrainTool)0;
 		}
 		if (Input.GetKeyDown(KeyCode.Y)) {
 			terrainTool--;
 			if ((int)terrainTool < 0)
-				terrainTool = (TerrainTool)2;
+				terrainTool = (TerrainTool)terrainToolMax;
 		}
 		
 		// Drawing
@@ -285,14 +290,11 @@ class MenuTerrain : MenuAbstract {
 	string TerrainStyleToText(TerrainStyle t) {
 		string s = "";
 		switch (t) {
-		case TerrainStyle.Grass:
+		case TerrainStyle.GroundGrass:
 			s = "Grass";
 			break;
-		case TerrainStyle.Snow:
-			s = "Snow (NOT IMPLEMENTED)";
-			break;
-		case TerrainStyle.Desert:
-			s = "Desert (NOT IMPLEMENTED)";
+		case TerrainStyle.RollersGeneral:
+			s = "Rollers";
 			break;
 		default:
 			s = "???";
