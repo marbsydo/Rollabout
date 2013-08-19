@@ -1,8 +1,121 @@
 using UnityEngine;
 using System.Collections;
 
+public enum TerrainBlueprintType {StraightLine, CurveBezierCubic, CurveCircularArc}
+public enum TerrainType {Ground, Roller};
+public enum TerrainGroundStyle {Grass, Snow, Desert};
+public enum TerrainRollerStyle {General, Clouds, Bubbles};
+
 public class TerrainGenerator : MonoBehaviour {
 	// This exists so that Unity is happy
+}
+
+public class TerrainObjectMaker {
+	BlueprintPart part;
+
+	TerrainType terrainType;
+	TerrainGroundStyle groundStyle;
+	TerrainRollerStyle rollerStyle;
+
+	Vector3[] nodes;
+	int nodeCurrent = 0;
+
+	float segmentLength = 1f;
+	bool edit;
+
+	public TerrainObjectMaker(TerrainBlueprintType type, TerrainType terrainType, TerrainGroundStyle groundStyle) {
+
+		if (terrainType != TerrainType.Ground) {
+			Debug.LogError("Can only use a TerrainGroundStyle with a TerrainType of Ground!");
+		}
+
+		this.terrainType = terrainType;
+		this.groundStyle = groundStyle;
+		CreatePart(type);
+	}
+
+	public TerrainObjectMaker(TerrainBlueprintType type, TerrainType terrainType, TerrainRollerStyle rollerStyle) {
+
+		if (terrainType != TerrainType.Roller) {
+			Debug.LogError("Can only use a TerrainRollerStyle with a TerrainType of Roller!");
+		}
+
+		this.terrainType = terrainType;
+		this.rollerStyle = rollerStyle;
+		CreatePart(type);
+	}
+
+	private void CreatePart(TerrainBlueprintType type) {
+		// Create the blank blueprint
+		switch (type) {
+		case TerrainBlueprintType.StraightLine:
+			part = new StraightLine();
+			break;
+		case TerrainBlueprintType.CurveBezierCubic:
+			part = new CurveBezierCubic();
+			break;
+		case TerrainBlueprintType.CurveCircularArc:
+			part = new CurveCircularArc();
+			break;
+		default:
+			Debug.LogError("Unknown part [" + part + "]. Defaulting to StraightLine.");
+			part = new StraightLine();
+			break;
+		}
+
+		nodes = new Vector3[part.GetNodeAmount()];
+	}
+
+	public int GetNodeAmount() {
+
+		// Get how many nodes the blueprint requires in total
+		return nodes.Length;
+	}
+
+	public void AddNode(Vector3 v) {
+		
+		// Add a node to the list of nodes for the blueprint
+		if (nodeCurrent >= nodes.Length) {
+			Debug.LogError("Trying to add too many nodes!");
+		} else {
+			nodes[nodeCurrent] = v;
+			nodeCurrent++;
+		}
+	}
+
+	public void SetSegmentLength(float segmentLength) {
+		this.segmentLength = segmentLength;
+	}
+
+	public void SetIsEditable(bool edit) {
+		this.edit = edit;
+	}
+
+	public void CreateTerrain() {
+
+		// Add all nodes to the blueprint
+		this.part.SetNodePositions(nodes);
+
+		// Create the terrain object
+		GameObject obj = new GameObject() as GameObject;
+
+		switch (terrainType) {
+		case TerrainType.Ground:
+			TerrainGround terrainGround = obj.AddComponent<TerrainGround>();
+			terrainGround.Init(edit);
+			terrainGround.SetTerrainGroundStyle(this.groundStyle);
+			terrainGround.SetSegmentLength(segmentLength);
+			terrainGround.AssignBlueprint(part);
+			break;
+		case TerrainType.Roller:
+			TerrainRoller terrainRoller = obj.AddComponent<TerrainRoller>();
+			terrainRoller.Init(edit);
+			terrainRoller.SetTerrainRollerStyle(this.rollerStyle);
+			terrainRoller.SetSegmentLength(segmentLength);
+			terrainRoller.AssignBlueprint(part);
+			break;
+		}
+	}
 }
 
 public abstract class TerrainPart {
@@ -45,12 +158,22 @@ public abstract class TerrainPart {
 }
 
 public class GroundPart : TerrainPart {
+
+	TerrainGroundStyle style;
+
 	GameObject terrainLine;
 	GameObject terrainCircle;
 	
-	public GroundPart(BlueprintPart blueprintPart) : base(blueprintPart) {
+	public GroundPart(BlueprintPart blueprintPart, TerrainGroundStyle style) : base(blueprintPart) {
+		this.style = style;
+
+		//TODO: Load a different sprite depending upon the style
 		terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundGrassLine") as GameObject;
 		terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundGrassCircle") as GameObject;
+	}
+
+	public TerrainGroundStyle GetTerrainGroundStyle() {
+		return style;
 	}
 	
 	public override void Regenerate() {
@@ -133,10 +256,19 @@ public class GroundPart : TerrainPart {
 
 public class RollerPart : TerrainPart {
 
+	TerrainRollerStyle style;
+
 	GameObject spriteRoller;
 
-	public RollerPart(BlueprintPart blueprintPart) : base(blueprintPart) {
+	public RollerPart(BlueprintPart blueprintPart, TerrainRollerStyle style) : base(blueprintPart) {
+		this.style = style;
+
+		//TODO: Load a different sprite depending upon the style
 		spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerGeneral") as GameObject;
+	}
+
+	public TerrainRollerStyle GetTerrainRollerStyle() {
+		return style;
 	}
 
 	public override void Regenerate() {
@@ -169,14 +301,12 @@ public class RollerPart : TerrainPart {
 	}
 }
 
-public enum BlueprintPartType {StraightLine, CurveBezierCubic, CurveCircularArc}
-
 abstract public class BlueprintPart {
-	protected BlueprintPartType type;
+	protected TerrainBlueprintType type;
 	protected Vector3[] p;
 	protected float segmentLength = 1f;
 
-	public BlueprintPartType GetPartType() {
+	public TerrainBlueprintType GetTerrainBlueprintType() {
 		return type;
 	}
 
@@ -224,7 +354,7 @@ public class StraightLine : BlueprintPart {
 	// # Constructor
 	
 	public StraightLine() {
-		type = BlueprintPartType.StraightLine;
+		type = TerrainBlueprintType.StraightLine;
 	}
 
 	// ## Meta
@@ -269,7 +399,7 @@ public class CurveBezierCubic : BlueprintPart {
 	// ## Constructor
 	
 	public CurveBezierCubic() {
-		type = BlueprintPartType.CurveBezierCubic;
+		type = TerrainBlueprintType.CurveBezierCubic;
 	}
 
 	// ## Meta
@@ -372,7 +502,7 @@ public class CurveCircularArc : BlueprintPart {
 	// ## Constructor
 
 	public CurveCircularArc() {
-		type = BlueprintPartType.CurveCircularArc;
+		type = TerrainBlueprintType.CurveCircularArc;
 	}
 
 	// ## Meta

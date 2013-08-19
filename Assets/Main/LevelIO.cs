@@ -55,16 +55,23 @@ public class LevelIO {
 		// 1) Write version
 		levelData.WriteString("v0.1");
 
-		// Find all TerrainObjects
-		GroundObject[] grounds = GameObject.FindObjectsOfType(typeof(GroundObject)) as GroundObject[];
+		// Find all TerrainGrounds
+		TerrainGround[] grounds = GameObject.FindObjectsOfType(typeof(TerrainGround)) as TerrainGround[];
+
+		//TODO: Do the same for TerrainRoller
 
 		// 2) Write how many grounds there are
 		levelData.WriteInt(grounds.Length);
 
-		foreach (GroundObject ground in grounds) {
+		foreach (TerrainGround ground in grounds) {
 			// Loop through each ground
-			BlueprintPartType type = ground.groundPart.blueprintPart.GetPartType();
+			TerrainBlueprintType type = ground.groundPart.blueprintPart.GetTerrainBlueprintType();
 			levelData.WriteInt((int) type);
+
+			TerrainGroundStyle style = ground.groundPart.GetTerrainGroundStyle();
+			levelData.WriteInt((int) style);
+
+			//TODO: Get style and write it as well
 
 			// Write points
 			for (int i = 0; i < ground.groundPart.blueprintPart.GetNodeAmount(); i++) {
@@ -97,8 +104,8 @@ public class LevelIO {
 		for (int t = 0; t < numTerrains; t++) {
 
 			// Create each terrain
-			BlueprintPartType type = (BlueprintPartType) levelData.ReadInt();
-			TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(type);
+			TerrainBlueprintType type = (TerrainBlueprintType) levelData.ReadInt();
+			TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(type, TerrainType.Ground, TerrainGroundStyle.Grass); //TODO: Load style rather than using GroundGrass
 			for (int i = 0; i < terrainObjectMaker.GetNodeAmount(); i++) {
 				terrainObjectMaker.AddNode(new Vector3(levelData.ReadFloat(), levelData.ReadFloat(), 0.0f));
 			}

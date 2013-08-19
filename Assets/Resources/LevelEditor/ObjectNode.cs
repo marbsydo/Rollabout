@@ -21,7 +21,7 @@ public class ObjectNode : MonoBehaviour {
 	EditorController editorController;
 	
 	// The object that we should tell when we update
-	GroundObject groundObject;
+	TerrainBase terrain;
 	
 	GameObject spriteBezierControl;
 	GameObject spriteBezierVertex;
@@ -124,8 +124,8 @@ public class ObjectNode : MonoBehaviour {
 		//MoveVertex(pos);
 	}
 	
-	public void SetGroundObject(GroundObject groundObject) {
-		this.groundObject = groundObject;
+	public void SetTerrain(TerrainBase terrain) {
+		this.terrain = terrain;
 	}
 	
 	public void SetControlRestriction(int control, ObjectNodeControlRestriction r) {
@@ -158,8 +158,8 @@ public class ObjectNode : MonoBehaviour {
 					mousePosOffset = nodeControl[i].transform.position - mousePos;
 					mouseHolding = i;
 
-					// Highlight groundObject to show it is being modified
-					groundObject.SetColor(colorModifyControl);
+					// Highlight terrain to show it is being modified
+					terrain.SetColor(colorModifyControl);
 
 					break;
 				}
@@ -172,8 +172,8 @@ public class ObjectNode : MonoBehaviour {
 					// Did click on the vertex
 					mouseHolding = -1;
 
-					// Highlight groundObject to show it is being modified
-					groundObject.SetColor(colorModifyVertex);
+					// Highlight terrain to show it is being modified
+					terrain.SetColor(colorModifyVertex);
 
 					// If moving multiple vertices, check for others at same position
 					if (!Input.GetKey(inputNodeSelectIndividual)) {
@@ -212,8 +212,8 @@ public class ObjectNode : MonoBehaviour {
 
 					// If the thing that claimed the mouse is NOT controlling the same object, return its colour to normal
 					if (editorController.MouseClaimant().transform.parent.GetInstanceID() != this.transform.parent.GetInstanceID()) {
-						groundObject.SetColor(Color.white);
-						groundObject.Regenerate();
+						terrain.SetColor(Color.white);
+						terrain.Regenerate();
 					}
 				}
 			}
@@ -224,8 +224,8 @@ public class ObjectNode : MonoBehaviour {
 				// If release button, drop whatever is being moved
 				mouseHolding = -2;
 				additionalNodesLength = 0;
-				groundObject.SetColor(Color.white);
-				groundObject.Regenerate();
+				terrain.SetColor(Color.white);
+				terrain.Regenerate();
 				
 				editorController.MouseRelease(gameObject);
 			}
@@ -254,11 +254,11 @@ public class ObjectNode : MonoBehaviour {
 
 			// Being held, so also update segment length if necessary
 			if (Input.GetKeyDown(inputNodeSegmentsIncrease)) {
-				groundObject.SegmentLengthIncrease();
+				terrain.SegmentLengthIncrease();
 			}
 
 			if (Input.GetKeyDown(inputNodeSegmentsDecrease)) {
-				groundObject.SegmentLengthDecrease();
+				terrain.SegmentLengthDecrease();
 			}
 			
 			// Snap to nearby thingies
@@ -375,7 +375,7 @@ public class ObjectNode : MonoBehaviour {
 				}
 			}
 
-			// Now tell our GroundObject to update
+			// Now tell our TerrainBase to update
 			Regenerate();
 		}
 	}
@@ -386,8 +386,8 @@ public class ObjectNode : MonoBehaviour {
 	}
 
 	public void Regenerate() {
-			if (groundObject != null)
-				groundObject.Regenerate();
+			if (terrain != null)
+				terrain.Regenerate();
 	}
 	
 	public void MoveVertex(Vector3 pos) {

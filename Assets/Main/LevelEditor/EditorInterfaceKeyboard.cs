@@ -9,9 +9,10 @@ using System.IO;
 // Edit -> Project Settings -> Script Execution Order
 // and ensure that EditorInterfaceKeyboard.cs is listed after EditorNode.cs
 
-// The last item is set to __Length to so then the length can be read by doing (int)TerrainStyle.__Length
-public enum TerrainStyle {GroundGrass, RollersGeneral, __Length};
-public enum TerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc, __Length};
+// The last item is set to __Length to so then the length can be read by doing (int)InterfaceTerrainStyle.__Length
+public enum InterfaceTerrainStyle {GroundGrass, GroundSnow, GroundDesert, RollersGeneral, RollersClouds, RollersBubbles, __Length};
+public enum InterfaceTerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc, __Length};
+
 public enum TextMenu {Main, Navigation, Terrain, Scenery, Objects, Options, LevelSave, LevelLoad};
 
 [RequireComponent (typeof(GUIText))]
@@ -158,12 +159,12 @@ class MenuNavigation : MenuAbstract {
 
 class MenuTerrain : MenuAbstract {
 	
-	TerrainStyle terrainStyle = TerrainStyle.GroundGrass;
+	InterfaceTerrainStyle terrainStyle = InterfaceTerrainStyle.GroundGrass;
 
-	int terrainStyleMax = (int)TerrainStyle.__Length;
-	int terrainToolMax = (int)TerrainTool.__Length;
+	int terrainStyleMax = (int)InterfaceTerrainStyle.__Length;
+	int terrainToolMax = (int)InterfaceTerrainTool.__Length;
 
-	TerrainTool terrainTool = TerrainTool.StraightLine;
+	InterfaceTerrainTool terrainTool = InterfaceTerrainTool.StraightLine;
 	int drawStage = 0;
 	Vector3[] drawPoints;
 	
@@ -179,8 +180,8 @@ class MenuTerrain : MenuAbstract {
 			"Del - Delete selected terrain\n" +
 			"Esc - Back\n" +
 			"\n" +
-			"Current style: " + TerrainStyleToText(terrainStyle) + "\n" +
-			"Current tool: " + TerrainToolToText(terrainTool) + "\n" +
+			"Current style: " + InterfaceTerrainStyleToText(terrainStyle) + "\n" +
+			"Current tool: " + InterfaceTerrainToolToText(terrainTool) + "\n" +
 			"\n" +
 			"Use mouse to draw and modify terrain.";
 		
@@ -191,23 +192,23 @@ class MenuTerrain : MenuAbstract {
 		if (Input.GetKeyDown(KeyCode.S)) {
 			terrainStyle++;
 			if ((int)terrainStyle >= terrainStyleMax)
-				terrainStyle = (TerrainStyle)0;
+				terrainStyle = (InterfaceTerrainStyle)0;
 		}
 		if (Input.GetKeyDown(KeyCode.D)) {
 			terrainStyle--;
 			if ((int)terrainStyle < 0)
-				terrainStyle = (TerrainStyle)terrainStyleMax;
+				terrainStyle = (InterfaceTerrainStyle)terrainStyleMax;
 		}
 		
 		if (Input.GetKeyDown(KeyCode.T)) {
 			terrainTool++;
 			if ((int)terrainTool >= terrainToolMax)
-				terrainTool = (TerrainTool)0;
+				terrainTool = (InterfaceTerrainTool)0;
 		}
 		if (Input.GetKeyDown(KeyCode.Y)) {
 			terrainTool--;
 			if ((int)terrainTool < 0)
-				terrainTool = (TerrainTool)terrainToolMax;
+				terrainTool = (InterfaceTerrainTool)terrainToolMax;
 		}
 		
 		// Drawing
@@ -228,43 +229,96 @@ class MenuTerrain : MenuAbstract {
 				Vector3 m = editorController.GetMousePos();
 				drawPoints[1] = m;
 				
-				//TODO: Use terrainStyle to select style e.g. grass, snow, etc.
+				//TODO: Use terrainStyle to select style e.g. grass, rollers, etc.
 				
 				// Create the desired blueprint
-				BlueprintPartType type;
+				TerrainBlueprintType type;
 				
 				switch (terrainTool) {
-				case TerrainTool.StraightLine:
-					type = BlueprintPartType.StraightLine;
+				case InterfaceTerrainTool.StraightLine:
+					type = TerrainBlueprintType.StraightLine;
 					break;
-				case TerrainTool.CurveBezierCubic:
-					type = BlueprintPartType.CurveBezierCubic;
+				case InterfaceTerrainTool.CurveBezierCubic:
+					type = TerrainBlueprintType.CurveBezierCubic;
 					break;
-				case TerrainTool.CurveCircularArc:
-					type = BlueprintPartType.CurveCircularArc;
+				case InterfaceTerrainTool.CurveCircularArc:
+					type = TerrainBlueprintType.CurveCircularArc;
 					break;
 				default:
-					type = BlueprintPartType.StraightLine;
-					Debug.LogWarning("Unknown terrainTool [" + terrainTool + "]. Defaulting to StraightLine");
+					type = TerrainBlueprintType.StraightLine;
+					Debug.LogWarning("Unknown terrainTool [" + terrainTool + "]. Defaulting to TerrainBlueprintType.StraightLine");
 					break;
 				}
 
-				TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(type);
+				TerrainType terrainType;
+
+				switch (terrainStyle) {
+				case InterfaceTerrainStyle.GroundGrass:
+				case InterfaceTerrainStyle.GroundSnow:
+				case InterfaceTerrainStyle.GroundDesert:
+					terrainType = TerrainType.Ground;
+					break;
+				case InterfaceTerrainStyle.RollersGeneral:
+				case InterfaceTerrainStyle.RollersClouds:
+				case InterfaceTerrainStyle.RollersBubbles:
+					terrainType = TerrainType.Roller;
+					break;
+				default:
+					terrainType = TerrainType.Ground;
+					Debug.LogWarning("Cannot determine terrainType from style [" + terrainStyle + "]. Defaulting to TerrainType.Ground");
+					break;
+				}
+
+				TerrainObjectMaker terrainObjectMaker;
+
+				if (terrainType == TerrainType.Ground) {
+					TerrainGroundStyle groundStyle;
+
+					switch (terrainStyle) {
+					case InterfaceTerrainStyle.GroundGrass:			groundStyle = TerrainGroundStyle.Grass;			break;
+					case InterfaceTerrainStyle.GroundSnow:			groundStyle = TerrainGroundStyle.Snow;			break;
+					case InterfaceTerrainStyle.GroundDesert:		groundStyle = TerrainGroundStyle.Desert;		break;
+					default:
+						Debug.LogError("Cannot find a matching TerrainGroundStyle for InterfaceTerrainStyle + [" + terrainStyle + "]. Defaulting to TerrainGroundStyle.Grass");
+						groundStyle = TerrainGroundStyle.Grass;
+						break;
+					}
+
+					terrainObjectMaker = new TerrainObjectMaker(type, TerrainType.Ground, groundStyle);
+				} else if (terrainType == TerrainType.Roller) {
+					TerrainRollerStyle rollerStyle;
+
+					switch (terrainStyle) {
+					case InterfaceTerrainStyle.RollersGeneral:		rollerStyle = TerrainRollerStyle.General;		break;
+					case InterfaceTerrainStyle.RollersClouds:		rollerStyle = TerrainRollerStyle.Clouds;		break;
+					case InterfaceTerrainStyle.RollersBubbles:		rollerStyle = TerrainRollerStyle.Bubbles;		break;
+					default:
+						Debug.LogError("Cannot find a matching TerrainRollerStyle for InterfaceTerrainStyle + [" + terrainStyle + "]. Defaulting to TerrainRollerStyle.General");
+						rollerStyle = TerrainRollerStyle.General;
+						break;
+					}
+
+					terrainObjectMaker = new TerrainObjectMaker(type, TerrainType.Roller, rollerStyle);
+				} else {
+					Debug.LogError("The terrainType [" + terrainType + "] is not valid. Defaulting to TerrainType.Ground and TerrainGroundStyle.Grass");
+					terrainType = TerrainType.Ground;
+					terrainObjectMaker = new TerrainObjectMaker(type, terrainType, TerrainGroundStyle.Grass);
+				}
 
 				Vector3 partPointsDiff = drawPoints[1] - drawPoints[0];
 				switch (type) {
-				case BlueprintPartType.CurveBezierCubic:
+				case TerrainBlueprintType.CurveBezierCubic:
 					terrainObjectMaker.AddNode(drawPoints[0]);
 					terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.25f);
 					terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.75f);
 					terrainObjectMaker.AddNode(drawPoints[1]);
 					break;
-				case BlueprintPartType.CurveCircularArc:
+				case TerrainBlueprintType.CurveCircularArc:
 					terrainObjectMaker.AddNode(drawPoints[0]);
 					terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.5f);
 					terrainObjectMaker.AddNode(drawPoints[1]);
 					break;
-				case BlueprintPartType.StraightLine:
+				case TerrainBlueprintType.StraightLine:
 					terrainObjectMaker.AddNode(drawPoints[0]);
 					terrainObjectMaker.AddNode(drawPoints[1]);
 					break;
@@ -287,37 +341,27 @@ class MenuTerrain : MenuAbstract {
 		editorController.NodesDeactivate();
 	}
 	
-	string TerrainStyleToText(TerrainStyle t) {
+	string InterfaceTerrainStyleToText(InterfaceTerrainStyle t) {
 		string s = "";
 		switch (t) {
-		case TerrainStyle.GroundGrass:
-			s = "Grass";
-			break;
-		case TerrainStyle.RollersGeneral:
-			s = "Rollers";
-			break;
-		default:
-			s = "???";
-			break;
+		case InterfaceTerrainStyle.GroundGrass:			s = "Grass";				break;
+		case InterfaceTerrainStyle.GroundSnow:			s = "Snow";					break;
+		case InterfaceTerrainStyle.GroundDesert:		s = "Desert";				break;
+		case InterfaceTerrainStyle.RollersGeneral:		s = "Rollers";				break;
+		case InterfaceTerrainStyle.RollersClouds:		s = "Cloud rollers";		break;
+		case InterfaceTerrainStyle.RollersBubbles:		s = "Bubble rollers";		break;
+		default:										s = "???";					break;
 		}
 		return s;
 	}
 
-	string TerrainToolToText(TerrainTool t) {
+	string InterfaceTerrainToolToText(InterfaceTerrainTool t) {
 		string s = "";
 		switch (t) {
-		case TerrainTool.StraightLine:
-			s = "Straight line";
-			break;
-		case TerrainTool.CurveBezierCubic:
-			s = "Curve bezier cubic";
-			break;
-		case TerrainTool.CurveCircularArc:
-			s = "Curve circular arc";
-			break;
-		default:
-			s = "???";
-			break;
+		case InterfaceTerrainTool.StraightLine:			s = "Straight line";		break;
+		case InterfaceTerrainTool.CurveBezierCubic:		s = "Curve bezier cubic";	break;
+		case InterfaceTerrainTool.CurveCircularArc:		s = "Curve circular arc";	break;
+		default:										s = "???";					break;
 		}
 		return s;
 	}
