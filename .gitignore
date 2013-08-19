@@ -17,3 +17,6 @@ Temp
 
 # Development files
 Development/*
+
+# Exported SVGs
+Assets/Art/svg/*.png
