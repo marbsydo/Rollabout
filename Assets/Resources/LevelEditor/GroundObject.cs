@@ -1,8 +1,8 @@
 using UnityEngine;
 using System.Collections;
 
-public class TerrainObject : MonoBehaviour {
-	public TerrainPart terrainPart;
+public class GroundObject : MonoBehaviour {
+	public GroundPart groundPart;
 	
 	private bool requireNodes;
 	public ObjectNode[] nodes;
@@ -21,8 +21,8 @@ public class TerrainObject : MonoBehaviour {
 
 	public void AssignBlueprint(BlueprintPart blueprintPart) {
 		// Convert the blueprint into a physical thing
-		this.terrainPart = new TerrainPart(blueprintPart);
-		this.terrainPart.SetParent(transform);
+		this.groundPart = new GroundPart(blueprintPart);
+		this.groundPart.SetParent(transform);
 
 		if (requireNodes) {
 			// Create the relevant nodes for this object
@@ -57,7 +57,7 @@ public class TerrainObject : MonoBehaviour {
 		ObjectNode node = g.AddComponent<ObjectNode>();
 		node.SetPosition(pos);
 		node.CreateHandles(numControls);
-		node.SetTerrainObject(this);
+		node.SetGroundObject(this);
 
 		// Make the node be a child of the terrain object
 		g.transform.parent = this.transform;
@@ -69,33 +69,33 @@ public class TerrainObject : MonoBehaviour {
 	public void Regenerate() {
 		if (requireNodes) {
 			// First, modify the blueprint
-			switch (this.terrainPart.blueprintPart.GetPartType()) {
+			switch (this.groundPart.blueprintPart.GetPartType()) {
 			case BlueprintPartType.StraightLine:
-				this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
-				this.terrainPart.blueprintPart.SetNodePosition(1, nodes[1].GetVertexPosition());
+				this.groundPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
+				this.groundPart.blueprintPart.SetNodePosition(1, nodes[1].GetVertexPosition());
 				break;
 			case BlueprintPartType.CurveBezierCubic:
-				this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
-				this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
-				this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetControlPosition(0));
-				this.terrainPart.blueprintPart.SetNodePosition(3, nodes[1].GetVertexPosition());
+				this.groundPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
+				this.groundPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
+				this.groundPart.blueprintPart.SetNodePosition(2, nodes[1].GetControlPosition(0));
+				this.groundPart.blueprintPart.SetNodePosition(3, nodes[1].GetVertexPosition());
 				break;
 			case BlueprintPartType.CurveCircularArc:
-				this.terrainPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
-				this.terrainPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
-				this.terrainPart.blueprintPart.SetNodePosition(2, nodes[1].GetVertexPosition());
+				this.groundPart.blueprintPart.SetNodePosition(0, nodes[0].GetVertexPosition());
+				this.groundPart.blueprintPart.SetNodePosition(1, nodes[0].GetControlPosition(0));
+				this.groundPart.blueprintPart.SetNodePosition(2, nodes[1].GetVertexPosition());
 				break;
 			default:
-				Debug.LogError("BlueprintPartType " + this.terrainPart.blueprintPart.GetType() + " does not exist.");
+				Debug.LogError("BlueprintPartType " + this.groundPart.blueprintPart.GetType() + " does not exist.");
 				break;
 			}
 		}
 
 		// Set segment length
-		this.terrainPart.blueprintPart.SetSegmentLength(segmentLength);
+		this.groundPart.blueprintPart.SetSegmentLength(segmentLength);
 
 		// Then, regenerate the terrain
-		this.terrainPart.Regenerate();
+		this.groundPart.Regenerate();
 
 		// Finally, apply the colour
 		ApplyColor();
@@ -207,21 +207,21 @@ public class TerrainObjectMaker {
 		this.edit = edit;
 	}
 
-	public TerrainObject CreateTerrain() {
+	public GroundObject CreateTerrain() {
 
 		// Add all nodes to the blueprint
 		this.part.SetNodePositions(nodes);
 
 		// Create the terrain object
 		GameObject obj = new GameObject() as GameObject;
-		TerrainObject terrain = obj.AddComponent<TerrainObject>();
-		terrain.Init(edit);
+		GroundObject ground = obj.AddComponent<GroundObject>();
+		ground.Init(edit);
 
-		terrain.SetSegmentLength(segmentLength);
+		ground.SetSegmentLength(segmentLength);
 
-		terrain.AssignBlueprint(part);
+		ground.AssignBlueprint(part);
 
 		// Return it
-		return terrain;
+		return ground;
 	}
 }

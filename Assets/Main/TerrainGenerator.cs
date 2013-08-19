@@ -5,27 +5,40 @@ public class TerrainGenerator : MonoBehaviour {
 
 }
 
-public class TerrainPart {
+//TODO: TerrainPart has been renamed GroundPart
+// A new class also called TerrainPart has been created to be the abstract for both GroundPart and RollerPart
+
+public abstract class TerrainPart {
+
 	public BlueprintPart blueprintPart;
-	Transform parent;
+	protected Transform parent;
+
+	// Then update TerraiunObvject.cs to rename terrainPart to groundPart
+
+	public TerrainPart(BlueprintPart blueprintPart) {
+		this.blueprintPart = blueprintPart;
+	}
+
+	public void SetParent(Transform parent) {
+		this.parent = parent;
+	}
+
+	public abstract void Regenerate();
+}
+
+public class GroundPart : TerrainPart {
 	GameObject[] objs;
 	int objPos = 0;
 
 	GameObject terrainLine;
 	GameObject terrainCircle;
 	
-	public TerrainPart(BlueprintPart blueprintPart) {
-		this.blueprintPart = blueprintPart;
-
+	public GroundPart(BlueprintPart blueprintPart) : base(blueprintPart) {
 		terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundGrassLine") as GameObject;
 		terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundGrassCircle") as GameObject;
 	}
 	
-	public void SetParent(Transform parent) {
-		this.parent = parent;
-	}
-	
-	public void Regenerate() {
+	public override void Regenerate() {
 		Vector3[] p = blueprintPart.CalculatePoints();
 		
 		// For (x) fenceposts, we need (x * 2 - 1) fences and fenceposts
@@ -120,6 +133,17 @@ public class TerrainPart {
 			b.transform.parent = parent;
 		
 		return b;
+	}
+}
+
+public class RollerPart : TerrainPart {
+
+	public RollerPart(BlueprintPart blueprintPart) : base(blueprintPart) {
+		//TODO: Load references to sprites
+	}
+
+	public override void Regenerate() {
+		//TODO: Generate rollers
 	}
 }
 

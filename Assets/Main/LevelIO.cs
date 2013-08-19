@@ -56,23 +56,23 @@ public class LevelIO {
 		levelData.WriteString("v0.1");
 
 		// Find all TerrainObjects
-		TerrainObject[] terrains = GameObject.FindObjectsOfType(typeof(TerrainObject)) as TerrainObject[];
+		GroundObject[] grounds = GameObject.FindObjectsOfType(typeof(GroundObject)) as GroundObject[];
 
-		// 2) Write how many terrains there are
-		levelData.WriteInt(terrains.Length);
+		// 2) Write how many grounds there are
+		levelData.WriteInt(grounds.Length);
 
-		foreach (TerrainObject terrain in terrains) {
-			// Loop through each terrain
-			BlueprintPartType type = terrain.terrainPart.blueprintPart.GetPartType();
+		foreach (GroundObject ground in grounds) {
+			// Loop through each ground
+			BlueprintPartType type = ground.groundPart.blueprintPart.GetPartType();
 			levelData.WriteInt((int) type);
 
 			// Write points
-			for (int i = 0; i < terrain.terrainPart.blueprintPart.GetNodeAmount(); i++) {
-				levelData.WriteVector2((Vector2) terrain.terrainPart.blueprintPart.GetNodePosition(i));
+			for (int i = 0; i < ground.groundPart.blueprintPart.GetNodeAmount(); i++) {
+				levelData.WriteVector2((Vector2) ground.groundPart.blueprintPart.GetNodePosition(i));
 			}
 
 			// Write segment length
-			levelData.WriteFloat(terrain.terrainPart.blueprintPart.GetSegmentLength());
+			levelData.WriteFloat(ground.groundPart.blueprintPart.GetSegmentLength());
 		}
 
 		return levelData.ReadAll();
