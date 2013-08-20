@@ -299,44 +299,28 @@ public class RollerPart : TerrainPart {
 
 
 
-		// Create a list of potentially valid points
-		Vector3[] validPoints;
-		int validPointsTotal;
-
 		// Choose a spacing for the current iteration
 		float currentSpacing = actualSpacing;
-
-		// Keep track of the last valid point
-		Vector3 lastPoint;
 		
+		Vector3[] validPoints;
 		bool foundValidPoints = false;
 
 		// Loop through, generating a series of points and testing whether it fits well
 		do {
-			validPoints = new Vector3[p.Length]; // p.Length is the maximum possible length this array could be
-			validPointsTotal = 0;
-
-			// Place the first point
-			lastPoint = validPoints[0] = p[0];
-			validPointsTotal++;
-
-			// Place the middle points
-			for (int i = 0; i < p.Length; i++) {
-				if ((p[i] - lastPoint).magnitude >= currentSpacing) {
-					lastPoint = validPoints[validPointsTotal] = p[i];
-					validPointsTotal++;
-				}
-			}
-
-			// Place the last points
-			validPoints[validPointsTotal] = p[p.Length - 1];
-			validPointsTotal++;
+			validPoints = GenerateValidPoints(p, currentSpacing);
 
 			// Check whether the points fit well
-			float spacingBetweenLastTwoPoints = (validPoints[validPointsTotal - 1] - validPoints[validPointsTotal - 2]).magnitude;
+			float spacingBetweenLastTwoPoints = (validPoints[validPoints.Length - 1] - validPoints[validPoints.Length - 2]).magnitude;
 			if (spacingBetweenLastTwoPoints < minimumSpacing) {
 				if (currentSpacing > maximumSpacing) {
-					// It is a good fit. Well, not really. But the gap has gotten so big now that this will have to do!
+					// It is a good fit. Well, not really.
+					//
+					// See, it failed here because the gap between the last two points has gotten too big. This is almost certainly
+					// because the start and end points are too near to each other. The solution then is to generated some validPoints
+					// that contain only the start and end point. The way this is done here is by using a spacing equal to the length
+					// of the curve (i.e. lengthEstimate)
+					validPoints = GenerateValidPoints(p, lengthEstimate);
+					
 					foundValidPoints = true;
 				} else {
 					// It is a bad fit, so try again with slightly bigger spacing
@@ -350,10 +334,42 @@ public class RollerPart : TerrainPart {
 
 
 		// Actually create the rollers from the set of valid points
-		ObjsReset(validPointsTotal);
-		for (int i = 0; i < validPointsTotal; i++) {
+		ObjsReset(validPoints.Length);
+		for (int i = 0; i < validPoints.Length; i++) {
 			ObjsAppend(CreateRollerAt(validPoints[i]));
 		}
+	}
+
+	Vector3[] GenerateValidPoints(Vector3[] p, float spacing) {
+		Vector3[] validPoints = new Vector3[p.Length]; // p.Length is the maximum possible length this array could be
+		int validPointsTotal = 0;
+
+		// Keep track of the last valid point
+		Vector3 lastPoint;
+
+		// Place the first point
+		lastPoint = validPoints[0] = p[0];
+		validPointsTotal++;
+
+		// Place the middle points
+		for (int i = 0; i < p.Length; i++) {
+			if ((p[i] - lastPoint).magnitude >= spacing) {
+				lastPoint = validPoints[validPointsTotal] = p[i];
+				validPointsTotal++;
+			}
+		}
+
+		// Place the last points
+		validPoints[validPointsTotal] = p[p.Length - 1];
+		validPointsTotal++;
+
+		// Create a correctly sized array
+		Vector3[] validPoints2 = new Vector3[validPointsTotal];
+		for (int i = 0; i < validPoints2.Length; i++) {
+			validPoints2[i] = validPoints[i];
+		}
+
+		return validPoints2;
 	}
 
 	GameObject CreateRollerAt(Vector3 pos) {
