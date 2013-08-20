@@ -15,6 +15,8 @@ public enum InterfaceTerrainType {Ground, Roller};
 public enum InterfaceTerrainGroundStyle {Grass, Snow, Desert, __Length};
 public enum InterfaceTerrainRollerStyle {General, Clouds, Bubbles, __Length};
 public enum InterfaceTerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc, __Length};
+public enum InterfaceTerrainRollerRotationDirection {Clockwise, AntiClockwise};
+public enum InterfaceTerrainRollerRotationSpeed {Free, Stationary, VerySlow, Slow, Normal, Fast, VeryFast, __Length}
 
 public enum TextMenu {Main, Navigation, Terrain, TerrainGround, TerrainRoller, Scenery, Objects, Options, OptionsSave, OptionsLoad};
 
@@ -344,40 +346,41 @@ class MenuTerrainGround : MenuTerrainBase {
 
 		t = "S/D - Select style\n" +
 			"T/Y - Select tool\n" +
-			"Del - Delete selected terrain\n" +
+			"Z/X - Adjust segment length\n" + 
+			"Del - Delete selected ground\n" +
 			"Esc - Back\n" +
 			"\n" +
 			"Current style: " + InterfaceTerrainGroundStyleToText(terrainGroundStyle) + "\n" +
-			"Current tool: " + InterfaceTerrainToolToText(terrainTool) + "\n" +
+			"Current tool:  " + InterfaceTerrainToolToText(terrainTool) + "\n" +
 			"\n" +
-			"Use mouse to draw and modify terrain.";
+			"Use mouse to draw and modify ground.";
 		
 		if (Input.GetKeyDown(KeyCode.Escape)) {
 			SetMenu(TextMenu.Terrain);
 		}
 		
 		if (Input.GetKeyDown(KeyCode.S)) {
-			terrainGroundStyle++;
-			if ((int)terrainGroundStyle >= terrainGroundStyleMax)
-				terrainGroundStyle = (InterfaceTerrainGroundStyle)0;
-		}
-
-		if (Input.GetKeyDown(KeyCode.D)) {
 			terrainGroundStyle--;
 			if ((int)terrainGroundStyle < 0)
 				terrainGroundStyle = (InterfaceTerrainGroundStyle)terrainGroundStyleMax - 1;
 		}
+
+		if (Input.GetKeyDown(KeyCode.D)) {
+			terrainGroundStyle++;
+			if ((int)terrainGroundStyle >= terrainGroundStyleMax)
+				terrainGroundStyle = (InterfaceTerrainGroundStyle)0;
+		}
 		
 		if (Input.GetKeyDown(KeyCode.T)) {
-			terrainTool++;
-			if ((int)terrainTool >= terrainToolMax)
-				terrainTool = (InterfaceTerrainTool)0;
-		}
-
-		if (Input.GetKeyDown(KeyCode.Y)) {
 			terrainTool--;
 			if ((int)terrainTool < 0)
 				terrainTool = (InterfaceTerrainTool)terrainToolMax - 1;
+		}
+
+		if (Input.GetKeyDown(KeyCode.Y)) {
+			terrainTool++;
+			if ((int)terrainTool >= terrainToolMax)
+				terrainTool = (InterfaceTerrainTool)0;
 		}
 
 		Draw(InterfaceTerrainType.Ground, (int)terrainGroundStyle);
@@ -402,46 +405,76 @@ class MenuTerrainRoller : MenuTerrainBase {
 	InterfaceTerrainRollerStyle terrainRollerStyle = InterfaceTerrainRollerStyle.General;
 	int terrainRollerStyleMax = (int)InterfaceTerrainRollerStyle.__Length;
 
+	InterfaceTerrainRollerRotationDirection terrainRollerRotationDirection = InterfaceTerrainRollerRotationDirection.Clockwise;
+
+	InterfaceTerrainRollerRotationSpeed terrainRollerRotationSpeed = InterfaceTerrainRollerRotationSpeed.Normal;
+	int terrainRollerRotationSpeedMax = (int)InterfaceTerrainRollerRotationSpeed.__Length;
+
 	override public string Text() {
 
 		string t;
 
 		t = "S/D - Select style\n" + 
 			"T/Y - Select tool\n" + 
-			"Del - Delete selected terrain\n" + 
+			"E/R - Select rotation direction\n" + 
+			"Q/W - Select rotation speed\n" + 
+			"Z/X - Adjust selected roller spacing\n" + 
+			"Del - Delete selected roller\n" + 
 			"Esc - Back\n" + 
 			"\n" + 
-			"Current style: " + InterfaceTerrainRollerStyleToText(terrainRollerStyle) + "\n" +
-			"Current tool: " + InterfaceTerrainToolToText(terrainTool) + "\n" + 
+			"Current style:      " + InterfaceTerrainRollerStyleToText(terrainRollerStyle) + "\n" +
+			"Current tool:       " + InterfaceTerrainToolToText(terrainTool) + "\n" + 
+			"Current rot. dir. : " + InterfaceTerrainRollerRotationDirectionToText(terrainRollerRotationDirection) + "\n" + 
+			"Current rot. speed: " + InterfaceTerrainRollerRotationSpeedToText(terrainRollerRotationSpeed) + "\n" +
 			"\n" + 
-			"Use mouse to draw and modify terrain.";
+			"Use mouse to draw and modify rollers.";
 
 		if (Input.GetKeyDown(KeyCode.Escape)) {
 			SetMenu(TextMenu.Terrain);
 		}
 		
 		if (Input.GetKeyDown(KeyCode.S)) {
+			terrainRollerStyle--;
+			if ((int)terrainRollerStyle < 0)
+				terrainRollerStyle = (InterfaceTerrainRollerStyle)terrainRollerStyleMax - 1;
+		}
+
+		if (Input.GetKeyDown(KeyCode.D)) {
 			terrainRollerStyle++;
 			if ((int)terrainRollerStyle >= terrainRollerStyleMax)
 				terrainRollerStyle = (InterfaceTerrainRollerStyle)0;
 		}
 		
-		if (Input.GetKeyDown(KeyCode.D)) {
-			terrainRollerStyle--;
-			if ((int)terrainRollerStyle < 0)
-				terrainRollerStyle = (InterfaceTerrainRollerStyle)terrainRollerStyleMax - 1;
+		if (Input.GetKeyDown(KeyCode.T)) {
+			terrainTool--;
+			if ((int)terrainTool < 0)
+				terrainTool = (InterfaceTerrainTool)terrainToolMax - 1;
 		}
 		
-		if (Input.GetKeyDown(KeyCode.T)) {
+		if (Input.GetKeyDown(KeyCode.Y)) {
 			terrainTool++;
 			if ((int)terrainTool >= terrainToolMax)
 				terrainTool = (InterfaceTerrainTool)0;
 		}
 
-		if (Input.GetKeyDown(KeyCode.Y)) {
-			terrainTool--;
-			if ((int)terrainTool < 0)
-				terrainTool = (InterfaceTerrainTool)terrainToolMax - 1;
+		if (Input.GetKeyDown(KeyCode.E)) {
+			terrainRollerRotationDirection = InterfaceTerrainRollerRotationDirection.Clockwise;
+		}
+
+		if (Input.GetKeyDown(KeyCode.R)) {
+			terrainRollerRotationDirection = InterfaceTerrainRollerRotationDirection.AntiClockwise;
+		}
+
+		if (Input.GetKeyDown(KeyCode.Q)) {
+			terrainRollerRotationSpeed--;
+			if ((int)terrainRollerRotationSpeed < 0)
+				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)terrainRollerRotationSpeedMax - 1;
+		}
+
+		if (Input.GetKeyDown(KeyCode.W)) {
+			terrainRollerRotationSpeed++;
+			if ((int)terrainRollerRotationSpeed >= terrainRollerRotationSpeedMax)
+				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)0;
 		}
 
 		Draw(InterfaceTerrainType.Roller, (int)terrainRollerStyle);
@@ -456,6 +489,31 @@ class MenuTerrainRoller : MenuTerrainBase {
 		case InterfaceTerrainRollerStyle.Clouds:		s = "Cloud rollers";		break;
 		case InterfaceTerrainRollerStyle.Bubbles:		s = "Bubble rollers";		break;
 		default:										s = "???";					break;
+		}
+		return s;
+	}
+
+	string InterfaceTerrainRollerRotationDirectionToText(InterfaceTerrainRollerRotationDirection r) {
+		string s = "";
+		switch (r) {
+		case InterfaceTerrainRollerRotationDirection.Clockwise:		s = "Clockwise";		break;
+		case InterfaceTerrainRollerRotationDirection.AntiClockwise:	s = "Anti-Clockwise";	break;
+		default:													s = "???";				break;
+		}
+		return s;
+	}
+
+	string InterfaceTerrainRollerRotationSpeedToText(InterfaceTerrainRollerRotationSpeed r) {
+		string s = "";
+		switch (r) {
+			case InterfaceTerrainRollerRotationSpeed.Free:			s = "No speed (free)";		break;
+			case InterfaceTerrainRollerRotationSpeed.Stationary:	s = "No speed (fixed)";		break;
+			case InterfaceTerrainRollerRotationSpeed.VerySlow:		s = "Very slow";			break;
+			case InterfaceTerrainRollerRotationSpeed.Slow:	 		s = "Slow";					break;
+			case InterfaceTerrainRollerRotationSpeed.Normal:		s = "Normal";				break;
+			case InterfaceTerrainRollerRotationSpeed.Fast:			s = "Fast";					break;
+			case InterfaceTerrainRollerRotationSpeed.VeryFast:		s = "Very fast";			break;
+			default:												s = "???";					break;
 		}
 		return s;
 	}
