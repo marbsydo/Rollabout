@@ -272,53 +272,88 @@ public class RollerPart : TerrainPart {
 	}
 
 	public override void Regenerate() {
-		//TODO: Generate rollers
+
+		// The desired spacing between each roller
+		float desiredSpacing = 1.5f;
+
+		// The minimum allowed spacing between each roller. Works well when set to desiredSpacing
+		float minimumSpacing = desiredSpacing;
+
+		// The maximum allowed spacing between each roller
+		float maximumSpacing = desiredSpacing + 1f;
+
+		// How much to increase the spacing by when trying to find a good spacing
+		float spacingIncrease = 0.05f;
+
+
 
 		// Force segment length to be small to get a high quality curve
 		blueprintPart.SetSegmentLength(0.1f);
 		Vector3[] p = blueprintPart.CalculatePoints();
 
+		// Find out how long the curve is
 		float lengthEstimate = blueprintPart.Length();
 
-		// rope = 7cm long
-		// want to cut at about every 2 cm to get equal sized pieces
-		// 7cm / 2cm = 3.5
-		// result is not a whole number so round it
-		// round 3.5 down to 3
-		// 7cm / 3 = 2.33cm
-		// So instead, cut every 2.33cm
-		// 7cm / 2.33cm = 3
-		// so:
-		// actual_cut_spacing = rope_length / floor(rope_length / desired_cut_spacing)
+		// Using the desiredSpacing, work out a nearby spacing that will fit as best as possible for equal distribution
+		float actualSpacing = lengthEstimate / Mathf.Floor(lengthEstimate / desiredSpacing);
 
-		float desiredSpacing = 1.5f;
-		int numPoints = (int) Mathf.Floor(lengthEstimate / desiredSpacing) + 1;
-		float actualSpacing = lengthEstimate / (numPoints - 1);
 
-		ObjsReset(numPoints);
-		//ObjsReset(p.Length);
 
+		// Create a list of potentially valid points
+		Vector3[] validPoints;
+		int validPointsTotal;
+
+		// Choose a spacing for the current iteration
+		float currentSpacing = actualSpacing;
+
+		// Keep track of the last valid point
 		Vector3 lastPoint;
+		
+		bool foundValidPoints = false;
 
-		ObjsAppend(CreateRollerAt(p[0]));
-		lastPoint = p[0];
+		// Loop through, generating a series of points and testing whether it fits well
+		do {
+			validPoints = new Vector3[p.Length]; // p.Length is the maximum possible length this array could be
+			validPointsTotal = 0;
 
-		for (int i = 1; i < p.Length; i++) {
-			if ((p[i] - lastPoint).magnitude >= actualSpacing) {
-				ObjsAppend(CreateRollerAt(p[i]));
-				lastPoint = p[i];
+			// Place the first point
+			lastPoint = validPoints[0] = p[0];
+			validPointsTotal++;
+
+			// Place the middle points
+			for (int i = 0; i < p.Length; i++) {
+				if ((p[i] - lastPoint).magnitude >= currentSpacing) {
+					lastPoint = validPoints[validPointsTotal] = p[i];
+					validPointsTotal++;
+				}
 			}
-		}
 
-		/*
-		Vector3[] p = blueprintPart.CalculatePoints();
-		ObjsReset(p.Length);
-		for (int i = 0; i < p.Length; i++) {
-			GameObject spriteObj = CreateRollerAt(p[i]);
-			ObjsAppend(spriteObj);
-		}
-		*/
+			// Place the last points
+			validPoints[validPointsTotal] = p[p.Length - 1];
+			validPointsTotal++;
 
+			// Check whether the points fit well
+			float spacingBetweenLastTwoPoints = (validPoints[validPointsTotal - 1] - validPoints[validPointsTotal - 2]).magnitude;
+			if (spacingBetweenLastTwoPoints < minimumSpacing) {
+				if (currentSpacing > maximumSpacing) {
+					// It is a good fit. Well, not really. But the gap has gotten so big now that this will have to do!
+					foundValidPoints = true;
+				} else {
+					// It is a bad fit, so try again with slightly bigger spacing
+					currentSpacing += spacingIncrease;
+				}
+			} else {
+				// It is a good fit, so carry on to generate the rollers
+				foundValidPoints = true;
+			}
+		} while (!foundValidPoints);
+
+
+		// Actually create the rollers from the set of valid points
+		ObjsReset(validPointsTotal);
+		for (int i = 0; i < validPointsTotal; i++) {
+			ObjsAppend(CreateRollerAt(validPoints[i]));
+		}
 	}
 
 	GameObject CreateRollerAt(Vector3 pos) {
