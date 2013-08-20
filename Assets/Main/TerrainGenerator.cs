@@ -274,14 +274,50 @@ public class RollerPart : TerrainPart {
 	public override void Regenerate() {
 		//TODO: Generate rollers
 
+		// Force segment length to be small to get a high quality curve
+		blueprintPart.SetSegmentLength(0.1f);
 		Vector3[] p = blueprintPart.CalculatePoints();
 
-		ObjsReset(p.Length);
+		float lengthEstimate = blueprintPart.Length();
 
+		// rope = 7cm long
+		// want to cut at about every 2 cm to get equal sized pieces
+		// 7cm / 2cm = 3.5
+		// result is not a whole number so round it
+		// round 3.5 down to 3
+		// 7cm / 3 = 2.33cm
+		// So instead, cut every 2.33cm
+		// 7cm / 2.33cm = 3
+		// so:
+		// actual_cut_spacing = rope_length / floor(rope_length / desired_cut_spacing)
+
+		float desiredSpacing = 1.5f;
+		int numPoints = (int) Mathf.Floor(lengthEstimate / desiredSpacing) + 1;
+		float actualSpacing = lengthEstimate / (numPoints - 1);
+
+		ObjsReset(numPoints);
+		//ObjsReset(p.Length);
+
+		Vector3 lastPoint;
+
+		ObjsAppend(CreateRollerAt(p[0]));
+		lastPoint = p[0];
+
+		for (int i = 1; i < p.Length; i++) {
+			if ((p[i] - lastPoint).magnitude >= actualSpacing) {
+				ObjsAppend(CreateRollerAt(p[i]));
+				lastPoint = p[i];
+			}
+		}
+
+		/*
+		Vector3[] p = blueprintPart.CalculatePoints();
+		ObjsReset(p.Length);
 		for (int i = 0; i < p.Length; i++) {
 			GameObject spriteObj = CreateRollerAt(p[i]);
 			ObjsAppend(spriteObj);
 		}
+		*/
 
 	}
 
@@ -312,6 +348,7 @@ abstract public class BlueprintPart {
 
 	abstract public Vector3[] CalculatePoints();
 	abstract public int GetNodeAmount();
+	abstract public float Length();
 	abstract public void SetSegmentLength(float segmentLength);
 
 	public float GetSegmentLength() {
@@ -363,6 +400,10 @@ public class StraightLine : BlueprintPart {
 		return nodeAmount;
 	}
 
+	override public float Length() {
+		return (p[0] - p[1]).magnitude;
+	}
+
 	// ## Segments
 
 	override public void SetSegmentLength(float segmentLength) {
@@ -406,6 +447,10 @@ public class CurveBezierCubic : BlueprintPart {
 
 	override public int GetNodeAmount() {
 		return nodeAmount;
+	}
+
+	override public float Length() {
+		return CalculateLength();
 	}
 
 	// ## Segments
@@ -509,6 +554,16 @@ public class CurveCircularArc : BlueprintPart {
 
 	override public int GetNodeAmount() {
 		return nodeAmount;
+	}
+
+	override public float Length() {
+		//NOTE: This is rather slow and should be called as little as possible
+		//TODO: If the length has already been calculated, there is no point in recalculating it
+		CalculateAngles();
+		CalculateDiameter();
+		CalculateArcType();
+		CalculateLength();
+		return this.calculatedLength;
 	}
 
 	// ## Segments
@@ -672,6 +727,9 @@ public class CurveCircularArc : BlueprintPart {
 			}
 		} else {
 			// No fitting arc could be found, so just generate a straight line
+
+			//TODO: Actually generate a straight line, rather than just two points?
+
 			points = new Vector3[2];
 			points[0] = p[0];
 			points[0].z = 0;
