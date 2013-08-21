@@ -12,7 +12,7 @@ public class TerrainRoller : TerrainBase {
 
 	public override void AssignBlueprint(BlueprintPart blueprintPart) {
 		// Convert the blueprint into a physical thing
-		this.rollerPart = new RollerPart(blueprintPart, this.style);
+		this.rollerPart = new RollerPart(blueprintPart, this.style, true);
 		this.rollerPart.SetParent(transform);
 
 		if (requireNodes) {

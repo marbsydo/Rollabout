@@ -77,8 +77,7 @@ public class TerrainObjectMaker {
 			break;
 		default:
 			Debug.LogError("Unknown part [" + part + "]. Defaulting to StraightLine.");
-			part = new StraightLine();
-			break;
+			goto case TerrainBlueprintType.StraightLine;
 		}
 
 		nodes = new Vector3[part.GetNodeAmount()];
@@ -184,7 +183,11 @@ public class GroundPart : TerrainPart {
 	GameObject terrainLine;
 	GameObject terrainCircle;
 	
-	public GroundPart(BlueprintPart blueprintPart, TerrainGroundStyle style) : base(blueprintPart) {
+	bool physicsEnabled;
+
+	public GroundPart(BlueprintPart blueprintPart, TerrainGroundStyle style, bool physicsEnabled) : base(blueprintPart) {
+
+		this.physicsEnabled = physicsEnabled;
 
 		//TODO: Load a different sprite depending upon the style
 		terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundGrassLine") as GameObject;
@@ -223,7 +226,13 @@ public class GroundPart : TerrainPart {
 	}
 	
 	GameObject CreateSphereAt(Vector3 pos, float angle) {
-		GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+
+		GameObject s = new GameObject();
+
+		if (physicsEnabled) {
+			s.AddComponent<SphereCollider>();
+			s.AddComponent<Rigidbody>().isKinematic = true;
+		}
 
 		// Sprite
 		GameObject.Destroy(s.GetComponent<MeshRenderer>());
@@ -241,7 +250,13 @@ public class GroundPart : TerrainPart {
 	}
 	
 	GameObject CreateBlockBetween(Vector3 pos1, Vector3 pos2) {
-		GameObject b = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+		GameObject b = new GameObject();
+
+		if (physicsEnabled) {
+			b.AddComponent<BoxCollider>();
+			b.AddComponent<Rigidbody>().isKinematic = true;
+		}
 
 		// Sprite
 		GameObject.Destroy(b.GetComponent<MeshRenderer>());
@@ -273,7 +288,11 @@ public class RollerPart : TerrainPart {
 
 	GameObject spriteRoller;
 
-	public RollerPart(BlueprintPart blueprintPart, TerrainRollerStyle style) : base(blueprintPart) {
+	bool physicsEnabled;
+
+	public RollerPart(BlueprintPart blueprintPart, TerrainRollerStyle style, bool physicsEnabled) : base(blueprintPart) {
+
+		this.physicsEnabled = physicsEnabled;
 
 		//TODO: Load a different sprite depending upon the style
 		spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerGeneral") as GameObject;
@@ -441,6 +460,11 @@ public class RollerPart : TerrainPart {
 
 	GameObject CreateRollerAt(Vector3 pos) {
 		GameObject spriteObj = new GameObject();
+
+		if (physicsEnabled) {
+			spriteObj.AddComponent<SphereCollider>();
+			spriteObj.AddComponent<Rigidbody>();
+		}
 
 		GameObject sprite = (GameObject.Instantiate(spriteRoller, Vector3.zero, Quaternion.identity) as GameObject);
 		sprite.transform.parent = spriteObj.transform;
