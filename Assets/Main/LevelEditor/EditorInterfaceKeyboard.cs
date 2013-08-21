@@ -199,7 +199,10 @@ class MenuTerrain : MenuAbstract {
 
 class MenuTerrainBase : MenuAbstract {
 
-	protected class TerrainInfo {
+	protected class InterfaceTerrainInfo {
+		// What type of line or curve it is
+		public InterfaceTerrainTool interfaceTerrainTool;
+
 		// Is it ground or roller?
 		public InterfaceTerrainType interfaceTerrainType;
 
@@ -211,13 +214,17 @@ class MenuTerrainBase : MenuAbstract {
 		public InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection;
 		public InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed;
 
-		public TerrainInfo(InterfaceTerrainGroundStyle interfaceTerrainGroundStyle) {
+		public InterfaceTerrainInfo(InterfaceTerrainTool interfaceTerrainTool, InterfaceTerrainGroundStyle interfaceTerrainGroundStyle) {
+			this.interfaceTerrainTool = interfaceTerrainTool;
+
 			this.interfaceTerrainType = InterfaceTerrainType.Ground;
 
 			this.interfaceTerrainGroundStyle = interfaceTerrainGroundStyle;
 		}
 
-		public TerrainInfo(InterfaceTerrainRollerStyle interfaceTerrainRollerStyle, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection, InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationsSpeed) {
+		public InterfaceTerrainInfo(InterfaceTerrainTool interfaceTerrainTool, InterfaceTerrainRollerStyle interfaceTerrainRollerStyle, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection, InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationsSpeed) {
+			this.interfaceTerrainTool = interfaceTerrainTool;
+			
 			this.interfaceTerrainType = InterfaceTerrainType.Roller;
 
 			this.interfaceTerrainRollerStyle = interfaceTerrainRollerStyle;
@@ -246,7 +253,7 @@ class MenuTerrainBase : MenuAbstract {
 	}
 
 	//protected void Draw(InterfaceTerrainType interfaceTerrainType, int terrainStyle) {
-	protected void Draw(TerrainInfo terrainInfo) {
+	protected void Draw(InterfaceTerrainInfo interfaceTerrainInfo) {
 		if (Input.GetMouseButtonDown(0)) {
 			if (editorController.MouseClaim(editorInterfaceKeyboard.gameObject)) {
 				drawStage = 1;
@@ -262,68 +269,11 @@ class MenuTerrainBase : MenuAbstract {
 				Vector3 m = editorController.GetMousePos();
 				drawPoints[1] = m;
 
-				// Create the desired blueprint
-				TerrainBlueprintType type;
-				
-				switch (terrainTool) {
-				case InterfaceTerrainTool.StraightLine:			type = TerrainBlueprintType.StraightLine;		break;
-				case InterfaceTerrainTool.CurveBezierCubic:		type = TerrainBlueprintType.CurveBezierCubic;	break;
-				case InterfaceTerrainTool.CurveCircularArc:		type = TerrainBlueprintType.CurveCircularArc;	break;
-				default:
-					type = TerrainBlueprintType.StraightLine;
-					Debug.LogWarning("Unknown terrainTool [" + terrainTool + "]. Defaulting to TerrainBlueprintType.StraightLine");
-					break;
-				}
-
-				TerrainType terrainType;
-
-				switch (terrainInfo.interfaceTerrainType) {
-					case InterfaceTerrainType.Ground:			terrainType = TerrainType.Ground;				break;
-					case InterfaceTerrainType.Roller:			terrainType = TerrainType.Roller;				break;
-					default:
-					terrainType = TerrainType.Ground;
-					Debug.LogWarning("Unknown terrainInfo.interfaceTerrainType [" + terrainInfo.interfaceTerrainType + "]. Defaulting to InterfaceTerrainType.Ground");
-					break;
-				}
-
-				TerrainObjectMaker terrainObjectMaker;
-
-				if (terrainType == TerrainType.Ground) {
-					TerrainGroundStyle groundStyle;
-
-					switch (terrainInfo.interfaceTerrainGroundStyle) {
-					case InterfaceTerrainGroundStyle.Grass:			groundStyle = TerrainGroundStyle.Grass;		break;
-					case InterfaceTerrainGroundStyle.Snow:			groundStyle = TerrainGroundStyle.Snow;		break;
-					case InterfaceTerrainGroundStyle.Desert:		groundStyle = TerrainGroundStyle.Desert;	break;
-					default:
-						Debug.LogError("Cannot find a matching TerrainGroundStyle for InterfaceTerrainGroundStyle + [" + terrainInfo.interfaceTerrainGroundStyle + "]. Defaulting to TerrainGroundStyle.Grass");
-						groundStyle = TerrainGroundStyle.Grass;
-						break;
-					}
-
-					terrainObjectMaker = new TerrainObjectMaker(type, TerrainType.Ground, groundStyle);
-				} else if (terrainType == TerrainType.Roller) {
-					TerrainRollerStyle rollerStyle;
-
-					switch (terrainInfo.interfaceTerrainRollerStyle) {
-					case InterfaceTerrainRollerStyle.General:		rollerStyle = TerrainRollerStyle.General;	break;
-					case InterfaceTerrainRollerStyle.Clouds:		rollerStyle = TerrainRollerStyle.Clouds;	break;
-					case InterfaceTerrainRollerStyle.Bubbles:		rollerStyle = TerrainRollerStyle.Bubbles;	break;
-					default:
-						Debug.LogError("Cannot find a matching TerrainRollerStyle for InterfaceTerrainRollerStyle + [" + terrainInfo.interfaceTerrainRollerStyle + "]. Defaulting to TerrainRollerStyle.General");
-						rollerStyle = TerrainRollerStyle.General;
-						break;
-					}
-
-					terrainObjectMaker = new TerrainObjectMaker(type, TerrainType.Roller, rollerStyle);
-				} else {
-					Debug.LogError("The terrainType [" + terrainType + "] is not valid. Defaulting to TerrainType.Ground and TerrainGroundStyle.Grass");
-					terrainType = TerrainType.Ground;
-					terrainObjectMaker = new TerrainObjectMaker(type, terrainType, TerrainGroundStyle.Grass);
-				}
+				TerrainInfo terrainInfo = InterfaceTerrainInfoToTerrainInfo(interfaceTerrainInfo);
+				TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(terrainInfo);
 
 				Vector3 partPointsDiff = drawPoints[1] - drawPoints[0];
-				switch (type) {
+				switch (terrainInfo.terrainBlueprintType) {
 				case TerrainBlueprintType.CurveBezierCubic:
 					terrainObjectMaker.AddNode(drawPoints[0]);
 					terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.25f);
@@ -341,7 +291,7 @@ class MenuTerrainBase : MenuAbstract {
 					break;
 				}
 
-				terrainObjectMaker.SetSegmentLength(2f);
+				//terrainObjectMaker.SetSegmentLength(2f);
 				terrainObjectMaker.SetIsEditable(true);
 
 				terrainObjectMaker.CreateTerrain();
@@ -360,6 +310,152 @@ class MenuTerrainBase : MenuAbstract {
 		default:										s = "???";					break;
 		}
 		return s;
+	}
+
+	private TerrainBlueprintType InterfaceTerrainToolToTerrainBlueprintType(InterfaceTerrainTool interfaceTerrainTool) {
+		
+		TerrainBlueprintType terrainBlueprintType;
+		
+		switch (interfaceTerrainTool) {
+		case InterfaceTerrainTool.StraightLine:			terrainBlueprintType = TerrainBlueprintType.StraightLine;		break;
+		case InterfaceTerrainTool.CurveBezierCubic:		terrainBlueprintType = TerrainBlueprintType.CurveBezierCubic;	break;
+		case InterfaceTerrainTool.CurveCircularArc:		terrainBlueprintType = TerrainBlueprintType.CurveCircularArc;	break;
+		default:
+			Debug.LogWarning("Unknown terrainTool [" + terrainTool + "]. Defaulting to InterfaceTerrainTool.StraightLine");
+			goto case InterfaceTerrainTool.StraightLine;
+		}
+
+		return terrainBlueprintType;
+	}
+
+	private TerrainType InterfaceTerrainTypeToTerrainType(InterfaceTerrainType interfaceTerrainType) {
+		
+		TerrainType terrainType;
+
+		switch (interfaceTerrainType) {
+			case InterfaceTerrainType.Ground:			terrainType = TerrainType.Ground;				break;
+			case InterfaceTerrainType.Roller:			terrainType = TerrainType.Roller;				break;
+			default:
+			Debug.LogWarning("Unknown terrainInfo.interfaceTerrainType [" + interfaceTerrainType + "]. Defaulting to InterfaceTerrainType.Ground");
+			goto case InterfaceTerrainType.Ground;
+		}
+
+		return terrainType;
+	}
+
+	private TerrainGroundStyle InterfaceTerrainGroundStyleToTerrainGroundStyle(InterfaceTerrainGroundStyle interfaceTerrainGroundStyle) {
+		
+		TerrainGroundStyle terrainGroundStyle;
+
+		switch (interfaceTerrainGroundStyle) {
+		case InterfaceTerrainGroundStyle.Grass:			terrainGroundStyle = TerrainGroundStyle.Grass;		break;
+		case InterfaceTerrainGroundStyle.Snow:			terrainGroundStyle = TerrainGroundStyle.Snow;		break;
+		case InterfaceTerrainGroundStyle.Desert:		terrainGroundStyle = TerrainGroundStyle.Desert;		break;
+		default:
+			Debug.LogError("Cannot find a matching TerrainGroundStyle for InterfaceTerrainGroundStyle [" + interfaceTerrainGroundStyle + "]. Defaulting to InterfaceTerrainGroundStyle.Grass");
+			goto case InterfaceTerrainGroundStyle.Grass;
+		}
+
+		return terrainGroundStyle;
+	}
+
+	private TerrainRollerStyle InterfaceTerrainRollerStyleToTerrainRollerStyle(InterfaceTerrainRollerStyle interfaceTerrainRollerStyle) {
+		
+		TerrainRollerStyle terrainRollerStyle;
+
+		switch (interfaceTerrainRollerStyle) {
+		case InterfaceTerrainRollerStyle.General:		terrainRollerStyle = TerrainRollerStyle.General;	break;
+		case InterfaceTerrainRollerStyle.Clouds:		terrainRollerStyle = TerrainRollerStyle.Clouds;		break;
+		case InterfaceTerrainRollerStyle.Bubbles:		terrainRollerStyle = TerrainRollerStyle.Bubbles;	break;
+		default:
+			Debug.LogError("Cannot find a matching TerrainRollerStyle for InterfaceTerrainRollerStyle [" + interfaceTerrainRollerStyle + "]. Defaulting to InterfaceTerrainRollerStyle.General");
+			goto case InterfaceTerrainRollerStyle.General;
+		}
+
+		return terrainRollerStyle;
+	}
+
+	private bool InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed(InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed) {
+		
+		bool terrainRollerFixed;
+
+		switch (interfaceTerrainRollerRotationSpeed) {
+		case InterfaceTerrainRollerRotationSpeed.Stationary:
+			terrainRollerFixed = true;
+			break;
+		case InterfaceTerrainRollerRotationSpeed.Free:
+		case InterfaceTerrainRollerRotationSpeed.VerySlow:
+		case InterfaceTerrainRollerRotationSpeed.Slow:
+		case InterfaceTerrainRollerRotationSpeed.Normal:
+		case InterfaceTerrainRollerRotationSpeed.Fast:
+		case InterfaceTerrainRollerRotationSpeed.VeryFast:
+			terrainRollerFixed = false;
+			break;
+		default:
+			Debug.LogWarning("Invalid InterfaceTerrainRollerRotationSpeed [" + interfaceTerrainRollerRotationSpeed + "]. Defaulting to InterfaceTerrainRollerRotationSpeed.Normal");
+			goto case InterfaceTerrainRollerRotationSpeed.Normal;
+		}
+
+		return terrainRollerFixed;
+	}
+
+	private float InterfaceTerrainRollerRotationSpeedAndInterfaceTerrainRollerRotationToTerrainRollerSpeed(InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection) {
+
+		float terrainRollerSpeed;
+
+		switch (interfaceTerrainRollerRotationSpeed) {
+		case InterfaceTerrainRollerRotationSpeed.Stationary:	terrainRollerSpeed = 0f;		break;
+		case InterfaceTerrainRollerRotationSpeed.Free:			terrainRollerSpeed = 0f;		break;
+		case InterfaceTerrainRollerRotationSpeed.VerySlow:		terrainRollerSpeed = 1f;		break;
+		case InterfaceTerrainRollerRotationSpeed.Slow:			terrainRollerSpeed = 2f;		break;
+		case InterfaceTerrainRollerRotationSpeed.Normal:		terrainRollerSpeed = 3f;		break;
+		case InterfaceTerrainRollerRotationSpeed.Fast:			terrainRollerSpeed = 4f;		break;
+		case InterfaceTerrainRollerRotationSpeed.VeryFast:		terrainRollerSpeed = 5f;		break;
+		default:
+			Debug.LogWarning("Invalid InterfaceTerrainRollerRotationSpeed [" + interfaceTerrainRollerRotationSpeed + "]. Defaulting to InterfaceTerrainRollerRotationSpeed.Normal");
+			goto case InterfaceTerrainRollerRotationSpeed.Normal;
+		}
+
+		// Change the sign of the speed to flip the rotation if necessary
+		if (interfaceTerrainRollerRotationDirection == InterfaceTerrainRollerRotationDirection.Clockwise)
+			terrainRollerSpeed *= -1;
+
+		return terrainRollerSpeed;
+	}
+
+	private TerrainInfo InterfaceTerrainInfoToTerrainInfo(InterfaceTerrainInfo interfaceTerrainInfo) {
+
+		TerrainInfo terrainInfo;
+
+		TerrainBlueprintType terrainBlueprintType = InterfaceTerrainToolToTerrainBlueprintType(interfaceTerrainInfo.interfaceTerrainTool);
+
+		switch (interfaceTerrainInfo.interfaceTerrainType) {
+		case InterfaceTerrainType.Ground:
+			
+			// Ground
+			TerrainGroundStyle terrainGroundStyle = InterfaceTerrainGroundStyleToTerrainGroundStyle(interfaceTerrainInfo.interfaceTerrainGroundStyle);
+			float terrainGroundSegmentLength = 3f;
+
+			terrainInfo = new TerrainInfo(terrainBlueprintType, terrainGroundStyle, terrainGroundSegmentLength);
+			
+			break;
+		case InterfaceTerrainType.Roller:
+			
+			//Roller
+			TerrainRollerStyle terrainRollerStyle = InterfaceTerrainRollerStyleToTerrainRollerStyle(interfaceTerrainInfo.interfaceTerrainRollerStyle);
+			float terrainRollerSpacing = 1.5f;
+			bool terrainRollerFixed = InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed(interfaceTerrainInfo.interfaceTerrainRollerRotationSpeed);
+			float terrainRollerSpeed = InterfaceTerrainRollerRotationSpeedAndInterfaceTerrainRollerRotationToTerrainRollerSpeed(interfaceTerrainInfo.interfaceTerrainRollerRotationSpeed, interfaceTerrainInfo.interfaceTerrainRollerRotationDirection);
+
+			terrainInfo = new TerrainInfo(terrainBlueprintType, terrainRollerStyle, terrainRollerSpacing, terrainRollerFixed, terrainRollerSpeed);
+
+			break;
+		default:
+			Debug.LogWarning("Invalid InterfaceTerrainType [" + interfaceTerrainInfo.interfaceTerrainType + "]. Defaulting to InterfaceTerrainType.Ground");
+			goto case InterfaceTerrainType.Ground;
+		}
+
+		return terrainInfo;
 	}
 }
 
@@ -411,8 +507,7 @@ class MenuTerrainGround : MenuTerrainBase {
 				terrainTool = (InterfaceTerrainTool)0;
 		}
 
-		Draw(new TerrainInfo(terrainGroundStyle));
-		//Draw(InterfaceTerrainType.Ground, (int)terrainGroundStyle);
+		Draw(new InterfaceTerrainInfo(terrainTool, terrainGroundStyle));
 
 		return t;
 	}
@@ -506,8 +601,7 @@ class MenuTerrainRoller : MenuTerrainBase {
 				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)0;
 		}
 
-		Draw(new TerrainInfo(terrainRollerStyle, terrainRollerRotationDirection, terrainRollerRotationSpeed));
-		//Draw(InterfaceTerrainType.Roller, (int)terrainRollerStyle);
+		Draw(new InterfaceTerrainInfo(terrainTool, terrainRollerStyle, terrainRollerRotationDirection, terrainRollerRotationSpeed));
 
 		return t;
 	}

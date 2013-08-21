@@ -70,13 +70,13 @@ public class LevelIO {
 			TerrainGroundStyle style = ground.groundPart.GetTerrainGroundStyle();
 			levelData.WriteInt((int) style);
 
+			// Write segment length
+			levelData.WriteFloat(ground.groundPart.blueprintPart.GetSegmentLength());
+
 			// Write points
 			for (int i = 0; i < ground.groundPart.blueprintPart.GetNodeAmount(); i++) {
 				levelData.WriteVector2((Vector2) ground.groundPart.blueprintPart.GetNodePosition(i));
 			}
-
-			// Write segment length
-			levelData.WriteFloat(ground.groundPart.blueprintPart.GetSegmentLength());
 		}
 
 		// Find all TerrainRollers
@@ -94,13 +94,15 @@ public class LevelIO {
 			TerrainRollerStyle style = roller.rollerPart.GetTerrainRollerStyle();
 			levelData.WriteInt((int) style);
 
+
+			//TODO: Write spacing, fixed and speed
+			// Write segment length
+			//levelData.WriteFloat(roller.rollerPart.blueprintPart.GetSegmentLength());
+
 			// Write points
 			for (int i = 0; i < roller.rollerPart.blueprintPart.GetNodeAmount(); i++) {
 				levelData.WriteVector2((Vector2) roller.rollerPart.blueprintPart.GetNodePosition(i));
 			}
-
-			// Write segment length
-			levelData.WriteFloat(roller.rollerPart.blueprintPart.GetSegmentLength());
 		}
 
 		return levelData.ReadAll();
@@ -130,42 +132,21 @@ public class LevelIO {
 			// Read style
 			TerrainGroundStyle style = (TerrainGroundStyle) levelData.ReadInt();
 
-			TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(type, TerrainType.Ground, style);
+			// Read segment length
+			float segmentLength = levelData.ReadFloat();
+
+			TerrainInfo terrainInfo = new TerrainInfo(type, style, segmentLength);
+			TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(terrainInfo);
+
 			for (int i = 0; i < terrainObjectMaker.GetNodeAmount(); i++) {
 				terrainObjectMaker.AddNode((Vector3) levelData.ReadVector2());
 			}
-
-			// Read segment length
-			float segmentLength = levelData.ReadFloat();
-			terrainObjectMaker.SetSegmentLength(segmentLength);
 
 			terrainObjectMaker.SetIsEditable(edit);
 			terrainObjectMaker.CreateTerrain();
 		}
 
-		// 3) Read how many rollers there are
-		int numRollers = levelData.ReadInt();
 
-		for (int t = 0; t < numRollers; t++) {
-
-			// Read type
-			TerrainBlueprintType type = (TerrainBlueprintType) levelData.ReadInt();
-
-			// Read style
-			TerrainRollerStyle style = (TerrainRollerStyle) levelData.ReadInt();
-
-			TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(type, TerrainType.Roller, style);
-			for (int i = 0; i < terrainObjectMaker.GetNodeAmount(); i++) {
-				terrainObjectMaker.AddNode((Vector3) levelData.ReadVector2());
-			}
-
-			// Read segment length
-			float segmentLength = levelData.ReadFloat();
-			terrainObjectMaker.SetSegmentLength(segmentLength);
-
-			terrainObjectMaker.SetIsEditable(edit);
-			terrainObjectMaker.CreateTerrain();
-		}
 	}
 }
 

@@ -6,6 +6,46 @@ public enum TerrainType {Ground, Roller};
 public enum TerrainGroundStyle {Grass, Snow, Desert};
 public enum TerrainRollerStyle {General, Clouds, Bubbles};
 
+public class TerrainInfo {
+	// What type of curve or line
+	public TerrainBlueprintType terrainBlueprintType;
+
+	// Is it ground or roller
+	public TerrainType terrainType;
+
+	// Ground
+	public TerrainGroundStyle terrainGroundStyle;
+	public float terrainGroundSegmentLength;
+
+	// Roller
+	public TerrainRollerStyle terrainRollerStyle;
+	public float terrainRollerSpacing;
+	public bool terrainRollerFixed;
+	public float terrainRollerSpeed;
+
+	public TerrainInfo(TerrainBlueprintType terrainBlueprintType, TerrainGroundStyle terrainGroundStyle, float terrainGroundSegmentLength) {
+		this.terrainBlueprintType = terrainBlueprintType;
+
+		this.terrainType = TerrainType.Ground;
+
+		this.terrainGroundStyle = terrainGroundStyle;
+		this.terrainGroundSegmentLength = terrainGroundSegmentLength;
+	}
+
+	public TerrainInfo(TerrainBlueprintType terrainBlueprintType, TerrainRollerStyle terrainRollerStyle, float terrainRollerSpacing, bool terrainRollerFixed, float terrainRollerSpeed) {
+		this.terrainBlueprintType = terrainBlueprintType;
+
+		this.terrainType = TerrainType.Roller;
+
+		this.terrainRollerStyle = terrainRollerStyle;
+		this.terrainRollerSpacing = terrainRollerSpacing;
+		this.terrainRollerFixed = terrainRollerFixed;
+		this.terrainRollerSpeed = terrainRollerSpeed;
+	}
+}
+
+// udpate TerrainObjectMaker to pass in TerrainInfo through the constructors and make SetSegmentLength() obselete
+
 public class TerrainGenerator : MonoBehaviour {
 	// This exists so that Unity is happy
 }
@@ -13,16 +53,23 @@ public class TerrainGenerator : MonoBehaviour {
 public class TerrainObjectMaker {
 	BlueprintPart part;
 
-	TerrainType terrainType;
-	TerrainGroundStyle groundStyle;
-	TerrainRollerStyle rollerStyle;
+	TerrainInfo terrainInfo;
+	//TerrainType terrainType;
+	//TerrainGroundStyle groundStyle;
+	//TerrainRollerStyle rollerStyle;
 
 	Vector3[] nodes;
 	int nodeCurrent = 0;
 
-	float segmentLength = 1f;
+	//float segmentLength = 1f;
 	bool edit;
 
+	public TerrainObjectMaker(TerrainInfo terrainInfo) {
+		this.terrainInfo = terrainInfo;
+		CreatePart();
+	}
+
+	/*
 	public TerrainObjectMaker(TerrainBlueprintType type, TerrainType terrainType, TerrainGroundStyle groundStyle) {
 
 		if (terrainType != TerrainType.Ground) {
@@ -44,10 +91,11 @@ public class TerrainObjectMaker {
 		this.rollerStyle = rollerStyle;
 		CreatePart(type);
 	}
+	*/
 
-	private void CreatePart(TerrainBlueprintType type) {
+	private void CreatePart() {
 		// Create the blank blueprint
-		switch (type) {
+		switch (this.terrainInfo.terrainBlueprintType) {
 		case TerrainBlueprintType.StraightLine:
 			part = new StraightLine();
 			break;
@@ -83,9 +131,11 @@ public class TerrainObjectMaker {
 		}
 	}
 
+	/*
 	public void SetSegmentLength(float segmentLength) {
 		this.segmentLength = segmentLength;
 	}
+	*/
 
 	public void SetIsEditable(bool edit) {
 		this.edit = edit;
@@ -99,19 +149,19 @@ public class TerrainObjectMaker {
 		// Create the terrain object
 		GameObject obj = new GameObject() as GameObject;
 
-		switch (terrainType) {
+		switch (terrainInfo.terrainType) {
 		case TerrainType.Ground:
 			TerrainGround terrainGround = obj.AddComponent<TerrainGround>();
 			terrainGround.Init(edit);
-			terrainGround.SetTerrainGroundStyle(this.groundStyle);
-			terrainGround.SetSegmentLength(segmentLength);
+			terrainGround.SetTerrainGroundStyle(this.terrainInfo.terrainGroundStyle);
+			terrainGround.SetSegmentLength(this.terrainInfo.terrainGroundSegmentLength);
 			terrainGround.AssignBlueprint(part);
 			break;
 		case TerrainType.Roller:
 			TerrainRoller terrainRoller = obj.AddComponent<TerrainRoller>();
 			terrainRoller.Init(edit);
-			terrainRoller.SetTerrainRollerStyle(this.rollerStyle);
-			terrainRoller.SetSegmentLength(segmentLength);
+			terrainRoller.SetTerrainRollerStyle(this.terrainInfo.terrainRollerStyle);
+			//terrainRoller.SetSegmentLength(segmentLength); //This is irrelevant because rollers force the segment length value
 			terrainRoller.AssignBlueprint(part);
 			break;
 		}
@@ -341,35 +391,49 @@ public class RollerPart : TerrainPart {
 	}
 
 	Vector3[] GenerateValidPoints(Vector3[] p, float spacing) {
-		Vector3[] validPoints = new Vector3[p.Length]; // p.Length is the maximum possible length this array could be
-		int validPointsTotal = 0;
+		Vector3[] validPointsFinal;
 
-		// Keep track of the last valid point
-		Vector3 lastPoint;
+		if (p.Length > 2) {
+			Vector3[] validPoints = new Vector3[p.Length]; // p.Length is the maximum possible length this array could be
+			int validPointsTotal = 0;
 
-		// Place the first point
-		lastPoint = validPoints[0] = p[0];
-		validPointsTotal++;
+			// Keep track of the last valid point
+			Vector3 lastPoint;
 
-		// Place the middle points
-		for (int i = 0; i < p.Length; i++) {
-			if ((p[i] - lastPoint).magnitude >= spacing) {
-				lastPoint = validPoints[validPointsTotal] = p[i];
-				validPointsTotal++;
+			// Place the first point
+			lastPoint = validPoints[0] = p[0];
+			validPointsTotal++;
+
+			// Place the middle points
+			for (int i = 0; i < p.Length; i++) {
+				if ((p[i] - lastPoint).magnitude >= spacing) {
+					lastPoint = validPoints[validPointsTotal] = p[i];
+					validPointsTotal++;
+				}
 			}
+
+			// Place the last points
+			validPoints[validPointsTotal] = p[p.Length - 1]; //TODO: This can lead to an "array index out of range" error
+			validPointsTotal++;
+
+			// Create a correctly sized array
+			validPointsFinal = new Vector3[validPointsTotal];
+			for (int i = 0; i < validPointsFinal.Length; i++) {
+				validPointsFinal[i] = validPoints[i];
+			}
+		} else if (p.Length == 2) {
+			validPointsFinal = new Vector3[2];
+			validPointsFinal[0] = p[0];
+			validPointsFinal[1] = p[1];
+		} else if (p.Length == 1) {
+			validPointsFinal = new Vector3[1];
+			validPointsFinal[0] = p[0];
+		} else {
+			Debug.LogError("Could not generate list of valid points because supplied list of points was empty.");
+			validPointsFinal = new Vector3[0];
 		}
 
-		// Place the last points
-		validPoints[validPointsTotal] = p[p.Length - 1];
-		validPointsTotal++;
-
-		// Create a correctly sized array
-		Vector3[] validPoints2 = new Vector3[validPointsTotal];
-		for (int i = 0; i < validPoints2.Length; i++) {
-			validPoints2[i] = validPoints[i];
-		}
-
-		return validPoints2;
+		return validPointsFinal;
 	}
 
 	GameObject CreateRollerAt(Vector3 pos) {
