@@ -8,8 +8,11 @@ public class TerrainGround : TerrainBase {
 	public TerrainGroundStyle style;
 
 	public override void AssignBlueprint(BlueprintPart blueprintPart) {
+
+		this.blueprintPart = blueprintPart;
+
 		// Convert the blueprint into a physical thing
-		this.groundPart = new GroundPart(blueprintPart, this.style, true);
+		this.groundPart = new GroundPart(this);
 		this.groundPart.SetParent(transform);
 
 		if (requireNodes) {

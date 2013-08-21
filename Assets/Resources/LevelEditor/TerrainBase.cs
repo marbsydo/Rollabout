@@ -4,18 +4,21 @@ using System.Collections;
 public abstract class TerrainBase : MonoBehaviour {
 
 	protected bool requireNodes;
-	public ObjectNode[] nodes;
+	protected ObjectNode[] nodes;
+	private Color partColor = Color.white;
 
 	public float segmentLength = 1f;
-	private Color partColor = Color.white;
+	public bool physicsEnabled;
+	public BlueprintPart blueprintPart;
 
 	// Init() is used instead of a constructor because parameters cannot be passed through AddComponent<>()
 	// and this class is created in the CreateTerrain() function of class TerrainObjectMaker using AddComponent<>()
 	// It is necessary that Init() is called before any other functions in this class
-	public void Init(bool requireNodes) {
+	public void Init(bool requireNodes, bool physicsEnabled) {
 		// If set to true, nodes will be created when AssignBlueprint() is called
 		// If set to false, nodes will not be created
 		this.requireNodes = requireNodes;
+		this.physicsEnabled = physicsEnabled;
 	}
 
 	public void SegmentLengthIncrease() {

@@ -11,8 +11,11 @@ public class TerrainRoller : TerrainBase {
 	public float speed;
 
 	public override void AssignBlueprint(BlueprintPart blueprintPart) {
+
+		this.blueprintPart = blueprintPart;
+
 		// Convert the blueprint into a physical thing
-		this.rollerPart = new RollerPart(blueprintPart, this.style, true);
+		this.rollerPart = new RollerPart(this);
 		this.rollerPart.SetParent(transform);
 
 		if (requireNodes) {

@@ -115,7 +115,7 @@ public class TerrainObjectMaker {
 		switch (terrainInfo.terrainType) {
 		case TerrainType.Ground:
 			TerrainGround terrainGround = obj.AddComponent<TerrainGround>();
-			terrainGround.Init(edit);
+			terrainGround.Init(edit, !edit);
 
 			// Pass terrainInfo data to terrainGround
 			terrainGround.style = this.terrainInfo.terrainGroundStyle;
@@ -125,7 +125,7 @@ public class TerrainObjectMaker {
 			break;
 		case TerrainType.Roller:
 			TerrainRoller terrainRoller = obj.AddComponent<TerrainRoller>();
-			terrainRoller.Init(edit);
+			terrainRoller.Init(edit, !edit);
 
 			// Pass terrainInfo data to terrainRoller
 			terrainRoller.style = this.terrainInfo.terrainRollerStyle;
@@ -183,13 +183,13 @@ public class GroundPart : TerrainPart {
 	GameObject terrainLine;
 	GameObject terrainCircle;
 	
-	bool physicsEnabled;
+	TerrainGround terrainGround;
 
-	public GroundPart(BlueprintPart blueprintPart, TerrainGroundStyle style, bool physicsEnabled) : base(blueprintPart) {
+	public GroundPart(TerrainGround terrainGround) : base(terrainGround.blueprintPart) {
 
-		this.physicsEnabled = physicsEnabled;
+		this.terrainGround = terrainGround;
 
-		//TODO: Load a different sprite depending upon the style
+		//TODO: Load a different sprite depending upon terrainGround.style;
 		terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundGrassLine") as GameObject;
 		terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundGrassCircle") as GameObject;
 	}
@@ -229,7 +229,7 @@ public class GroundPart : TerrainPart {
 
 		GameObject s = new GameObject();
 
-		if (physicsEnabled) {
+		if (terrainGround.physicsEnabled) {
 			s.AddComponent<SphereCollider>();
 			s.AddComponent<Rigidbody>().isKinematic = true;
 		}
@@ -253,7 +253,7 @@ public class GroundPart : TerrainPart {
 
 		GameObject b = new GameObject();
 
-		if (physicsEnabled) {
+		if (terrainGround.physicsEnabled) {
 			b.AddComponent<BoxCollider>();
 			b.AddComponent<Rigidbody>().isKinematic = true;
 		}
@@ -288,13 +288,13 @@ public class RollerPart : TerrainPart {
 
 	GameObject spriteRoller;
 
-	bool physicsEnabled;
+	TerrainRoller terrainRoller;
 
-	public RollerPart(BlueprintPart blueprintPart, TerrainRollerStyle style, bool physicsEnabled) : base(blueprintPart) {
+	public RollerPart(TerrainRoller terrainRoller) : base(terrainRoller.blueprintPart) {
 
-		this.physicsEnabled = physicsEnabled;
+		this.terrainRoller = terrainRoller;
 
-		//TODO: Load a different sprite depending upon the style
+		//TODO: Load a different sprite depending upon terrainRoller.style
 		spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerGeneral") as GameObject;
 	}
 
@@ -435,7 +435,7 @@ public class RollerPart : TerrainPart {
 			}
 
 			// Place the last points
-			validPoints[validPointsTotal] = p[p.Length - 1]; //TODO: This can lead to an "array index out of range" error
+			validPoints[validPointsTotal] = p[p.Length - 1];
 			validPointsTotal++;
 
 			// Create a correctly sized array
@@ -461,10 +461,17 @@ public class RollerPart : TerrainPart {
 	GameObject CreateRollerAt(Vector3 pos) {
 		GameObject spriteObj = new GameObject();
 
-		if (physicsEnabled) {
+		if (terrainRoller.physicsEnabled) {
 			spriteObj.AddComponent<SphereCollider>();
 			spriteObj.AddComponent<Rigidbody>();
 			spriteObj.rigidbody.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
+			/*
+			// Add a script to control its physics
+			PhysicsRoller physicsRoller = spriteObj.AddComponent<PhysicsRoller>();
+
+			// Give it a reference to TerrainRoller somehow
+			physicsRoller.terrainRoller = //this.
+			*/
 		}
 
 		GameObject sprite = (GameObject.Instantiate(spriteRoller, Vector3.zero, Quaternion.identity) as GameObject);
