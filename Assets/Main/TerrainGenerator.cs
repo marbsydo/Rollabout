@@ -464,6 +464,7 @@ public class RollerPart : TerrainPart {
 		if (physicsEnabled) {
 			spriteObj.AddComponent<SphereCollider>();
 			spriteObj.AddComponent<Rigidbody>();
+			spriteObj.rigidbody.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
 		}
 
 		GameObject sprite = (GameObject.Instantiate(spriteRoller, Vector3.zero, Quaternion.identity) as GameObject);
