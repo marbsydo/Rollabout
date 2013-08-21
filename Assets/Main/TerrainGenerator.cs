@@ -323,6 +323,45 @@ public class RollerPart : TerrainPart {
 
 	public override void Regenerate() {
 
+		// The aim of this function is to generate a series of rollers that are equally distributed (by desiredSpacing) along
+		// the desired curve (p). This is a challenge, especially for the Bezier curve. The mathematical nature of the Bezier curve
+		// means that its length, and interpolation, are not computable. The best solution is an estimate (treating it as a series
+		// of very short lines).
+		//
+		// The first step of the process is to convert your desiredSpacing (the space inbetween each roller) into actualSpacing.
+		// This step is required because the spaces need to be uniform, and desiredSpacing is almost never a factor of the curve
+		// length.
+		//
+		// The curve length therefore is first worked out with blueprintPart.Length(). As previously mentioned, the Bezier curve
+		// only returns an estimate of its length - but this is good enough.
+		//
+		// The value of actualSpacing is worked out by dividing the curve length by desiredSpacing, flooring that result, and then
+		// dividing the curve length by that result. The use of Floor(), rather than Round() or Ceil(), is to ensure that actualSpacing
+		// will always be bigger than desiredSpacing. That is because the rollers must never be too close (if they touch, the physics
+		// messes up), but it does not matter if they are slightly farther apart.
+		//
+		// In practice, however, the value for actualSpacing is often not perfect - especially when combined with the fact that the
+		// curve (p) is only a finite number of points, so precision is lost.
+		//
+		// To solve this above issue of actualSpacing not being a perfect factor of the actual curve length in practice, we use brute
+		// force. There is a do/while loop that generates a series of (potentially) valid points, then measures whether the points are
+		// suitable. This suitability test is done through 3 main checks:
+		//
+		// 1. If there are 2 points or less, the points are considered valid. There is no point wasting time trying to place rollers
+		// in the right place when there are so few points.
+		//
+		// 2. If the last two points are too close together (i.e. the final roller is less than actualSpacing away from the end of
+		// the curve), then the points are consired invalid. A new curve is attempted (with a larger value of actualSpacing)
+		//
+		// 2b. However, if the value of actualSpacing is too large (since each time 2. occurs, it increases by spacingIncrease), (i.e it
+		// has exceeded the value of maximumSpacing), then a set of valid points are generated containing only the start and end point
+		// of curve p.
+		//
+		// 3. If the spacing between the last two points is greater than minimumSpacing (not not greater than maximumSpacing) then the
+		// points are considered valid.
+		//
+		// Finally, a new array is created which has the correct size for these points. This array is returned.
+
 		// The desired spacing between each roller
 		float desiredSpacing = 1.5f;
 
@@ -359,26 +398,32 @@ public class RollerPart : TerrainPart {
 		do {
 			validPoints = GenerateValidPoints(p, currentSpacing);
 
-			// Check whether the points fit well
-			float spacingBetweenLastTwoPoints = (validPoints[validPoints.Length - 1] - validPoints[validPoints.Length - 2]).magnitude;
-			if (spacingBetweenLastTwoPoints < minimumSpacing) {
-				if (currentSpacing > maximumSpacing) {
-					// It is a good fit. Well, not really.
-					//
-					// See, it failed here because the gap between the last two points has gotten too big. This is almost certainly
-					// because the start and end points are too near to each other. The solution then is to generated some validPoints
-					// that contain only the start and end point. The way this is done here is by using a spacing equal to the length
-					// of the curve (i.e. lengthEstimate)
-					validPoints = GenerateValidPoints(p, lengthEstimate);
-					
-					foundValidPoints = true;
-				} else {
-					// It is a bad fit, so try again with slightly bigger spacing
-					currentSpacing += spacingIncrease;
-				}
-			} else {
-				// It is a good fit, so carry on to generate the rollers
+			if (validPoints.Length <= 2) {
+				// Do not try to calculate points when there are so few rollers
+				// This often occurs when the start and end points are too near each other
 				foundValidPoints = true;
+			} else {
+				// Check whether the points fit well
+				float spacingBetweenLastTwoPoints = (validPoints[validPoints.Length - 1] - validPoints[validPoints.Length - 2]).magnitude;
+				if (spacingBetweenLastTwoPoints < minimumSpacing) {
+					if (currentSpacing > maximumSpacing) {
+						// It is a good fit. Well, not really.
+						//
+						// See, it failed here because the gap between the last two points has gotten too big. This is also almost certainly
+						// because the start and end points are too near to each other. The solution then is to generated some validPoints
+						// that contain only the start and end point. The way this is done here is by using a spacing equal to the length
+						// of the curve (i.e. lengthEstimate)
+						validPoints = GenerateValidPoints(p, lengthEstimate);
+						
+						foundValidPoints = true;
+					} else {
+						// It is a bad fit, so try again with slightly bigger spacing
+						currentSpacing += spacingIncrease;
+					}
+				} else {
+					// It is a good fit, so carry on to generate the rollers
+					foundValidPoints = true;
+				}
 			}
 		} while (!foundValidPoints);
 
