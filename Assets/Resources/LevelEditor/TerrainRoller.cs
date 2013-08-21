@@ -81,4 +81,15 @@ public class TerrainRoller : TerrainBase {
 		// Finally, apply the colour
 		ApplyColor();
 	}
+
+	public void Update() {
+		if (rollerPart != null && this.physicsEnabled) {
+			int numObjs = rollerPart.GetObjsLength();
+
+			for (int i = 0; i < numObjs; i++) {
+				GameObject obj = rollerPart.GetObj(i);
+				obj.rigidbody.AddTorque(0, 0, 10);
+			}
+		}
+	}
 }

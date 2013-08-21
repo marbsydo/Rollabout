@@ -175,6 +175,14 @@ public abstract class TerrainPart {
 		objPos = 0;
 	}
 
+	public int GetObjsLength() {
+		return objs.Length;
+	}
+
+	public GameObject GetObj(int o) {
+		return objs[o];
+	}
+
 	public abstract void Regenerate();
 }
 
@@ -465,13 +473,6 @@ public class RollerPart : TerrainPart {
 			spriteObj.AddComponent<SphereCollider>();
 			spriteObj.AddComponent<Rigidbody>();
 			spriteObj.rigidbody.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
-			/*
-			// Add a script to control its physics
-			PhysicsRoller physicsRoller = spriteObj.AddComponent<PhysicsRoller>();
-
-			// Give it a reference to TerrainRoller somehow
-			physicsRoller.terrainRoller = //this.
-			*/
 		}
 
 		GameObject sprite = (GameObject.Instantiate(spriteRoller, Vector3.zero, Quaternion.identity) as GameObject);
