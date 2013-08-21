@@ -199,6 +199,33 @@ class MenuTerrain : MenuAbstract {
 
 class MenuTerrainBase : MenuAbstract {
 
+	protected class TerrainInfo {
+		// Is it ground or roller?
+		public InterfaceTerrainType interfaceTerrainType;
+
+		// Ground specific data
+		public InterfaceTerrainGroundStyle interfaceTerrainGroundStyle;
+
+		// Roller specific data
+		public InterfaceTerrainRollerStyle interfaceTerrainRollerStyle;
+		public InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection;
+		public InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed;
+
+		public TerrainInfo(InterfaceTerrainGroundStyle interfaceTerrainGroundStyle) {
+			this.interfaceTerrainType = InterfaceTerrainType.Ground;
+
+			this.interfaceTerrainGroundStyle = interfaceTerrainGroundStyle;
+		}
+
+		public TerrainInfo(InterfaceTerrainRollerStyle interfaceTerrainRollerStyle, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection, InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationsSpeed) {
+			this.interfaceTerrainType = InterfaceTerrainType.Roller;
+
+			this.interfaceTerrainRollerStyle = interfaceTerrainRollerStyle;
+			this.interfaceTerrainRollerRotationDirection = interfaceTerrainRollerRotationDirection;
+			this.interfaceTerrainRollerRotationSpeed = interfaceTerrainRollerRotationSpeed;
+		}
+	}
+
 	protected int terrainToolMax = (int)InterfaceTerrainTool.__Length;
 	protected InterfaceTerrainTool terrainTool = InterfaceTerrainTool.StraightLine;
 
@@ -218,7 +245,8 @@ class MenuTerrainBase : MenuAbstract {
 		editorController.NodesDeactivate();
 	}
 
-	protected void Draw(InterfaceTerrainType interfaceTerrainType, int terrainStyle) {
+	//protected void Draw(InterfaceTerrainType interfaceTerrainType, int terrainStyle) {
+	protected void Draw(TerrainInfo terrainInfo) {
 		if (Input.GetMouseButtonDown(0)) {
 			if (editorController.MouseClaim(editorInterfaceKeyboard.gameObject)) {
 				drawStage = 1;
@@ -249,12 +277,12 @@ class MenuTerrainBase : MenuAbstract {
 
 				TerrainType terrainType;
 
-				switch (interfaceTerrainType) {
+				switch (terrainInfo.interfaceTerrainType) {
 					case InterfaceTerrainType.Ground:			terrainType = TerrainType.Ground;				break;
 					case InterfaceTerrainType.Roller:			terrainType = TerrainType.Roller;				break;
 					default:
 					terrainType = TerrainType.Ground;
-					Debug.LogWarning("Unknown interfaceTerrainType [" + interfaceTerrainType + "]. Defaulting to InterfaceTerrainType.Ground");
+					Debug.LogWarning("Unknown terrainInfo.interfaceTerrainType [" + terrainInfo.interfaceTerrainType + "]. Defaulting to InterfaceTerrainType.Ground");
 					break;
 				}
 
@@ -263,12 +291,12 @@ class MenuTerrainBase : MenuAbstract {
 				if (terrainType == TerrainType.Ground) {
 					TerrainGroundStyle groundStyle;
 
-					switch ((InterfaceTerrainGroundStyle)terrainStyle) {
+					switch (terrainInfo.interfaceTerrainGroundStyle) {
 					case InterfaceTerrainGroundStyle.Grass:			groundStyle = TerrainGroundStyle.Grass;		break;
 					case InterfaceTerrainGroundStyle.Snow:			groundStyle = TerrainGroundStyle.Snow;		break;
 					case InterfaceTerrainGroundStyle.Desert:		groundStyle = TerrainGroundStyle.Desert;	break;
 					default:
-						Debug.LogError("Cannot find a matching TerrainGroundStyle for InterfaceTerrainGroundStyle + [" + (InterfaceTerrainGroundStyle)terrainStyle + "]. Defaulting to TerrainGroundStyle.Grass");
+						Debug.LogError("Cannot find a matching TerrainGroundStyle for InterfaceTerrainGroundStyle + [" + terrainInfo.interfaceTerrainGroundStyle + "]. Defaulting to TerrainGroundStyle.Grass");
 						groundStyle = TerrainGroundStyle.Grass;
 						break;
 					}
@@ -277,12 +305,12 @@ class MenuTerrainBase : MenuAbstract {
 				} else if (terrainType == TerrainType.Roller) {
 					TerrainRollerStyle rollerStyle;
 
-					switch ((InterfaceTerrainRollerStyle)terrainStyle) {
+					switch (terrainInfo.interfaceTerrainRollerStyle) {
 					case InterfaceTerrainRollerStyle.General:		rollerStyle = TerrainRollerStyle.General;	break;
 					case InterfaceTerrainRollerStyle.Clouds:		rollerStyle = TerrainRollerStyle.Clouds;	break;
 					case InterfaceTerrainRollerStyle.Bubbles:		rollerStyle = TerrainRollerStyle.Bubbles;	break;
 					default:
-						Debug.LogError("Cannot find a matching TerrainRollerStyle for InterfaceTerrainRollerStyle + [" + (InterfaceTerrainRollerStyle)terrainStyle + "]. Defaulting to TerrainRollerStyle.General");
+						Debug.LogError("Cannot find a matching TerrainRollerStyle for InterfaceTerrainRollerStyle + [" + terrainInfo.interfaceTerrainRollerStyle + "]. Defaulting to TerrainRollerStyle.General");
 						rollerStyle = TerrainRollerStyle.General;
 						break;
 					}
@@ -383,7 +411,8 @@ class MenuTerrainGround : MenuTerrainBase {
 				terrainTool = (InterfaceTerrainTool)0;
 		}
 
-		Draw(InterfaceTerrainType.Ground, (int)terrainGroundStyle);
+		Draw(new TerrainInfo(terrainGroundStyle));
+		//Draw(InterfaceTerrainType.Ground, (int)terrainGroundStyle);
 
 		return t;
 	}
@@ -477,7 +506,8 @@ class MenuTerrainRoller : MenuTerrainBase {
 				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)0;
 		}
 
-		Draw(InterfaceTerrainType.Roller, (int)terrainRollerStyle);
+		Draw(new TerrainInfo(terrainRollerStyle, terrainRollerRotationDirection, terrainRollerRotationSpeed));
+		//Draw(InterfaceTerrainType.Roller, (int)terrainRollerStyle);
 
 		return t;
 	}
