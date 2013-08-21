@@ -54,44 +54,16 @@ public class TerrainObjectMaker {
 	BlueprintPart part;
 
 	TerrainInfo terrainInfo;
-	//TerrainType terrainType;
-	//TerrainGroundStyle groundStyle;
-	//TerrainRollerStyle rollerStyle;
 
 	Vector3[] nodes;
 	int nodeCurrent = 0;
 
-	//float segmentLength = 1f;
 	bool edit;
 
 	public TerrainObjectMaker(TerrainInfo terrainInfo) {
 		this.terrainInfo = terrainInfo;
 		CreatePart();
 	}
-
-	/*
-	public TerrainObjectMaker(TerrainBlueprintType type, TerrainType terrainType, TerrainGroundStyle groundStyle) {
-
-		if (terrainType != TerrainType.Ground) {
-			Debug.LogError("Can only use a TerrainGroundStyle with a TerrainType of Ground!");
-		}
-
-		this.terrainType = terrainType;
-		this.groundStyle = groundStyle;
-		CreatePart(type);
-	}
-
-	public TerrainObjectMaker(TerrainBlueprintType type, TerrainType terrainType, TerrainRollerStyle rollerStyle) {
-
-		if (terrainType != TerrainType.Roller) {
-			Debug.LogError("Can only use a TerrainRollerStyle with a TerrainType of Roller!");
-		}
-
-		this.terrainType = terrainType;
-		this.rollerStyle = rollerStyle;
-		CreatePart(type);
-	}
-	*/
 
 	private void CreatePart() {
 		// Create the blank blueprint
@@ -130,12 +102,6 @@ public class TerrainObjectMaker {
 			nodeCurrent++;
 		}
 	}
-
-	/*
-	public void SetSegmentLength(float segmentLength) {
-		this.segmentLength = segmentLength;
-	}
-	*/
 
 	public void SetIsEditable(bool edit) {
 		this.edit = edit;
