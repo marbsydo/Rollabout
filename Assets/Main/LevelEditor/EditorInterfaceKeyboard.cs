@@ -222,9 +222,9 @@ class MenuTerrainBase : MenuAbstract {
 			this.interfaceTerrainGroundStyle = interfaceTerrainGroundStyle;
 		}
 
-		public InterfaceTerrainInfo(InterfaceTerrainTool interfaceTerrainTool, InterfaceTerrainRollerStyle interfaceTerrainRollerStyle, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection, InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationsSpeed) {
+		public InterfaceTerrainInfo(InterfaceTerrainTool interfaceTerrainTool, InterfaceTerrainRollerStyle interfaceTerrainRollerStyle, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection, InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed) {
 			this.interfaceTerrainTool = interfaceTerrainTool;
-			
+
 			this.interfaceTerrainType = InterfaceTerrainType.Roller;
 
 			this.interfaceTerrainRollerStyle = interfaceTerrainRollerStyle;

@@ -6,7 +6,7 @@ public abstract class TerrainBase : MonoBehaviour {
 	protected bool requireNodes;
 	public ObjectNode[] nodes;
 
-	protected float segmentLength = 1f;
+	public float segmentLength = 1f;
 	private Color partColor = Color.white;
 
 	// Init() is used instead of a constructor because parameters cannot be passed through AddComponent<>()
@@ -16,10 +16,6 @@ public abstract class TerrainBase : MonoBehaviour {
 		// If set to true, nodes will be created when AssignBlueprint() is called
 		// If set to false, nodes will not be created
 		this.requireNodes = requireNodes;
-	}
-
-	public void SetSegmentLength(float segmentLength) {
-		this.segmentLength = segmentLength;
 	}
 
 	public void SegmentLengthIncrease() {

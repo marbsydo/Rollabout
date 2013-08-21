@@ -67,8 +67,7 @@ public class LevelIO {
 			TerrainBlueprintType type = ground.groundPart.blueprintPart.GetTerrainBlueprintType();
 			levelData.WriteInt((int) type);
 
-			TerrainGroundStyle style = ground.groundPart.GetTerrainGroundStyle();
-			levelData.WriteInt((int) style);
+			levelData.WriteInt((int) ground.style);
 
 			// Write segment length
 			levelData.WriteFloat(ground.groundPart.blueprintPart.GetSegmentLength());
@@ -91,13 +90,10 @@ public class LevelIO {
 			TerrainBlueprintType type = roller.rollerPart.blueprintPart.GetTerrainBlueprintType();
 			levelData.WriteInt((int) type);
 
-			TerrainRollerStyle style = roller.rollerPart.GetTerrainRollerStyle();
-			levelData.WriteInt((int) style);
-
-
-			//TODO: Write spacing, fixed and speed
-			// Write segment length
-			//levelData.WriteFloat(roller.rollerPart.blueprintPart.GetSegmentLength());
+			levelData.WriteInt((int) roller.style);
+			levelData.WriteFloat(roller.spacing);
+			levelData.WriteBool(roller.isFixed);
+			levelData.WriteFloat(roller.speed);
 
 			// Write points
 			for (int i = 0; i < roller.rollerPart.blueprintPart.GetNodeAmount(); i++) {
@@ -146,7 +142,30 @@ public class LevelIO {
 			terrainObjectMaker.CreateTerrain();
 		}
 
+		// 3) Read how many rollers there are
+		int numRollers = levelData.ReadInt();
 
+		for (int t = 0; t < numRollers; t++) {
+
+			// Read type
+			TerrainBlueprintType type = (TerrainBlueprintType) levelData.ReadInt();
+
+			// Read style
+			TerrainRollerStyle style = (TerrainRollerStyle) levelData.ReadInt();
+			float spacing = levelData.ReadFloat();
+			bool isFixed = levelData.ReadBool();
+			float speed = levelData.ReadFloat();
+
+			TerrainInfo terrainInfo = new TerrainInfo(type, style, spacing, isFixed, speed);
+			TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(terrainInfo);
+
+			for (int i = 0; i < terrainObjectMaker.GetNodeAmount(); i++) {
+				terrainObjectMaker.AddNode((Vector3) levelData.ReadVector2());
+			}
+
+			terrainObjectMaker.SetIsEditable(edit);
+			terrainObjectMaker.CreateTerrain();
+		}
 	}
 }
 
@@ -216,6 +235,10 @@ public class LevelDataRead : LevelData {
 		return StringToFloat(f_s);
 	}
 
+	public bool ReadBool() {
+		return (ReadInt() == 1 ? true : false);
+	}
+
 	public string ReadString() {
 		int l = ReadInt();
 		return ReadNumChars(l);
@@ -257,6 +280,10 @@ public class LevelDataWrite : LevelData {
 		// Convert float to string
 		WriteRaw(FloatToString(f));
 		WriteRaw(" ");
+	}
+
+	public void WriteBool(bool b) {
+		WriteInt(b ? 1 : 0);
 	}
 
 	public void WriteVector2(Vector2 v) {

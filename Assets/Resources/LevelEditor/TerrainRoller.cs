@@ -4,15 +4,15 @@ using System.Collections;
 public class TerrainRoller : TerrainBase {
 
 	public RollerPart rollerPart;
-	private TerrainRollerStyle terrainRollerStyle;
 
-	public void SetTerrainRollerStyle(TerrainRollerStyle terrainRollerStyle) {
-		this.terrainRollerStyle = terrainRollerStyle;
-	}
+	public TerrainRollerStyle style;
+	public float spacing;
+	public bool isFixed;
+	public float speed;
 
 	public override void AssignBlueprint(BlueprintPart blueprintPart) {
 		// Convert the blueprint into a physical thing
-		this.rollerPart = new RollerPart(blueprintPart, this.terrainRollerStyle);
+		this.rollerPart = new RollerPart(blueprintPart, this.style);
 		this.rollerPart.SetParent(transform);
 
 		if (requireNodes) {

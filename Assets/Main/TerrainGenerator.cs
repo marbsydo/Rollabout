@@ -44,8 +44,6 @@ public class TerrainInfo {
 	}
 }
 
-// udpate TerrainObjectMaker to pass in TerrainInfo through the constructors and make SetSegmentLength() obselete
-
 public class TerrainGenerator : MonoBehaviour {
 	// This exists so that Unity is happy
 }
@@ -119,15 +117,23 @@ public class TerrainObjectMaker {
 		case TerrainType.Ground:
 			TerrainGround terrainGround = obj.AddComponent<TerrainGround>();
 			terrainGround.Init(edit);
-			terrainGround.SetTerrainGroundStyle(this.terrainInfo.terrainGroundStyle);
-			terrainGround.SetSegmentLength(this.terrainInfo.terrainGroundSegmentLength);
+
+			// Pass terrainInfo data to terrainGround
+			terrainGround.style = this.terrainInfo.terrainGroundStyle;
+			terrainGround.segmentLength = this.terrainInfo.terrainGroundSegmentLength;
+
 			terrainGround.AssignBlueprint(part);
 			break;
 		case TerrainType.Roller:
 			TerrainRoller terrainRoller = obj.AddComponent<TerrainRoller>();
 			terrainRoller.Init(edit);
-			terrainRoller.SetTerrainRollerStyle(this.terrainInfo.terrainRollerStyle);
-			//terrainRoller.SetSegmentLength(segmentLength); //This is irrelevant because rollers force the segment length value
+
+			// Pass terrainInfo data to terrainRoller
+			terrainRoller.style = this.terrainInfo.terrainRollerStyle;
+			terrainRoller.spacing = this.terrainInfo.terrainRollerSpacing;
+			terrainRoller.isFixed = this.terrainInfo.terrainRollerFixed;
+			terrainRoller.speed = this.terrainInfo.terrainRollerSpeed;
+
 			terrainRoller.AssignBlueprint(part);
 			break;
 		}
@@ -175,21 +181,14 @@ public abstract class TerrainPart {
 
 public class GroundPart : TerrainPart {
 
-	TerrainGroundStyle style;
-
 	GameObject terrainLine;
 	GameObject terrainCircle;
 	
 	public GroundPart(BlueprintPart blueprintPart, TerrainGroundStyle style) : base(blueprintPart) {
-		this.style = style;
 
 		//TODO: Load a different sprite depending upon the style
 		terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundGrassLine") as GameObject;
 		terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundGrassCircle") as GameObject;
-	}
-
-	public TerrainGroundStyle GetTerrainGroundStyle() {
-		return style;
 	}
 	
 	public override void Regenerate() {
@@ -272,19 +271,12 @@ public class GroundPart : TerrainPart {
 
 public class RollerPart : TerrainPart {
 
-	TerrainRollerStyle style;
-
 	GameObject spriteRoller;
 
 	public RollerPart(BlueprintPart blueprintPart, TerrainRollerStyle style) : base(blueprintPart) {
-		this.style = style;
 
 		//TODO: Load a different sprite depending upon the style
 		spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerGeneral") as GameObject;
-	}
-
-	public TerrainRollerStyle GetTerrainRollerStyle() {
-		return style;
 	}
 
 	public override void Regenerate() {

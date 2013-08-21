@@ -4,15 +4,12 @@ using System.Collections;
 public class TerrainGround : TerrainBase {
 
 	public GroundPart groundPart;
-	private TerrainGroundStyle terrainGroundStyle;
-
-	public void SetTerrainGroundStyle(TerrainGroundStyle terrainGroundStyle) {
-		this.terrainGroundStyle = terrainGroundStyle;
-	}
+	
+	public TerrainGroundStyle style;
 
 	public override void AssignBlueprint(BlueprintPart blueprintPart) {
 		// Convert the blueprint into a physical thing
-		this.groundPart = new GroundPart(blueprintPart, this.terrainGroundStyle);
+		this.groundPart = new GroundPart(blueprintPart, this.style);
 		this.groundPart.SetParent(transform);
 
 		if (requireNodes) {
