@@ -357,13 +357,13 @@ public class RollerPart : TerrainPart {
 		// Finally, a new array is created which has the correct size for these points. This array is returned.
 
 		// The desired spacing between each roller
-		float desiredSpacing = 1.5f;
+		float desiredSpacing = terrainRoller.spacing;
 
 		// The minimum allowed spacing between each roller. Works well when set to desiredSpacing
 		float minimumSpacing = desiredSpacing;
 
 		// The maximum allowed spacing between each roller
-		float maximumSpacing = desiredSpacing + 1f;
+		float maximumSpacing = desiredSpacing * 2;
 
 		// How much to increase the spacing by when trying to find a good spacing
 		float spacingIncrease = 0.05f;

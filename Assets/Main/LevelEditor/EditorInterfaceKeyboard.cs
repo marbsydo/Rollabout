@@ -17,6 +17,7 @@ public enum InterfaceTerrainRollerStyle {General, Clouds, Bubbles, __Length};
 public enum InterfaceTerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc, __Length};
 public enum InterfaceTerrainRollerRotationDirection {Clockwise, AntiClockwise};
 public enum InterfaceTerrainRollerRotationSpeed {Stationary, Free, VerySlow, Slow, Normal, Fast, VeryFast, __Length}
+public enum InterfaceTerrainRollerSpacing {VeryPacked, Packed, Normal, Sparse, VerySparse, __Length};
 
 public enum TextMenu {Main, Navigation, Terrain, TerrainGround, TerrainRoller, Scenery, Objects, Options, OptionsSave, OptionsLoad};
 
@@ -213,6 +214,7 @@ class MenuTerrainBase : MenuAbstract {
 		public InterfaceTerrainRollerStyle interfaceTerrainRollerStyle;
 		public InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection;
 		public InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed;
+		public InterfaceTerrainRollerSpacing interfaceTerrainRollerSpacing;
 
 		public InterfaceTerrainInfo(InterfaceTerrainTool interfaceTerrainTool, InterfaceTerrainGroundStyle interfaceTerrainGroundStyle) {
 			this.interfaceTerrainTool = interfaceTerrainTool;
@@ -222,7 +224,7 @@ class MenuTerrainBase : MenuAbstract {
 			this.interfaceTerrainGroundStyle = interfaceTerrainGroundStyle;
 		}
 
-		public InterfaceTerrainInfo(InterfaceTerrainTool interfaceTerrainTool, InterfaceTerrainRollerStyle interfaceTerrainRollerStyle, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection, InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed) {
+		public InterfaceTerrainInfo(InterfaceTerrainTool interfaceTerrainTool, InterfaceTerrainRollerStyle interfaceTerrainRollerStyle, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection, InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed, InterfaceTerrainRollerSpacing interfaceTerrainRollerSpacing) {
 			this.interfaceTerrainTool = interfaceTerrainTool;
 
 			this.interfaceTerrainType = InterfaceTerrainType.Roller;
@@ -230,6 +232,7 @@ class MenuTerrainBase : MenuAbstract {
 			this.interfaceTerrainRollerStyle = interfaceTerrainRollerStyle;
 			this.interfaceTerrainRollerRotationDirection = interfaceTerrainRollerRotationDirection;
 			this.interfaceTerrainRollerRotationSpeed = interfaceTerrainRollerRotationSpeed;
+			this.interfaceTerrainRollerSpacing = interfaceTerrainRollerSpacing;
 		}
 	}
 
@@ -423,6 +426,24 @@ class MenuTerrainBase : MenuAbstract {
 		return terrainRollerSpeed;
 	}
 
+	private float InterfaceTerrainRollerSpacingToTerrainRollerSpacing(InterfaceTerrainRollerSpacing interfaceTerrainRollerSpacing) {
+		
+		float terrainRollerSpacing;
+
+		switch (interfaceTerrainRollerSpacing) {
+			case InterfaceTerrainRollerSpacing.VeryPacked:		terrainRollerSpacing = 1f;		break;
+			case InterfaceTerrainRollerSpacing.Packed:			terrainRollerSpacing = 1.375f;	break;
+			case InterfaceTerrainRollerSpacing.Normal:			terrainRollerSpacing = 1.75f;	break;
+			case InterfaceTerrainRollerSpacing.Sparse:			terrainRollerSpacing = 2.5f;	break;
+			case InterfaceTerrainRollerSpacing.VerySparse:		terrainRollerSpacing = 4f;		break;
+			default:
+				Debug.LogWarning("Invalid InterfaceTerrainRollerSpacing [" + interfaceTerrainRollerSpacing + "]. Defaulting to InterfaceTerrainRollerSpacing.Normal");
+				goto case InterfaceTerrainRollerSpacing.Normal;
+		}
+
+		return terrainRollerSpacing;
+	}
+
 	private TerrainInfo InterfaceTerrainInfoToTerrainInfo(InterfaceTerrainInfo interfaceTerrainInfo) {
 
 		TerrainInfo terrainInfo;
@@ -443,7 +464,7 @@ class MenuTerrainBase : MenuAbstract {
 			
 			//Roller
 			TerrainRollerStyle terrainRollerStyle = InterfaceTerrainRollerStyleToTerrainRollerStyle(interfaceTerrainInfo.interfaceTerrainRollerStyle);
-			float terrainRollerSpacing = 1.5f;
+			float terrainRollerSpacing = InterfaceTerrainRollerSpacingToTerrainRollerSpacing(interfaceTerrainInfo.interfaceTerrainRollerSpacing);
 			bool terrainRollerFixed = InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed(interfaceTerrainInfo.interfaceTerrainRollerRotationSpeed);
 			float terrainRollerSpeed = InterfaceTerrainRollerRotationSpeedAndInterfaceTerrainRollerRotationToTerrainRollerSpeed(interfaceTerrainInfo.interfaceTerrainRollerRotationSpeed, interfaceTerrainInfo.interfaceTerrainRollerRotationDirection);
 
@@ -534,6 +555,9 @@ class MenuTerrainRoller : MenuTerrainBase {
 	InterfaceTerrainRollerRotationSpeed terrainRollerRotationSpeed = InterfaceTerrainRollerRotationSpeed.Normal;
 	int terrainRollerRotationSpeedMax = (int)InterfaceTerrainRollerRotationSpeed.__Length;
 
+	InterfaceTerrainRollerSpacing terrainRollerSpacing = InterfaceTerrainRollerSpacing.Normal;
+	int terrainRollerSpacingMax = (int)InterfaceTerrainRollerSpacing.__Length;
+
 	override public string Text() {
 
 		string t;
@@ -548,8 +572,9 @@ class MenuTerrainRoller : MenuTerrainBase {
 			"\n" + 
 			"Current style:      " + InterfaceTerrainRollerStyleToText(terrainRollerStyle) + "\n" +
 			"Current tool:       " + InterfaceTerrainToolToText(terrainTool) + "\n" + 
-			"Current rot. dir. : " + InterfaceTerrainRollerRotationDirectionToText(terrainRollerRotationDirection) + "\n" + 
+			"Current rot. dir.:  " + InterfaceTerrainRollerRotationDirectionToText(terrainRollerRotationDirection) + "\n" + 
 			"Current rot. speed: " + InterfaceTerrainRollerRotationSpeedToText(terrainRollerRotationSpeed) + "\n" +
+			"Current spacing:    " + InterfaceTerrainRollerSpacingToText(terrainRollerSpacing) + "\n" + 
 			"\n" + 
 			"Use mouse to draw and modify rollers.";
 
@@ -601,7 +626,19 @@ class MenuTerrainRoller : MenuTerrainBase {
 				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)0;
 		}
 
-		Draw(new InterfaceTerrainInfo(terrainTool, terrainRollerStyle, terrainRollerRotationDirection, terrainRollerRotationSpeed));
+		if (Input.GetKeyDown(KeyCode.Z)) {
+			terrainRollerSpacing--;
+			if ((int)terrainRollerSpacing < 0)
+				terrainRollerSpacing = (InterfaceTerrainRollerSpacing)0;
+		}
+
+		if (Input.GetKeyDown(KeyCode.X)) {
+			terrainRollerSpacing++;
+			if ((int)terrainRollerSpacing >= terrainRollerSpacingMax)
+				terrainRollerSpacing = (InterfaceTerrainRollerSpacing)terrainRollerSpacingMax - 1;
+		}
+
+		Draw(new InterfaceTerrainInfo(terrainTool, terrainRollerStyle, terrainRollerRotationDirection, terrainRollerRotationSpeed, terrainRollerSpacing));
 
 		return t;
 	}
@@ -637,6 +674,19 @@ class MenuTerrainRoller : MenuTerrainBase {
 			case InterfaceTerrainRollerRotationSpeed.Normal:		s = "Normal";				break;
 			case InterfaceTerrainRollerRotationSpeed.Fast:			s = "Fast";					break;
 			case InterfaceTerrainRollerRotationSpeed.VeryFast:		s = "Very fast";			break;
+			default:												s = "???";					break;
+		}
+		return s;
+	}
+
+	string InterfaceTerrainRollerSpacingToText(InterfaceTerrainRollerSpacing r) {
+		string s = "";
+		switch (r) {
+			case InterfaceTerrainRollerSpacing.VeryPacked:			s = "Very packed";			break;
+			case InterfaceTerrainRollerSpacing.Packed:				s = "Packed";				break;
+			case InterfaceTerrainRollerSpacing.Normal:				s = "Normal";				break;
+			case InterfaceTerrainRollerSpacing.Sparse:				s = "Sparse";				break;
+			case InterfaceTerrainRollerSpacing.VerySparse:			s = "Very sparse";			break;
 			default:												s = "???";					break;
 		}
 		return s;
