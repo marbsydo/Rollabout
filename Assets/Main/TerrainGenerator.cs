@@ -114,6 +114,7 @@ public class TerrainObjectMaker {
 
 		switch (terrainInfo.terrainType) {
 		case TerrainType.Ground:
+			obj.name = "TerrainGround";
 			TerrainGround terrainGround = obj.AddComponent<TerrainGround>();
 			terrainGround.Init(edit, !edit);
 
@@ -124,6 +125,7 @@ public class TerrainObjectMaker {
 			terrainGround.AssignBlueprint(part);
 			break;
 		case TerrainType.Roller:
+			obj.name = "TerrainRoller";
 			TerrainRoller terrainRoller = obj.AddComponent<TerrainRoller>();
 			terrainRoller.Init(edit, !edit);
 
@@ -236,6 +238,7 @@ public class GroundPart : TerrainPart {
 	GameObject CreateSphereAt(Vector3 pos, float angle) {
 
 		GameObject s = new GameObject();
+		s.name = "GroundSphere";
 
 		if (terrainGround.physicsEnabled) {
 			s.AddComponent<SphereCollider>();
@@ -245,6 +248,7 @@ public class GroundPart : TerrainPart {
 		// Sprite
 		GameObject.Destroy(s.GetComponent<MeshRenderer>());
 		GameObject sprite = GameObject.Instantiate(terrainCircle, Vector3.zero, Quaternion.identity) as GameObject;
+		sprite.name = "Sprite";
 		sprite.transform.parent = s.transform;
 		sprite.transform.eulerAngles = new Vector3(0, 0, angle * Mathf.Rad2Deg);
 		sprite.transform.position = new Vector3(0, 0, 0.5f);
@@ -260,6 +264,7 @@ public class GroundPart : TerrainPart {
 	GameObject CreateBlockBetween(Vector3 pos1, Vector3 pos2) {
 
 		GameObject b = new GameObject();
+		b.name = "GroundBlock";
 
 		if (terrainGround.physicsEnabled) {
 			b.AddComponent<BoxCollider>();
@@ -269,6 +274,7 @@ public class GroundPart : TerrainPart {
 		// Sprite
 		GameObject.Destroy(b.GetComponent<MeshRenderer>());
 		GameObject sprite = GameObject.Instantiate(terrainLine, Vector3.zero, Quaternion.identity) as GameObject;
+		sprite.name = "Sprite";
 		sprite.transform.parent = b.transform;
 
 		b.transform.position = (pos1 + pos2) / 2;
@@ -468,6 +474,7 @@ public class RollerPart : TerrainPart {
 
 	GameObject CreateRollerAt(Vector3 pos) {
 		GameObject spriteObj = new GameObject();
+		spriteObj.name = "Roller";
 
 		if (terrainRoller.physicsEnabled) {
 			spriteObj.AddComponent<SphereCollider>();
@@ -476,6 +483,7 @@ public class RollerPart : TerrainPart {
 		}
 
 		GameObject sprite = (GameObject.Instantiate(spriteRoller, Vector3.zero, Quaternion.identity) as GameObject);
+		sprite.name = "Sprite";
 		sprite.transform.parent = spriteObj.transform;
 
 		spriteObj.transform.position = pos;

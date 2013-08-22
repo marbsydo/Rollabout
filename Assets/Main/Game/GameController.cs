@@ -20,7 +20,8 @@ public class GameController : MonoBehaviour {
 
 		if (Input.GetMouseButtonDown(0)) {
 			Object domino = Resources.Load("Objects/Domino");
-			GameObject.Instantiate(domino, GetMousePos(), Quaternion.identity);
+			Object obj = GameObject.Instantiate(domino, GetMousePos(), Quaternion.identity);
+			obj.name = "Domino";
 		}
 	}
 
