@@ -16,7 +16,7 @@ public enum InterfaceTerrainGroundStyle {Grass, Snow, Desert, __Length};
 public enum InterfaceTerrainRollerStyle {General, Clouds, Bubbles, __Length};
 public enum InterfaceTerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc, __Length};
 public enum InterfaceTerrainRollerRotationDirection {Clockwise, AntiClockwise};
-public enum InterfaceTerrainRollerRotationSpeed {Free, Stationary, VerySlow, Slow, Normal, Fast, VeryFast, __Length}
+public enum InterfaceTerrainRollerRotationSpeed {Stationary, Free, VerySlow, Slow, Normal, Fast, VeryFast, __Length}
 
 public enum TextMenu {Main, Navigation, Terrain, TerrainGround, TerrainRoller, Scenery, Objects, Options, OptionsSave, OptionsLoad};
 
@@ -406,11 +406,11 @@ class MenuTerrainBase : MenuAbstract {
 		switch (interfaceTerrainRollerRotationSpeed) {
 		case InterfaceTerrainRollerRotationSpeed.Stationary:	terrainRollerSpeed = 0f;		break;
 		case InterfaceTerrainRollerRotationSpeed.Free:			terrainRollerSpeed = 0f;		break;
-		case InterfaceTerrainRollerRotationSpeed.VerySlow:		terrainRollerSpeed = 1f;		break;
-		case InterfaceTerrainRollerRotationSpeed.Slow:			terrainRollerSpeed = 2f;		break;
-		case InterfaceTerrainRollerRotationSpeed.Normal:		terrainRollerSpeed = 3f;		break;
-		case InterfaceTerrainRollerRotationSpeed.Fast:			terrainRollerSpeed = 4f;		break;
-		case InterfaceTerrainRollerRotationSpeed.VeryFast:		terrainRollerSpeed = 5f;		break;
+		case InterfaceTerrainRollerRotationSpeed.VerySlow:		terrainRollerSpeed = 2.5f;		break;
+		case InterfaceTerrainRollerRotationSpeed.Slow:			terrainRollerSpeed = 5f;		break;
+		case InterfaceTerrainRollerRotationSpeed.Normal:		terrainRollerSpeed = 10f;		break;
+		case InterfaceTerrainRollerRotationSpeed.Fast:			terrainRollerSpeed = 20f;		break;
+		case InterfaceTerrainRollerRotationSpeed.VeryFast:		terrainRollerSpeed = 50f;		break;
 		default:
 			Debug.LogWarning("Invalid InterfaceTerrainRollerRotationSpeed [" + interfaceTerrainRollerRotationSpeed + "]. Defaulting to InterfaceTerrainRollerRotationSpeed.Normal");
 			goto case InterfaceTerrainRollerRotationSpeed.Normal;
