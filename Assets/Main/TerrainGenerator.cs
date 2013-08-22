@@ -134,6 +134,7 @@ public class TerrainObjectMaker {
 			terrainRoller.spacing = this.terrainInfo.terrainRollerSpacing;
 			terrainRoller.isFixed = this.terrainInfo.terrainRollerFixed;
 			terrainRoller.speed = this.terrainInfo.terrainRollerSpeed;
+			terrainRoller.direction = (sbyte) Mathf.Sign(this.terrainInfo.terrainRollerSpeed);
 
 			terrainRoller.AssignBlueprint(part);
 			break;
@@ -482,10 +483,15 @@ public class RollerPart : TerrainPart {
 		if (terrainRoller.physicsEnabled) {
 			spriteObj.AddComponent<SphereCollider>();
 			spriteObj.AddComponent<Rigidbody>();
+
+			// Set whether fixed or not
 			if (terrainRoller.isFixed)
 				spriteObj.rigidbody.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
 			else
 				spriteObj.rigidbody.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
+
+			// Set speed
+			spriteObj.rigidbody.maxAngularVelocity = terrainRoller.speed;
 		}
 
 		GameObject sprite = (GameObject.Instantiate(spriteRoller, Vector3.zero, Quaternion.identity) as GameObject);

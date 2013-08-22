@@ -409,8 +409,8 @@ class MenuTerrainBase : MenuAbstract {
 		case InterfaceTerrainRollerRotationSpeed.VerySlow:		terrainRollerSpeed = 2.5f;		break;
 		case InterfaceTerrainRollerRotationSpeed.Slow:			terrainRollerSpeed = 5f;		break;
 		case InterfaceTerrainRollerRotationSpeed.Normal:		terrainRollerSpeed = 10f;		break;
-		case InterfaceTerrainRollerRotationSpeed.Fast:			terrainRollerSpeed = 20f;		break;
-		case InterfaceTerrainRollerRotationSpeed.VeryFast:		terrainRollerSpeed = 50f;		break;
+		case InterfaceTerrainRollerRotationSpeed.Fast:			terrainRollerSpeed = 100f;		break;
+		case InterfaceTerrainRollerRotationSpeed.VeryFast:		terrainRollerSpeed = 1000f;		break;
 		default:
 			Debug.LogWarning("Invalid InterfaceTerrainRollerRotationSpeed [" + interfaceTerrainRollerRotationSpeed + "]. Defaulting to InterfaceTerrainRollerRotationSpeed.Normal");
 			goto case InterfaceTerrainRollerRotationSpeed.Normal;

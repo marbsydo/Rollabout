@@ -9,6 +9,8 @@ public class TerrainRoller : TerrainBase {
 	public float spacing;
 	public bool isFixed;
 	public float speed;
+	public sbyte direction;
+	public const int torque = 1000;
 
 	public override void AssignBlueprint(BlueprintPart blueprintPart) {
 
@@ -89,7 +91,7 @@ public class TerrainRoller : TerrainBase {
 
 				for (int i = 0; i < numObjs; i++) {
 					GameObject obj = rollerPart.GetObj(i);
-					obj.rigidbody.AddTorque(0, 0, speed, ForceMode.Acceleration);
+					obj.rigidbody.AddTorque(0, 0, torque * direction, ForceMode.Acceleration);
 				}
 			}
 		}
