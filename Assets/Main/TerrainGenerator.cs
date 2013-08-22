@@ -239,6 +239,7 @@ public class GroundPart : TerrainPart {
 
 		GameObject s = new GameObject();
 		s.name = "GroundSphere";
+		s.layer = 8;	// Put in the Terrain layer
 
 		if (terrainGround.physicsEnabled) {
 			s.AddComponent<SphereCollider>();
@@ -265,6 +266,7 @@ public class GroundPart : TerrainPart {
 
 		GameObject b = new GameObject();
 		b.name = "GroundBlock";
+		b.layer = 8;	// Put in the Terrain layer
 
 		if (terrainGround.physicsEnabled) {
 			b.AddComponent<BoxCollider>();
@@ -475,6 +477,7 @@ public class RollerPart : TerrainPart {
 	GameObject CreateRollerAt(Vector3 pos) {
 		GameObject spriteObj = new GameObject();
 		spriteObj.name = "Roller";
+		spriteObj.layer = 8;	// Put in the Terrain layer
 
 		if (terrainRoller.physicsEnabled) {
 			spriteObj.AddComponent<SphereCollider>();
