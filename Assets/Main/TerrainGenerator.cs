@@ -185,6 +185,7 @@ public abstract class TerrainPart {
 		return objs[o];
 	}
 
+	public abstract void ReloadSprites();
 	public abstract void Regenerate();
 }
 
@@ -199,9 +200,29 @@ public class GroundPart : TerrainPart {
 
 		this.terrainGround = terrainGround;
 
-		//TODO: Load a different sprite depending upon terrainGround.style;
-		terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundGrassLine") as GameObject;
-		terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundGrassCircle") as GameObject;
+		ReloadSprites();
+	}
+
+	public override void ReloadSprites() {
+		switch (terrainGround.style) {
+		case TerrainGroundStyle.Grass:
+			terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundGrassLine") as GameObject;
+			terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundGrassCircle") as GameObject;
+			break;
+		case TerrainGroundStyle.Snow:
+			terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundSnowLine") as GameObject;
+			terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundSnowCircle") as GameObject;
+			break;
+		case TerrainGroundStyle.Desert:
+			terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundDesertLine") as GameObject;
+			terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundDesertCircle") as GameObject;
+			break;
+		default:
+			Debug.LogWarning("Invalid TerrainGroundStyle [" + terrainGround.style + "]. Defaulting to TerrainGroundStyle.Grass");
+			goto case TerrainGroundStyle.Grass;
+		}
+
+
 	}
 	
 	public override void Regenerate() {
@@ -310,6 +331,10 @@ public class RollerPart : TerrainPart {
 
 		this.terrainRoller = terrainRoller;
 
+		ReloadSprites();
+	}
+
+	public override void ReloadSprites() {
 		switch (terrainRoller.style) {
 			case TerrainRollerStyle.General:		spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerGeneral") as GameObject;			break;
 			case TerrainRollerStyle.Clouds:			spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerCloud") as GameObject;			break;

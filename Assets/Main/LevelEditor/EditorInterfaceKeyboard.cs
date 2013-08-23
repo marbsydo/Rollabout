@@ -627,6 +627,11 @@ class MenuTerrainRoller : MenuTerrainBase {
 	InterfaceTerrainRollerSpacing terrainRollerSpacing = InterfaceTerrainRollerSpacing.Normal;
 	int terrainRollerSpacingMax = (int)InterfaceTerrainRollerSpacing.__Length;
 
+	bool updateTerrainRollerStyle = false;
+	bool updateTerrainRollerSpacing = false;
+	bool updateTerrainRollerRotationSpeed = false;
+	bool updateTerrainRollerRotationDirection = false;
+
 	override public TextMenuText Text() {
 
 		string t;
@@ -651,20 +656,22 @@ class MenuTerrainRoller : MenuTerrainBase {
 		}
 
 		// Style
-		if (Input.GetKeyDown(KeyCode.Alpha1)) {terrainRollerStyle = InterfaceTerrainRollerStyle.General;}
-		if (Input.GetKeyDown(KeyCode.Alpha2)) {terrainRollerStyle = InterfaceTerrainRollerStyle.Clouds;}
-		if (Input.GetKeyDown(KeyCode.Alpha3)) {terrainRollerStyle = InterfaceTerrainRollerStyle.Bubbles;}
+		if (Input.GetKeyDown(KeyCode.Alpha1)) {terrainRollerStyle = InterfaceTerrainRollerStyle.General; updateTerrainRollerStyle = true;}
+		if (Input.GetKeyDown(KeyCode.Alpha2)) {terrainRollerStyle = InterfaceTerrainRollerStyle.Clouds;  updateTerrainRollerStyle = true;}
+		if (Input.GetKeyDown(KeyCode.Alpha3)) {terrainRollerStyle = InterfaceTerrainRollerStyle.Bubbles; updateTerrainRollerStyle = true;}
 
 		// Spacing
 		if (Input.GetKeyDown(KeyCode.Z)) {
 			terrainRollerSpacing--;
 			if ((int)terrainRollerSpacing < 0)
 				terrainRollerSpacing = (InterfaceTerrainRollerSpacing)0;
+			updateTerrainRollerSpacing= true;
 		}
 		if (Input.GetKeyDown(KeyCode.X)) {
 			terrainRollerSpacing++;
 			if ((int)terrainRollerSpacing >= terrainRollerSpacingMax)
 				terrainRollerSpacing = (InterfaceTerrainRollerSpacing)terrainRollerSpacingMax - 1;
+			updateTerrainRollerSpacing = true;
 		}
 
 		// Speed
@@ -672,16 +679,19 @@ class MenuTerrainRoller : MenuTerrainBase {
 			terrainRollerRotationSpeed--;
 			if ((int)terrainRollerRotationSpeed < 0)
 				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)0;
+			updateTerrainRollerRotationSpeed = true;
 		}
 		if (Input.GetKeyDown(KeyCode.V)) {
 			terrainRollerRotationSpeed++;
 			if ((int)terrainRollerRotationSpeed >= terrainRollerRotationSpeedMax)
 				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)terrainRollerRotationSpeedMax - 1;
+			updateTerrainRollerRotationSpeed = true;
 		}
 
 		// Direction
 		if (Input.GetKeyDown(KeyCode.B)) {
 			terrainRollerRotationDirection = terrainRollerRotationDirection == InterfaceTerrainRollerRotationDirection.Clockwise ? InterfaceTerrainRollerRotationDirection.AntiClockwise : InterfaceTerrainRollerRotationDirection.Clockwise;
+			updateTerrainRollerRotationDirection = true;
 		}
 
 		// Return to previous menu
@@ -695,11 +705,41 @@ class MenuTerrainRoller : MenuTerrainBase {
 		if (editorController.currentTerrain is TerrainRoller) {
 			TerrainRoller roller = (TerrainRoller) editorController.currentTerrain;
 
-			if (Input.GetKey(KeyCode.Space)) {
-				roller.spacing = InterfaceTerrainRollerSpacingToTerrainRollerSpacing(terrainRollerSpacing);
-				roller.speed = InterfaceTerrainRollerRotationSpeedAndInterfaceTerrainRollerRotationToTerrainRollerSpeed(terrainRollerRotationSpeed, terrainRollerRotationDirection);
-				roller.isFixed = InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed(terrainRollerRotationSpeed);
+			bool regenerate = false;
+			bool reloadSprites = false;
 
+			// Update the roller settings in real-time
+			if (updateTerrainRollerStyle) {
+				updateTerrainRollerStyle = false;
+				regenerate = true;
+				reloadSprites = true;
+				roller.style = InterfaceTerrainRollerStyleToTerrainRollerStyle(terrainRollerStyle);
+			}
+
+			if (updateTerrainRollerSpacing) {
+				updateTerrainRollerSpacing = false;
+				regenerate = true;
+				roller.spacing = InterfaceTerrainRollerSpacingToTerrainRollerSpacing(terrainRollerSpacing);
+			}
+
+			if (updateTerrainRollerRotationSpeed && updateTerrainRollerRotationDirection) {
+				updateTerrainRollerRotationDirection = false;
+				regenerate = true;
+				roller.speed = InterfaceTerrainRollerRotationSpeedAndInterfaceTerrainRollerRotationToTerrainRollerSpeed(terrainRollerRotationSpeed, terrainRollerRotationDirection);
+			}
+
+			if (updateTerrainRollerRotationSpeed) {
+				updateTerrainRollerRotationSpeed = false;
+				regenerate = true;
+				roller.isFixed = InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed(terrainRollerRotationSpeed);
+			}
+
+			// Apply the updates
+			if (reloadSprites) {
+				roller.rollerPart.ReloadSprites();
+			}
+
+			if (regenerate) {
 				roller.Regenerate();
 			}
 
