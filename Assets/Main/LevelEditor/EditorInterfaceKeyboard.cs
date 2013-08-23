@@ -239,7 +239,7 @@ class MenuTerrainBase : MenuAbstract {
 	protected int terrainToolMax = (int)InterfaceTerrainTool.__Length;
 	protected InterfaceTerrainTool terrainTool = InterfaceTerrainTool.StraightLine;
 
-	int drawStage = 0;
+	byte drawStage = 0;
 	Vector3[] drawPoints;
 
 	override public void Begin() {
@@ -272,33 +272,35 @@ class MenuTerrainBase : MenuAbstract {
 				Vector3 m = editorController.GetMousePos();
 				drawPoints[1] = m;
 
-				TerrainInfo terrainInfo = InterfaceTerrainInfoToTerrainInfo(interfaceTerrainInfo);
-				TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(terrainInfo);
+				if ((drawPoints[0] - drawPoints[1]).magnitude > 2f) {
+					TerrainInfo terrainInfo = InterfaceTerrainInfoToTerrainInfo(interfaceTerrainInfo);
+					TerrainObjectMaker terrainObjectMaker = new TerrainObjectMaker(terrainInfo);
 
-				Vector3 partPointsDiff = drawPoints[1] - drawPoints[0];
-				switch (terrainInfo.terrainBlueprintType) {
-				case TerrainBlueprintType.CurveBezierCubic:
-					terrainObjectMaker.AddNode(drawPoints[0]);
-					terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.25f);
-					terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.75f);
-					terrainObjectMaker.AddNode(drawPoints[1]);
-					break;
-				case TerrainBlueprintType.CurveCircularArc:
-					terrainObjectMaker.AddNode(drawPoints[0]);
-					terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.5f);
-					terrainObjectMaker.AddNode(drawPoints[1]);
-					break;
-				case TerrainBlueprintType.StraightLine:
-					terrainObjectMaker.AddNode(drawPoints[0]);
-					terrainObjectMaker.AddNode(drawPoints[1]);
-					break;
+					Vector3 partPointsDiff = drawPoints[1] - drawPoints[0];
+					switch (terrainInfo.terrainBlueprintType) {
+					case TerrainBlueprintType.CurveBezierCubic:
+						terrainObjectMaker.AddNode(drawPoints[0]);
+						terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.25f);
+						terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.75f);
+						terrainObjectMaker.AddNode(drawPoints[1]);
+						break;
+					case TerrainBlueprintType.CurveCircularArc:
+						terrainObjectMaker.AddNode(drawPoints[0]);
+						terrainObjectMaker.AddNode(drawPoints[0] + partPointsDiff * 0.5f);
+						terrainObjectMaker.AddNode(drawPoints[1]);
+						break;
+					case TerrainBlueprintType.StraightLine:
+						terrainObjectMaker.AddNode(drawPoints[0]);
+						terrainObjectMaker.AddNode(drawPoints[1]);
+						break;
+					}
+
+					//terrainObjectMaker.SetSegmentLength(2f);
+					terrainObjectMaker.SetIsEditable(true);
+
+					terrainObjectMaker.CreateTerrain();
 				}
-
-				//terrainObjectMaker.SetSegmentLength(2f);
-				terrainObjectMaker.SetIsEditable(true);
-
-				terrainObjectMaker.CreateTerrain();
-
+				
 				editorController.MouseReleaseNextFrame(editorInterfaceKeyboard.gameObject);
 			}
 		}
