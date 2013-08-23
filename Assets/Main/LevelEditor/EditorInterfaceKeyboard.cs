@@ -562,81 +562,60 @@ class MenuTerrainRoller : MenuTerrainBase {
 
 		string t;
 
-		t = "S/D - Select style\n" + 
-			"T/Y - Select tool\n" + 
-			"E/R - Select rotation direction\n" + 
-			"Q/W - Select rotation speed\n" + 
-			"Z/X - Adjust selected roller spacing\n" + 
-			"Del - Delete selected roller\n" + 
-			"Esc - Back\n" + 
-			"\n" + 
-			"Current style:      " + InterfaceTerrainRollerStyleToText(terrainRollerStyle) + "\n" +
-			"Current tool:       " + InterfaceTerrainToolToText(terrainTool) + "\n" + 
-			"Current rot. dir.:  " + InterfaceTerrainRollerRotationDirectionToText(terrainRollerRotationDirection) + "\n" + 
-			"Current rot. speed: " + InterfaceTerrainRollerRotationSpeedToText(terrainRollerRotationSpeed) + "\n" +
-			"Current spacing:    " + InterfaceTerrainRollerSpacingToText(terrainRollerSpacing) + "\n" + 
-			"\n" + 
-			"Use mouse to draw and modify rollers.";
+		t = "(123...) Style: " + InterfaceTerrainRollerStyleToText(terrainRollerStyle) + "\n" + 
+			"(QE)      Tool: " + InterfaceTerrainToolToText(terrainTool) + "\n" +
+			"(ZX)   Spacing: " + InterfaceTerrainRollerSpacingToText(terrainRollerSpacing) + "\n" + 
+			"(CV)     Speed: " + InterfaceTerrainRollerRotationSpeedToText(terrainRollerRotationSpeed) + "\n" +
+			"(B)  Direction: " + InterfaceTerrainRollerRotationDirectionToText(terrainRollerRotationDirection) + "\n";
 
-		if (Input.GetKeyDown(KeyCode.Escape)) {
-			SetMenu(TextMenu.Terrain);
-		}
-		
-		if (Input.GetKeyDown(KeyCode.S)) {
-			terrainRollerStyle--;
-			if ((int)terrainRollerStyle < 0)
-				terrainRollerStyle = (InterfaceTerrainRollerStyle)terrainRollerStyleMax - 1;
-		}
+		// Style
+		if (Input.GetKeyDown(KeyCode.Alpha1)) {terrainRollerStyle = InterfaceTerrainRollerStyle.General;}
+		if (Input.GetKeyDown(KeyCode.Alpha2)) {terrainRollerStyle = InterfaceTerrainRollerStyle.Clouds;}
+		if (Input.GetKeyDown(KeyCode.Alpha3)) {terrainRollerStyle = InterfaceTerrainRollerStyle.Bubbles;}
 
-		if (Input.GetKeyDown(KeyCode.D)) {
-			terrainRollerStyle++;
-			if ((int)terrainRollerStyle >= terrainRollerStyleMax)
-				terrainRollerStyle = (InterfaceTerrainRollerStyle)0;
-		}
-		
-		if (Input.GetKeyDown(KeyCode.T)) {
+		// Tool
+		if (Input.GetKeyDown(KeyCode.Q)) {
 			terrainTool--;
 			if ((int)terrainTool < 0)
-				terrainTool = (InterfaceTerrainTool)terrainToolMax - 1;
+				terrainTool = 0;
 		}
-		
-		if (Input.GetKeyDown(KeyCode.Y)) {
+		if (Input.GetKeyDown(KeyCode.E)) {
 			terrainTool++;
 			if ((int)terrainTool >= terrainToolMax)
-				terrainTool = (InterfaceTerrainTool)0;
+				terrainTool = (InterfaceTerrainTool)terrainToolMax - 1;
 		}
 
-		if (Input.GetKeyDown(KeyCode.E)) {
-			terrainRollerRotationDirection = InterfaceTerrainRollerRotationDirection.Clockwise;
-		}
-
-		if (Input.GetKeyDown(KeyCode.R)) {
-			terrainRollerRotationDirection = InterfaceTerrainRollerRotationDirection.AntiClockwise;
-		}
-
-		if (Input.GetKeyDown(KeyCode.Q)) {
-			terrainRollerRotationSpeed--;
-			if ((int)terrainRollerRotationSpeed < 0)
-				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)terrainRollerRotationSpeedMax - 1;
-		}
-
-		if (Input.GetKeyDown(KeyCode.W)) {
-			terrainRollerRotationSpeed++;
-			if ((int)terrainRollerRotationSpeed >= terrainRollerRotationSpeedMax)
-				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)0;
-		}
-
+		// Spacing
 		if (Input.GetKeyDown(KeyCode.Z)) {
 			terrainRollerSpacing--;
 			if ((int)terrainRollerSpacing < 0)
 				terrainRollerSpacing = (InterfaceTerrainRollerSpacing)0;
 		}
-
 		if (Input.GetKeyDown(KeyCode.X)) {
 			terrainRollerSpacing++;
 			if ((int)terrainRollerSpacing >= terrainRollerSpacingMax)
 				terrainRollerSpacing = (InterfaceTerrainRollerSpacing)terrainRollerSpacingMax - 1;
 		}
+
+		// Speed
+		if (Input.GetKeyDown(KeyCode.C)) {
+			terrainRollerRotationSpeed--;
+			if ((int)terrainRollerRotationSpeed < 0)
+				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)0;
+		}
+		if (Input.GetKeyDown(KeyCode.V)) {
+			terrainRollerRotationSpeed++;
+			if ((int)terrainRollerRotationSpeed >= terrainRollerRotationSpeedMax)
+				terrainRollerRotationSpeed = (InterfaceTerrainRollerRotationSpeed)terrainRollerRotationSpeedMax - 1;
+		}
+
+		// Direction
+		if (Input.GetKeyDown(KeyCode.B)) {
+			terrainRollerRotationDirection = terrainRollerRotationDirection == InterfaceTerrainRollerRotationDirection.Clockwise ? InterfaceTerrainRollerRotationDirection.AntiClockwise : InterfaceTerrainRollerRotationDirection.Clockwise;
+		}
+
+		// Return to previous menu
+		if (Input.GetKeyDown(KeyCode.Escape)) {SetMenu(TextMenu.Terrain);}
 
 		Draw(new InterfaceTerrainInfo(terrainTool, terrainRollerStyle, terrainRollerRotationDirection, terrainRollerRotationSpeed, terrainRollerSpacing));
 
