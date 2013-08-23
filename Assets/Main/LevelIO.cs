@@ -93,7 +93,7 @@ public class LevelIO {
 			levelData.WriteInt((int) roller.style);
 			levelData.WriteFloat(roller.spacing);
 			levelData.WriteBool(roller.isFixed);
-			levelData.WriteFloat(roller.speed);
+			levelData.WriteFloat(roller.speed * (int) roller.direction); //NOTE: Multiply speed by direction to give it a sign
 
 			// Write points
 			for (int i = 0; i < roller.rollerPart.blueprintPart.GetNodeAmount(); i++) {

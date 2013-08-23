@@ -57,7 +57,7 @@ public class ObjectNode : MonoBehaviour {
 	Vector3 mousePosOffset;
 	
 	void Awake() {
-		
+
 		editorController = (GameObject.Find("EditorController") as GameObject).GetComponent<EditorController>();
 		
 		spriteBezierControl = Resources.Load("LevelEditor/Sprites/SpriteBezierControl") as GameObject;
@@ -228,10 +228,16 @@ public class ObjectNode : MonoBehaviour {
 				terrain.Regenerate();
 				
 				editorController.MouseRelease(gameObject);
+
+				// Tell editorController that we are no longer the current selected terrain
+				editorController.currentTerrain = null;
 			}
 		}
 		
 		if (mouseHolding > -2) {
+			// Tell editorController what the current selected terrain is
+			editorController.currentTerrain = terrain;
+
 			// Something is being held, so move it
 			
 			bool snappingToGrid = Input.GetKey(inputNodeSnapGrid);
@@ -246,19 +252,13 @@ public class ObjectNode : MonoBehaviour {
 				mousePosWithOffset = GetMousePosition(false, mousePosOffset);
 			}
 
-			if (Input.GetKeyDown(inputDelete)) {
+			if (Input.GetKeyDown(inputDelete) || Input.GetMouseButtonDown(1)) {
 				Destroy(this.transform.parent.gameObject);
 
 				editorController.MouseRelease(gameObject);
-			}
 
-			// Being held, so also update segment length if necessary
-			if (Input.GetKeyDown(inputNodeSegmentsIncrease)) {
-				terrain.SegmentLengthIncrease();
-			}
-
-			if (Input.GetKeyDown(inputNodeSegmentsDecrease)) {
-				terrain.SegmentLengthDecrease();
+				// Tell editorController that we are no longer the current selected terrain
+				editorController.currentTerrain = null;
 			}
 			
 			// Snap to nearby thingies

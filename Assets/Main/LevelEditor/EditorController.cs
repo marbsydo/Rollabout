@@ -15,10 +15,14 @@ public class EditorController : TerrainGenerator {
 	Camera editorCamera;
 	
 	// Who has claimed to mouse?
-	public bool mouseClaimed = false;
-	public GameObject mouseClaimant;
-	public bool mouseReleaseNextFrame = false;
-	public GameObject mouseReleaseNextFrameClaimant;
+	private bool mouseClaimed = false;
+	private GameObject mouseClaimant;
+	private bool mouseReleaseNextFrame = false;
+	private GameObject mouseReleaseNextFrameClaimant;
+
+	// Have a new variable that stores the current selected object!
+	// It gets released when the mouse clicks somewhere else without moving (see: EditorInterfaceKeyboard.Draw())
+	public TerrainBase currentTerrain;
 	
 	// Terrain nodes
 	ObjectNode[] nodes;

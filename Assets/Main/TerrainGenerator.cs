@@ -133,8 +133,7 @@ public class TerrainObjectMaker {
 			terrainRoller.style = this.terrainInfo.terrainRollerStyle;
 			terrainRoller.spacing = this.terrainInfo.terrainRollerSpacing;
 			terrainRoller.isFixed = this.terrainInfo.terrainRollerFixed;
-			terrainRoller.speed = this.terrainInfo.terrainRollerSpeed;
-			terrainRoller.direction = (sbyte) Mathf.Sign(this.terrainInfo.terrainRollerSpeed);
+			terrainRoller.speed = this.terrainInfo.terrainRollerSpeed; //NOTE: Setting speed also sets direction
 
 			terrainRoller.AssignBlueprint(part);
 			break;

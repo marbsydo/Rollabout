@@ -8,8 +8,29 @@ public class TerrainRoller : TerrainBase {
 	public TerrainRollerStyle style;
 	public float spacing;
 	public bool isFixed;
-	public float speed;
-	public sbyte direction;
+
+	//NOTE: Setting speed also sets direction
+	public float speed {
+		get {
+			return this._speed;
+		}
+		set {
+			this._speed = Mathf.Abs(value);
+			this._direction = (sbyte) Mathf.Sign(value);
+		}
+	}
+	public sbyte direction {
+		get {
+			return this._direction;
+		}
+		set {
+			this._direction = (sbyte) Mathf.Sign(value);
+		}
+	}
+
+	private float _speed;
+	private sbyte _direction;
+	
 	public const int torque = 1000;
 
 	public override void AssignBlueprint(BlueprintPart blueprintPart) {

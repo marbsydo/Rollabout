@@ -21,9 +21,21 @@ public enum InterfaceTerrainRollerSpacing {VeryPacked, Packed, Normal, Sparse, V
 
 public enum TextMenu {Main, Navigation, Terrain, TerrainGround, TerrainRoller, Scenery, Objects, Options, OptionsSave, OptionsLoad};
 
-[RequireComponent (typeof(GUIText))]
+public class TextMenuText {
+	public string text1;
+	public string text2;
+
+	public TextMenuText(string text1, string text2) {
+		this.text1 = text1;
+		this.text2 = text2;
+	}
+}
+
 public class EditorInterfaceKeyboard : MonoBehaviour {
 	
+	public GUIText guiText1;
+	public GUIText guiText2;
+
 	MainController mainController;
 	EditorController editorController;
 	
@@ -32,7 +44,7 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	
 	void Awake() {
 		// Move text to top right corner
-		transform.position = new Vector3(0.01f, 0.99f, 0);
+		guiText1.transform.position = new Vector3(0.01f, 0.99f, 0);
 		
 		// Get references
 		editorController = (GameObject.Find("EditorController") as GameObject).GetComponent<EditorController>() as EditorController;
@@ -66,7 +78,9 @@ public class EditorInterfaceKeyboard : MonoBehaviour {
 	}
 	
 	void Update() {
-		guiText.text = menus[(int)menuCurrent].Text();
+		TextMenuText textMenuText = menus[(int)menuCurrent].Text();
+		guiText1.text = textMenuText.text1;
+		guiText2.text = textMenuText.text2;
 	}
 	
 	public void SetMenu(TextMenu menu) {
@@ -83,7 +97,7 @@ abstract class MenuAbstract {
 	protected EditorController editorController;
 	
 	abstract public void Begin();
-	abstract public string Text();
+	abstract public TextMenuText Text();
 	abstract public void End();
 	
 	public void SetReferances(EditorInterfaceKeyboard editorInterfaceKeyboard, MainController mainController, EditorController editorController) {
@@ -101,7 +115,7 @@ class MenuMain : MenuAbstract {
 	override public void Begin() {
 	}
 	
-	override public string Text() {
+	override public TextMenuText Text() {
 		string t;
 		
 		t = "?   - Help\n" +
@@ -127,7 +141,7 @@ class MenuMain : MenuAbstract {
 			SetMenu(TextMenu.Options);
 		}
 		
-		return t;
+		return new TextMenuText(t, "");
 	}
 	
 	override public void End() {
@@ -143,7 +157,7 @@ class MenuNavigation : MenuAbstract {
 	override public void Begin() {
 	}
 	
-	override public string Text() {
+	override public TextMenuText Text() {
 		string t;
 		
 		t = "WASD/Arrows - Move\n" +
@@ -158,7 +172,7 @@ class MenuNavigation : MenuAbstract {
 			SetMenu(TextMenu.Main);
 		}
 		
-		return t;
+		return new TextMenuText(t, "");
 	}
 	
 	override public void End() {
@@ -171,7 +185,7 @@ class MenuTerrain : MenuAbstract {
 		editorController.NodesActivate();
 	}
 	
-	override public string Text() {
+	override public TextMenuText Text() {
 		string t;
 
 		t = "G   - Ground\n" + 
@@ -190,7 +204,7 @@ class MenuTerrain : MenuAbstract {
 			SetMenu(TextMenu.Main);
 		}
 
-		return t;
+		return new TextMenuText(t, "");
 	}
 	
 	override public void End() {
@@ -247,8 +261,8 @@ class MenuTerrainBase : MenuAbstract {
 	}
 
 	// This is overriden by MenuTerrainGround and MenuTerrainRoller
-	override public string Text() {
-		return "";
+	override public TextMenuText Text() {
+		return new TextMenuText("", "");
 	}
 
 	override public void End() {
@@ -295,12 +309,11 @@ class MenuTerrainBase : MenuAbstract {
 						break;
 					}
 
-					//terrainObjectMaker.SetSegmentLength(2f);
 					terrainObjectMaker.SetIsEditable(true);
 
 					terrainObjectMaker.CreateTerrain();
 				}
-				
+
 				editorController.MouseReleaseNextFrame(editorInterfaceKeyboard.gameObject);
 			}
 		}
@@ -317,7 +330,7 @@ class MenuTerrainBase : MenuAbstract {
 		return s;
 	}
 
-	private TerrainBlueprintType InterfaceTerrainToolToTerrainBlueprintType(InterfaceTerrainTool interfaceTerrainTool) {
+	protected TerrainBlueprintType InterfaceTerrainToolToTerrainBlueprintType(InterfaceTerrainTool interfaceTerrainTool) {
 		
 		TerrainBlueprintType terrainBlueprintType;
 		
@@ -333,7 +346,7 @@ class MenuTerrainBase : MenuAbstract {
 		return terrainBlueprintType;
 	}
 
-	private TerrainType InterfaceTerrainTypeToTerrainType(InterfaceTerrainType interfaceTerrainType) {
+	protected TerrainType InterfaceTerrainTypeToTerrainType(InterfaceTerrainType interfaceTerrainType) {
 		
 		TerrainType terrainType;
 
@@ -348,7 +361,7 @@ class MenuTerrainBase : MenuAbstract {
 		return terrainType;
 	}
 
-	private TerrainGroundStyle InterfaceTerrainGroundStyleToTerrainGroundStyle(InterfaceTerrainGroundStyle interfaceTerrainGroundStyle) {
+	protected TerrainGroundStyle InterfaceTerrainGroundStyleToTerrainGroundStyle(InterfaceTerrainGroundStyle interfaceTerrainGroundStyle) {
 		
 		TerrainGroundStyle terrainGroundStyle;
 
@@ -364,7 +377,7 @@ class MenuTerrainBase : MenuAbstract {
 		return terrainGroundStyle;
 	}
 
-	private TerrainRollerStyle InterfaceTerrainRollerStyleToTerrainRollerStyle(InterfaceTerrainRollerStyle interfaceTerrainRollerStyle) {
+	protected TerrainRollerStyle InterfaceTerrainRollerStyleToTerrainRollerStyle(InterfaceTerrainRollerStyle interfaceTerrainRollerStyle) {
 		
 		TerrainRollerStyle terrainRollerStyle;
 
@@ -380,7 +393,7 @@ class MenuTerrainBase : MenuAbstract {
 		return terrainRollerStyle;
 	}
 
-	private bool InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed(InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed) {
+	protected bool InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed(InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed) {
 		
 		bool terrainRollerFixed;
 
@@ -404,7 +417,7 @@ class MenuTerrainBase : MenuAbstract {
 		return terrainRollerFixed;
 	}
 
-	private float InterfaceTerrainRollerRotationSpeedAndInterfaceTerrainRollerRotationToTerrainRollerSpeed(InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection) {
+	protected float InterfaceTerrainRollerRotationSpeedAndInterfaceTerrainRollerRotationToTerrainRollerSpeed(InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection) {
 
 		float terrainRollerSpeed;
 
@@ -428,7 +441,7 @@ class MenuTerrainBase : MenuAbstract {
 		return terrainRollerSpeed;
 	}
 
-	private float InterfaceTerrainRollerSpacingToTerrainRollerSpacing(InterfaceTerrainRollerSpacing interfaceTerrainRollerSpacing) {
+	protected float InterfaceTerrainRollerSpacingToTerrainRollerSpacing(InterfaceTerrainRollerSpacing interfaceTerrainRollerSpacing) {
 		
 		float terrainRollerSpacing;
 
@@ -446,7 +459,7 @@ class MenuTerrainBase : MenuAbstract {
 		return terrainRollerSpacing;
 	}
 
-	private TerrainInfo InterfaceTerrainInfoToTerrainInfo(InterfaceTerrainInfo interfaceTerrainInfo) {
+	protected TerrainInfo InterfaceTerrainInfoToTerrainInfo(InterfaceTerrainInfo interfaceTerrainInfo) {
 
 		TerrainInfo terrainInfo;
 
@@ -487,7 +500,7 @@ class MenuTerrainGround : MenuTerrainBase {
 	InterfaceTerrainGroundStyle terrainGroundStyle = InterfaceTerrainGroundStyle.Grass;
 	int terrainGroundStyleMax = (int)InterfaceTerrainGroundStyle.__Length;
 
-	override public string Text() {
+	override public TextMenuText Text() {
 
 		string t;
 
@@ -532,7 +545,7 @@ class MenuTerrainGround : MenuTerrainBase {
 
 		Draw(new InterfaceTerrainInfo(terrainTool, terrainGroundStyle));
 
-		return t;
+		return new TextMenuText(t, "");
 	}
 
 	string InterfaceTerrainGroundStyleToText(InterfaceTerrainGroundStyle t) {
@@ -560,12 +573,13 @@ class MenuTerrainRoller : MenuTerrainBase {
 	InterfaceTerrainRollerSpacing terrainRollerSpacing = InterfaceTerrainRollerSpacing.Normal;
 	int terrainRollerSpacingMax = (int)InterfaceTerrainRollerSpacing.__Length;
 
-	override public string Text() {
+	override public TextMenuText Text() {
 
 		string t;
 
-		t = "(123...) Style: " + InterfaceTerrainRollerStyleToText(terrainRollerStyle) + "\n" + 
+		t = "_Current settings_\n" + 
 			"(QE)      Tool: " + InterfaceTerrainToolToText(terrainTool) + "\n" +
+			"(123...) Style: " + InterfaceTerrainRollerStyleToText(terrainRollerStyle) + "\n" + 
 			"(ZX)   Spacing: " + InterfaceTerrainRollerSpacingToText(terrainRollerSpacing) + "\n" + 
 			"(CV)     Speed: " + InterfaceTerrainRollerRotationSpeedToText(terrainRollerRotationSpeed) + "\n" +
 			"(B)  Direction: " + InterfaceTerrainRollerRotationDirectionToText(terrainRollerRotationDirection) + "\n";
@@ -621,7 +635,29 @@ class MenuTerrainRoller : MenuTerrainBase {
 
 		Draw(new InterfaceTerrainInfo(terrainTool, terrainRollerStyle, terrainRollerRotationDirection, terrainRollerRotationSpeed, terrainRollerSpacing));
 
-		return t;
+		string t2 = "";
+
+		// Find currently selected object
+		if (editorController.currentTerrain is TerrainRoller) {
+			TerrainRoller roller = (TerrainRoller) editorController.currentTerrain;
+
+			if (Input.GetKey(KeyCode.Space)) {
+				roller.spacing = InterfaceTerrainRollerSpacingToTerrainRollerSpacing(terrainRollerSpacing); //InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed
+				roller.speed = InterfaceTerrainRollerRotationSpeedAndInterfaceTerrainRollerRotationToTerrainRollerSpeed(terrainRollerRotationSpeed, terrainRollerRotationDirection);
+				roller.isFixed = InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed(terrainRollerRotationSpeed);
+
+				roller.Regenerate();
+			}
+
+			t2 = "_Selection settings_\n" + 
+				"    Style: " + roller.style + "\n" + 
+				"  Spacing: " + roller.spacing + "\n" + 
+				"    Speed: " + roller.speed + "\n" +
+				"Direction: " + roller.direction + "\n" + 
+				" Is fixed: " + roller.isFixed;
+		}
+
+		return new TextMenuText(t, t2);
 	}
 
 	string InterfaceTerrainRollerStyleToText(InterfaceTerrainRollerStyle t) {
@@ -678,8 +714,8 @@ class MenuScenery : MenuAbstract {
 	override public void Begin() {
 	}
 	
-	override public string Text() {
-		return "Scenery menu is not done yet";
+	override public TextMenuText Text() {
+		return new TextMenuText("Scenery menu is not done yet", "");
 	}
 	
 	override public void End() {
@@ -695,7 +731,7 @@ class MenuObjects : MenuAbstract {
 	override public void Begin() {
 	}
 	
-	override public string Text() {
+	override public TextMenuText Text() {
 		string t;
 	
 		t = "Current object: " + EditorObjectToString(currentObject) + 
@@ -717,7 +753,7 @@ class MenuObjects : MenuAbstract {
 			SetMenu(TextMenu.Main);
 		}
 		
-		return t;
+		return new TextMenuText(t, "");
 	}
 	
 	override public void End() {
@@ -745,7 +781,7 @@ class MenuOptions : MenuAbstract {
 	override public void Begin() {
 	}
 	
-	override public string Text() {
+	override public TextMenuText Text() {
 		string t;
 		
 		t = "S   - Save\n" +
@@ -769,7 +805,7 @@ class MenuOptions : MenuAbstract {
 			SetMenu(TextMenu.Main);
 		}
 		
-		return t;
+		return new TextMenuText(t, "");
 	}
 	
 	override public void End() {
@@ -784,7 +820,7 @@ class MenuOptionsSave : MenuAbstract {
 		levelSaveLevelName = "";
 	}
 	
-	override public string Text() {
+	override public TextMenuText Text() {
 		string t;
 		
 		// Show all files in directory
@@ -828,7 +864,7 @@ class MenuOptionsSave : MenuAbstract {
 			t += "\n" + file;
 		}
 		
-		return t;
+		return new TextMenuText(t, "");
 	}
 	
 	override public void End() {
@@ -843,7 +879,7 @@ class MenuOptionsLoad : MenuAbstract {
 		levelLoadLevelNum = 0;
 	}
 	
-	override public string Text() {
+	override public TextMenuText Text() {
 		string t;
 		
 		// Show all files in directory
@@ -894,7 +930,7 @@ class MenuOptionsLoad : MenuAbstract {
 			t += "\n" + file;
 		}
 		
-		return t;
+		return new TextMenuText(t, "");
 	}
 	
 	override public void End() {
@@ -905,14 +941,14 @@ class MenuError : MenuAbstract {
 	override public void Begin() {
 	}
 	
-	override public string Text() {
+	override public TextMenuText Text() {
 		string t;
 		
 		t = "Esc - Main menu\n" +
 			"\n" +
 			"Error! This menu does not exist.";
 		
-		return t;
+		return new TextMenuText(t, "");
 	}
 	
 	override public void End() {
@@ -924,7 +960,8 @@ class MenuTemplate : MenuAbstract {
 	override public void Begin() {
 	}
 	
-	override public string Text() {
+	override public TextMenuText Text() {
+		return new TextMenuText("", "");
 	}
 	
 	override public void End() {
