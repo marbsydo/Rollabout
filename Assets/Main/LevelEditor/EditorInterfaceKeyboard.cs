@@ -13,6 +13,7 @@ using System.IO;
 //public enum InterfaceTerrainStyle {GroundGrass, GroundSnow, GroundDesert, RollersGeneral, RollersClouds, RollersBubbles, __Length};
 public enum InterfaceTerrainType {Ground, Roller};
 public enum InterfaceTerrainGroundStyle {Grass, Snow, Desert, __Length};
+public enum InterfaceTerrainGroundGrain {VeryCoarse, Coarse, Normal, Fine, VeryFine, __Length};
 public enum InterfaceTerrainRollerStyle {General, Clouds, Bubbles, __Length};
 public enum InterfaceTerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc, __Length};
 public enum InterfaceTerrainRollerRotationDirection {Clockwise, AntiClockwise};
@@ -223,6 +224,7 @@ class MenuTerrainBase : MenuAbstract {
 
 		// Ground specific data
 		public InterfaceTerrainGroundStyle interfaceTerrainGroundStyle;
+		public InterfaceTerrainGroundGrain interfaceTerrainGroundGrain;
 
 		// Roller specific data
 		public InterfaceTerrainRollerStyle interfaceTerrainRollerStyle;
@@ -230,12 +232,13 @@ class MenuTerrainBase : MenuAbstract {
 		public InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed;
 		public InterfaceTerrainRollerSpacing interfaceTerrainRollerSpacing;
 
-		public InterfaceTerrainInfo(InterfaceTerrainTool interfaceTerrainTool, InterfaceTerrainGroundStyle interfaceTerrainGroundStyle) {
+		public InterfaceTerrainInfo(InterfaceTerrainTool interfaceTerrainTool, InterfaceTerrainGroundStyle interfaceTerrainGroundStyle, InterfaceTerrainGroundGrain interfaceTerrainGroundGrain) {
 			this.interfaceTerrainTool = interfaceTerrainTool;
 
 			this.interfaceTerrainType = InterfaceTerrainType.Ground;
 
 			this.interfaceTerrainGroundStyle = interfaceTerrainGroundStyle;
+			this.interfaceTerrainGroundGrain = interfaceTerrainGroundGrain;
 		}
 
 		public InterfaceTerrainInfo(InterfaceTerrainTool interfaceTerrainTool, InterfaceTerrainRollerStyle interfaceTerrainRollerStyle, InterfaceTerrainRollerRotationDirection interfaceTerrainRollerRotationDirection, InterfaceTerrainRollerRotationSpeed interfaceTerrainRollerRotationSpeed, InterfaceTerrainRollerSpacing interfaceTerrainRollerSpacing) {
@@ -377,6 +380,24 @@ class MenuTerrainBase : MenuAbstract {
 		return terrainGroundStyle;
 	}
 
+	protected float InterfaceTerrainGroundGrainToTerrainSegmentLength(InterfaceTerrainGroundGrain interfaceTerrainGroundGrain) {
+
+		float segmentLength;
+
+		switch (interfaceTerrainGroundGrain) {
+		case InterfaceTerrainGroundGrain.VeryCoarse:	segmentLength = 5f;									break;
+		case InterfaceTerrainGroundGrain.Coarse:		segmentLength = 4f;									break;
+		case InterfaceTerrainGroundGrain.Normal:		segmentLength = 3f;									break;
+		case InterfaceTerrainGroundGrain.Fine:			segmentLength = 2f;									break;
+		case InterfaceTerrainGroundGrain.VeryFine:		segmentLength = 1f;									break;
+		default:
+			Debug.LogError("Cannot find a matching segmentLength for InterfaceTerrainGroundGrain [" + interfaceTerrainGroundGrain + "]. Defaulting to InterfaceTerrainGroundGrain.Normal");
+			goto case InterfaceTerrainGroundGrain.Normal;
+		}
+
+		return segmentLength;
+	}
+
 	protected TerrainRollerStyle InterfaceTerrainRollerStyleToTerrainRollerStyle(InterfaceTerrainRollerStyle interfaceTerrainRollerStyle) {
 		
 		TerrainRollerStyle terrainRollerStyle;
@@ -470,7 +491,7 @@ class MenuTerrainBase : MenuAbstract {
 			
 			// Ground
 			TerrainGroundStyle terrainGroundStyle = InterfaceTerrainGroundStyleToTerrainGroundStyle(interfaceTerrainInfo.interfaceTerrainGroundStyle);
-			float terrainGroundSegmentLength = 3f;
+			float terrainGroundSegmentLength = InterfaceTerrainGroundGrainToTerrainSegmentLength(interfaceTerrainInfo.interfaceTerrainGroundGrain);
 
 			terrainInfo = new TerrainInfo(terrainBlueprintType, terrainGroundStyle, terrainGroundSegmentLength);
 			
@@ -500,50 +521,53 @@ class MenuTerrainGround : MenuTerrainBase {
 	InterfaceTerrainGroundStyle terrainGroundStyle = InterfaceTerrainGroundStyle.Grass;
 	int terrainGroundStyleMax = (int)InterfaceTerrainGroundStyle.__Length;
 
+	InterfaceTerrainGroundGrain terrainGroundGrain = InterfaceTerrainGroundGrain.Normal;
+	int terrainGroundGrainMax = (int)InterfaceTerrainGroundGrain.__Length;
+
 	override public TextMenuText Text() {
 
 		string t;
 
-		t = "S/D - Select style\n" +
-			"T/Y - Select tool\n" +
-			"Z/X - Adjust segment length\n" + 
-			"Del - Delete selected ground\n" +
-			"Esc - Back\n" +
-			"\n" +
-			"Current style: " + InterfaceTerrainGroundStyleToText(terrainGroundStyle) + "\n" +
-			"Current tool:  " + InterfaceTerrainToolToText(terrainTool) + "\n" +
-			"\n" +
-			"Use mouse to draw and modify ground.";
-		
-		if (Input.GetKeyDown(KeyCode.Escape)) {
-			SetMenu(TextMenu.Terrain);
-		}
-		
-		if (Input.GetKeyDown(KeyCode.S)) {
-			terrainGroundStyle--;
-			if ((int)terrainGroundStyle < 0)
-				terrainGroundStyle = (InterfaceTerrainGroundStyle)terrainGroundStyleMax - 1;
-		}
+		t = "_Current settings_\n" + 
+			"(QE)      Tool: " + InterfaceTerrainToolToText(terrainTool) + "\n" +
+			"(123...) Style: " + InterfaceTerrainGroundStyleToText(terrainGroundStyle) + "\n" + 
+			"(ZX)     Grain: " + InterfaceTerrainGroundGrainToText(terrainGroundGrain);
 
-		if (Input.GetKeyDown(KeyCode.D)) {
-			terrainGroundStyle++;
-			if ((int)terrainGroundStyle >= terrainGroundStyleMax)
-				terrainGroundStyle = (InterfaceTerrainGroundStyle)0;
-		}
-		
-		if (Input.GetKeyDown(KeyCode.T)) {
+		// Tool
+		if (Input.GetKeyDown(KeyCode.Q)) {
 			terrainTool--;
 			if ((int)terrainTool < 0)
+				terrainTool = 0;
+		}
+		if (Input.GetKeyDown(KeyCode.E)) {
+			terrainTool++;
+			if ((int)terrainTool >= terrainToolMax)
 				terrainTool = (InterfaceTerrainTool)terrainToolMax - 1;
 		}
 
-		if (Input.GetKeyDown(KeyCode.Y)) {
-			terrainTool++;
-			if ((int)terrainTool >= terrainToolMax)
-				terrainTool = (InterfaceTerrainTool)0;
+		// Style
+		if (Input.GetKeyDown(KeyCode.Alpha1)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Grass;}
+		if (Input.GetKeyDown(KeyCode.Alpha2)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Snow;}
+		if (Input.GetKeyDown(KeyCode.Alpha3)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Desert;}
+
+		// Grain
+		if (Input.GetKeyDown(KeyCode.Z)) {
+			terrainGroundGrain--;
+			if ((int)terrainGroundGrain < 0)
+				terrainGroundGrain = (InterfaceTerrainGroundGrain)0;
+		}
+		if (Input.GetKeyDown(KeyCode.X)) {
+			terrainGroundGrain++;
+			if ((int)terrainGroundGrain > terrainGroundGrainMax - 1)
+				terrainGroundGrain = (InterfaceTerrainGroundGrain)terrainGroundGrainMax - 1;
 		}
 
-		Draw(new InterfaceTerrainInfo(terrainTool, terrainGroundStyle));
+		// Return to previous menu
+		if (Input.GetKeyDown(KeyCode.Escape)) {
+			SetMenu(TextMenu.Terrain);
+		}
+
+		Draw(new InterfaceTerrainInfo(terrainTool, terrainGroundStyle, terrainGroundGrain));
 
 		return new TextMenuText(t, "");
 	}
@@ -558,12 +582,25 @@ class MenuTerrainGround : MenuTerrainBase {
 		}
 		return s;
 	}
+
+	string InterfaceTerrainGroundGrainToText(InterfaceTerrainGroundGrain t) {
+		string s = "";
+		switch (t) {
+		case InterfaceTerrainGroundGrain.VeryCoarse:	s = "Very coarse";			break;
+		case InterfaceTerrainGroundGrain.Coarse:		s = "Coarse";				break;
+		case InterfaceTerrainGroundGrain.Normal:		s = "Normal";				break;
+		case InterfaceTerrainGroundGrain.Fine:			s = "Fine";					break;
+		case InterfaceTerrainGroundGrain.VeryFine:		s = "Very fine";			break;
+		default:										s = "???";					break;
+		}
+		return s;
+	}
 }
 
 class MenuTerrainRoller : MenuTerrainBase {
 
 	InterfaceTerrainRollerStyle terrainRollerStyle = InterfaceTerrainRollerStyle.General;
-	int terrainRollerStyleMax = (int)InterfaceTerrainRollerStyle.__Length;
+	//int terrainRollerStyleMax = (int)InterfaceTerrainRollerStyle.__Length; // Not used anymore
 
 	InterfaceTerrainRollerRotationDirection terrainRollerRotationDirection = InterfaceTerrainRollerRotationDirection.Clockwise;
 
@@ -584,11 +621,6 @@ class MenuTerrainRoller : MenuTerrainBase {
 			"(CV)     Speed: " + InterfaceTerrainRollerRotationSpeedToText(terrainRollerRotationSpeed) + "\n" +
 			"(B)  Direction: " + InterfaceTerrainRollerRotationDirectionToText(terrainRollerRotationDirection) + "\n";
 
-		// Style
-		if (Input.GetKeyDown(KeyCode.Alpha1)) {terrainRollerStyle = InterfaceTerrainRollerStyle.General;}
-		if (Input.GetKeyDown(KeyCode.Alpha2)) {terrainRollerStyle = InterfaceTerrainRollerStyle.Clouds;}
-		if (Input.GetKeyDown(KeyCode.Alpha3)) {terrainRollerStyle = InterfaceTerrainRollerStyle.Bubbles;}
-
 		// Tool
 		if (Input.GetKeyDown(KeyCode.Q)) {
 			terrainTool--;
@@ -600,6 +632,11 @@ class MenuTerrainRoller : MenuTerrainBase {
 			if ((int)terrainTool >= terrainToolMax)
 				terrainTool = (InterfaceTerrainTool)terrainToolMax - 1;
 		}
+
+		// Style
+		if (Input.GetKeyDown(KeyCode.Alpha1)) {terrainRollerStyle = InterfaceTerrainRollerStyle.General;}
+		if (Input.GetKeyDown(KeyCode.Alpha2)) {terrainRollerStyle = InterfaceTerrainRollerStyle.Clouds;}
+		if (Input.GetKeyDown(KeyCode.Alpha3)) {terrainRollerStyle = InterfaceTerrainRollerStyle.Bubbles;}
 
 		// Spacing
 		if (Input.GetKeyDown(KeyCode.Z)) {
