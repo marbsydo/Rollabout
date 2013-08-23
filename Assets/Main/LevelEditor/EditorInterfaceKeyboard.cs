@@ -569,7 +569,24 @@ class MenuTerrainGround : MenuTerrainBase {
 
 		Draw(new InterfaceTerrainInfo(terrainTool, terrainGroundStyle, terrainGroundGrain));
 
-		return new TextMenuText(t, "");
+		string t2 = "";
+
+		// Find currently selected object
+		if (editorController.currentTerrain is TerrainGround) {
+			TerrainGround ground = (TerrainGround) editorController.currentTerrain;
+
+			if (Input.GetKey(KeyCode.Space)) {
+				ground.segmentLength = InterfaceTerrainGroundGrainToTerrainSegmentLength(terrainGroundGrain);
+
+				ground.Regenerate();
+			}
+
+			t2 = "_Selection settings_\n" + 
+				"    Style: " + ground.style + "\n" + 
+				"Seg. len.: " + ground.segmentLength;
+		}
+
+		return new TextMenuText(t, t2);
 	}
 
 	string InterfaceTerrainGroundStyleToText(InterfaceTerrainGroundStyle t) {
@@ -679,7 +696,7 @@ class MenuTerrainRoller : MenuTerrainBase {
 			TerrainRoller roller = (TerrainRoller) editorController.currentTerrain;
 
 			if (Input.GetKey(KeyCode.Space)) {
-				roller.spacing = InterfaceTerrainRollerSpacingToTerrainRollerSpacing(terrainRollerSpacing); //InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed
+				roller.spacing = InterfaceTerrainRollerSpacingToTerrainRollerSpacing(terrainRollerSpacing);
 				roller.speed = InterfaceTerrainRollerRotationSpeedAndInterfaceTerrainRollerRotationToTerrainRollerSpeed(terrainRollerRotationSpeed, terrainRollerRotationDirection);
 				roller.isFixed = InterfaceTerrainRollerRotationSpeedToTerrainRollerFixed(terrainRollerRotationSpeed);
 
@@ -691,7 +708,8 @@ class MenuTerrainRoller : MenuTerrainBase {
 				"  Spacing: " + roller.spacing + "\n" + 
 				"    Speed: " + roller.speed + "\n" +
 				"Direction: " + roller.direction + "\n" + 
-				" Is fixed: " + roller.isFixed;
+				" Is fixed: " + roller.isFixed + "\n" + 
+				"Seg. len.: " + roller.segmentLength;
 		}
 
 		return new TextMenuText(t, t2);
