@@ -46,6 +46,7 @@ public abstract class TerrainBase : MonoBehaviour {
 
 	protected ObjectNode CreateNode(Vector3 pos, int numControls) {
 		GameObject g = new GameObject();
+		g.name = "Node";
 		ObjectNode node = g.AddComponent<ObjectNode>();
 		node.SetPosition(pos);
 		node.CreateHandles(numControls);
