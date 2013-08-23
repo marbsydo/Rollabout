@@ -310,8 +310,14 @@ public class RollerPart : TerrainPart {
 
 		this.terrainRoller = terrainRoller;
 
-		//TODO: Load a different sprite depending upon terrainRoller.style
-		spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerGeneral") as GameObject;
+		switch (terrainRoller.style) {
+			case TerrainRollerStyle.General:		spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerGeneral") as GameObject;			break;
+			case TerrainRollerStyle.Clouds:			spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerCloud") as GameObject;			break;
+			case TerrainRollerStyle.Bubbles:		spriteRoller = Resources.Load("Terrain/Sprites/SpriteRollerBubble") as GameObject;			break;
+			default:
+				Debug.LogWarning("Invalid TerrainRollerStyle [" + terrainRoller.style + "]. Defaulting to TerrainRollerStyle.General.");
+				goto case TerrainRollerStyle.General;
+		}
 	}
 
 	public override void Regenerate() {
