@@ -525,6 +525,9 @@ class MenuTerrainGround : MenuTerrainBase {
 	InterfaceTerrainGroundGrain terrainGroundGrain = InterfaceTerrainGroundGrain.Normal;
 	int terrainGroundGrainMax = (int)InterfaceTerrainGroundGrain.__Length;
 
+	bool updateTerrainGroundStyle = false;
+	bool updateTerrainGroundGrain = false;
+
 	override public TextMenuText Text() {
 
 		string t;
@@ -547,21 +550,23 @@ class MenuTerrainGround : MenuTerrainBase {
 		}
 
 		// Style
-		if (Input.GetKeyDown(KeyCode.Alpha1)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Grass;}
-		if (Input.GetKeyDown(KeyCode.Alpha2)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Snow;}
-		if (Input.GetKeyDown(KeyCode.Alpha3)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Desert;}
-		if (Input.GetKeyDown(KeyCode.Alpha4)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Stonebrick;}
+		if (Input.GetKeyDown(KeyCode.Alpha1)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Grass;		updateTerrainGroundStyle = true;}
+		if (Input.GetKeyDown(KeyCode.Alpha2)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Snow;		updateTerrainGroundStyle = true;}
+		if (Input.GetKeyDown(KeyCode.Alpha3)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Desert;		updateTerrainGroundStyle = true;}
+		if (Input.GetKeyDown(KeyCode.Alpha4)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Stonebrick;	updateTerrainGroundStyle = true;}
 
 		// Grain
 		if (Input.GetKeyDown(KeyCode.Z)) {
 			terrainGroundGrain--;
 			if ((int)terrainGroundGrain < 0)
 				terrainGroundGrain = (InterfaceTerrainGroundGrain)0;
+			updateTerrainGroundGrain = true;
 		}
 		if (Input.GetKeyDown(KeyCode.X)) {
 			terrainGroundGrain++;
 			if ((int)terrainGroundGrain > terrainGroundGrainMax - 1)
 				terrainGroundGrain = (InterfaceTerrainGroundGrain)terrainGroundGrainMax - 1;
+			updateTerrainGroundGrain = true;
 		}
 
 		// Return to previous menu
@@ -577,9 +582,29 @@ class MenuTerrainGround : MenuTerrainBase {
 		if (editorController.currentTerrain is TerrainGround) {
 			TerrainGround ground = (TerrainGround) editorController.currentTerrain;
 
-			if (Input.GetKey(KeyCode.Space)) {
-				ground.segmentLength = InterfaceTerrainGroundGrainToTerrainSegmentLength(terrainGroundGrain);
+			bool regenerate = false;
+			bool reloadSprites = false;
 
+			// Update the roller settings in real-time
+			if (updateTerrainGroundStyle) {
+				updateTerrainGroundStyle = false;
+				regenerate = true;
+				reloadSprites = true;
+				ground.style = InterfaceTerrainGroundStyleToTerrainGroundStyle(terrainGroundStyle);
+			}
+
+			if (updateTerrainGroundGrain) {
+				updateTerrainGroundGrain = false;
+				regenerate = true;
+				ground.segmentLength = InterfaceTerrainGroundGrainToTerrainSegmentLength(terrainGroundGrain);
+			}
+
+			// Apply the updates
+			if (reloadSprites) {
+				ground.groundPart.ReloadSprites();
+			}
+
+			if (regenerate) {
 				ground.Regenerate();
 			}
 
