@@ -3,7 +3,7 @@ using System.Collections;
 
 public enum TerrainBlueprintType {StraightLine, CurveBezierCubic, CurveCircularArc}
 public enum TerrainType {Ground, Roller};
-public enum TerrainGroundStyle {Grass, Snow, Desert, Stonebrick};
+public enum TerrainGroundStyle {Grass, Grass2, Snow, Desert, Stonebrick};
 public enum TerrainRollerStyle {General, Clouds, Bubbles};
 
 public class TerrainInfo {
@@ -208,6 +208,10 @@ public class GroundPart : TerrainPart {
 		case TerrainGroundStyle.Grass:
 			terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundGrassLine") as GameObject;
 			terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundGrassCircle") as GameObject;
+			break;
+		case TerrainGroundStyle.Grass2:
+			terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundGrass2Line") as GameObject;
+			terrainCircle = Resources.Load("Terrain/Sprites/SpriteGroundGrass2Circle") as GameObject;
 			break;
 		case TerrainGroundStyle.Snow:
 			terrainLine = Resources.Load("Terrain/Sprites/SpriteGroundSnowLine") as GameObject;

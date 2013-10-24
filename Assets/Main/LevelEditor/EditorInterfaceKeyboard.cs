@@ -12,7 +12,7 @@ using System.IO;
 // The last item is set to __Length to so then the length can be read by doing (int)InterfaceTerrainGroundStyle.__Length
 //public enum InterfaceTerrainStyle {GroundGrass, GroundSnow, GroundDesert, RollersGeneral, RollersClouds, RollersBubbles, __Length};
 public enum InterfaceTerrainType {Ground, Roller};
-public enum InterfaceTerrainGroundStyle {Grass, Snow, Desert, Stonebrick, __Length};
+public enum InterfaceTerrainGroundStyle {Grass, Grass2, Snow, Desert, Stonebrick, __Length};
 public enum InterfaceTerrainGroundGrain {VeryCoarse, Coarse, Normal, Fine, VeryFine, __Length};
 public enum InterfaceTerrainRollerStyle {General, Clouds, Bubbles, __Length};
 public enum InterfaceTerrainTool {StraightLine, CurveBezierCubic, CurveCircularArc, __Length};
@@ -370,6 +370,7 @@ class MenuTerrainBase : MenuAbstract {
 
 		switch (interfaceTerrainGroundStyle) {
 		case InterfaceTerrainGroundStyle.Grass:			terrainGroundStyle = TerrainGroundStyle.Grass;		break;
+		case InterfaceTerrainGroundStyle.Grass2:		terrainGroundStyle = TerrainGroundStyle.Grass2;		break;
 		case InterfaceTerrainGroundStyle.Snow:			terrainGroundStyle = TerrainGroundStyle.Snow;		break;
 		case InterfaceTerrainGroundStyle.Desert:		terrainGroundStyle = TerrainGroundStyle.Desert;		break;
 		case InterfaceTerrainGroundStyle.Stonebrick:	terrainGroundStyle = TerrainGroundStyle.Stonebrick;	break;
@@ -554,6 +555,7 @@ class MenuTerrainGround : MenuTerrainBase {
 		if (Input.GetKeyDown(KeyCode.Alpha2)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Snow;		updateTerrainGroundStyle = true;}
 		if (Input.GetKeyDown(KeyCode.Alpha3)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Desert;		updateTerrainGroundStyle = true;}
 		if (Input.GetKeyDown(KeyCode.Alpha4)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Stonebrick;	updateTerrainGroundStyle = true;}
+		if (Input.GetKeyDown(KeyCode.Alpha5)) {terrainGroundStyle = InterfaceTerrainGroundStyle.Grass2;		updateTerrainGroundStyle = true;}
 
 		// Grain
 		if (Input.GetKeyDown(KeyCode.Z)) {
@@ -620,6 +622,7 @@ class MenuTerrainGround : MenuTerrainBase {
 		string s = "";
 		switch (t) {
 		case InterfaceTerrainGroundStyle.Grass:			s = "Grass";				break;
+		case InterfaceTerrainGroundStyle.Grass2:		s = "Grass2";				break;
 		case InterfaceTerrainGroundStyle.Snow:			s = "Snow";					break;
 		case InterfaceTerrainGroundStyle.Desert:		s = "Desert";				break;
 		case InterfaceTerrainGroundStyle.Stonebrick:	s = "Stone Brick";			break;
