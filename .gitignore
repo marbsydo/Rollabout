@@ -14,13 +14,3 @@ Temp
 *.unityproj
 *.sln
 *.userprefs
-
-# Development files
-Development/*
-
-# Exported SVGs
-Assets/Art/svg/*.png
-
-# Temporary level
-Assets/levels/__temp_level.ewfg
-Assets/levels/__temp_level.ewfg.meta
